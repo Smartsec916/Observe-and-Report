@@ -40,12 +40,8 @@ export default function SearchPage() {
 
   // Handle editing an observation
   const handleEdit = (id: number) => {
-    // Navigate to edit page (not implemented in this version)
-    toast({
-      title: "Edit Observation",
-      description: `Edit functionality for observation ${id} will be implemented in a future version.`,
-      variant: "default",
-    });
+    // Navigate to edit page
+    setLocation(`/input/${id}`);
   };
 
   // Handle viewing details of an observation
