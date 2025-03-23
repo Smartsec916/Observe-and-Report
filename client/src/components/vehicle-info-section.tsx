@@ -102,12 +102,18 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                   value={vehicle.yearMin || ""}
                   onValueChange={(value) => {
                     const newValue = value === "placeholder" ? "" : value;
-                    handleChange("yearMin", newValue);
+                    // Create a completely new object and update both fields at once
+                    const newVehicle = { ...vehicle } as VehicleInfo;
+                    newVehicle.yearMin = newValue;
+                    
                     // Update legacy year field for backward compatibility
                     if (vehicle.yearMax) {
                       const range = `${newValue}-${vehicle.yearMax}`;
-                      handleChange("year", range);
+                      newVehicle.year = range;
                     }
+                    
+                    // Send the entire updated object at once
+                    onChange(newVehicle);
                   }}
                 >
                   <SelectTrigger
@@ -150,12 +156,18 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                   value={vehicle.yearMax || ""}
                   onValueChange={(value) => {
                     const newValue = value === "placeholder" ? "" : value;
-                    handleChange("yearMax", newValue);
+                    // Create a completely new object and update both fields at once
+                    const newVehicle = { ...vehicle } as VehicleInfo;
+                    newVehicle.yearMax = newValue;
+                    
                     // Update legacy year field for backward compatibility
                     if (vehicle.yearMin) {
                       const range = `${vehicle.yearMin}-${newValue}`;
-                      handleChange("year", range);
+                      newVehicle.year = range;
                     }
+                    
+                    // Send the entire updated object at once
+                    onChange(newVehicle);
                   }}
                 >
                   <SelectTrigger

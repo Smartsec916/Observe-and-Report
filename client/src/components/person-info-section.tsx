@@ -69,12 +69,18 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                   value={person.heightMin || ""}
                   onValueChange={(value) => {
                     const newValue = value === "placeholder" ? "" : value;
-                    handleChange("heightMin", newValue);
+                    // Create a completely new object and update both fields at once
+                    const newPerson = { ...person } as PersonInfo;
+                    newPerson.heightMin = newValue;
+                    
                     // Also update the legacy height field for backward compatibility
                     if (person.heightMax) {
                       const range = `${newValue}-${person.heightMax}`;
-                      handleChange("height", range);
+                      newPerson.height = range;
                     }
+                    
+                    // Send the entire updated object at once
+                    onChange(newPerson);
                   }}
                 >
                   <SelectTrigger
@@ -100,12 +106,18 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                   value={person.heightMax || ""}
                   onValueChange={(value) => {
                     const newValue = value === "placeholder" ? "" : value;
-                    handleChange("heightMax", newValue);
+                    // Create a completely new object and update both fields at once
+                    const newPerson = { ...person } as PersonInfo;
+                    newPerson.heightMax = newValue;
+                    
                     // Also update the legacy height field for backward compatibility
                     if (person.heightMin) {
                       const range = `${person.heightMin}-${newValue}`;
-                      handleChange("height", range);
+                      newPerson.height = range;
                     }
+                    
+                    // Send the entire updated object at once
+                    onChange(newPerson);
                   }}
                 >
                   <SelectTrigger
@@ -140,14 +152,20 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                   value={person.buildPrimary || ""}
                   onValueChange={(value) => {
                     const newValue = value === "placeholder" ? "" : value;
-                    handleChange("buildPrimary", newValue);
+                    // Create a completely new object and update both fields at once
+                    const newPerson = { ...person } as PersonInfo;
+                    newPerson.buildPrimary = newValue;
+                    
                     // Also update the legacy build field for backward compatibility
                     if (person.buildSecondary) {
                       const combined = `${newValue}-${person.buildSecondary}`;
-                      handleChange("build", combined);
+                      newPerson.build = combined;
                     } else {
-                      handleChange("build", newValue);
+                      newPerson.build = newValue;
                     }
+                    
+                    // Send the entire updated object at once
+                    onChange(newPerson);
                   }}
                 >
                   <SelectTrigger
@@ -173,12 +191,18 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                   value={person.buildSecondary || ""}
                   onValueChange={(value) => {
                     const newValue = value === "placeholder" ? "" : value;
-                    handleChange("buildSecondary", newValue);
+                    // Create a completely new object and update both fields at once
+                    const newPerson = { ...person } as PersonInfo;
+                    newPerson.buildSecondary = newValue;
+                    
                     // Also update the legacy build field for backward compatibility
                     if (person.buildPrimary) {
                       const combined = `${person.buildPrimary}-${newValue}`;
-                      handleChange("build", combined);
+                      newPerson.build = combined;
                     }
+                    
+                    // Send the entire updated object at once
+                    onChange(newPerson);
                   }}
                 >
                   <SelectTrigger
