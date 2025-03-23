@@ -16,6 +16,7 @@ const loginFormSchema = z.object({
   password: z.string().min(1, 'Password is required'),
   rememberUsername: z.boolean().optional().default(false),
   rememberPassword: z.boolean().optional().default(false),
+  forgotCredentials: z.boolean().optional().default(false),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;

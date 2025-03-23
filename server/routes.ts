@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response } from "express";
 import { createServer, type Server } from "http";
 import { storage as dataStorage } from "./storage";
 import { z } from "zod";
-import { observationInputSchema, imageSchema, ImageInfo, imageMetadataSchema } from "@shared/schema";
+import { observationInputSchema, imageSchema, ImageInfo, imageMetadataSchema, InsertObservation } from "@shared/schema";
 import { ZodError } from "zod";
 import { isAuthenticated } from "./auth";
 import multer from "multer";
@@ -250,10 +250,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get current images or initialize an empty array
         const currentImages: ImageInfo[] = observation.images || [];
         
-        // Add the new image
-        const updatedObservation = await dataStorage.updateObservation(id, {
+        // Check if we should add location information automatically
+        const updates: Partial<InsertObservation> = {
           images: [...currentImages, validatedImage]
-        });
+        };
+        
+        // If there's location text in the metadata, add it to the location field
+        if (metadata.locationText) {
+          const currentLocation = observation.location || '';
+          const locationText = metadata.locationText;
+          
+          // Only add if it's not already in the location text
+          if (!currentLocation.includes(locationText)) {
+            const formattedLocation = currentLocation.trim() 
+              ? currentLocation.includes("Location Information")
+                ? `${currentLocation}\nLocation: ${locationText}`
+                : `${currentLocation}\nLocation Information\nLocation: ${locationText}`
+              : `Location Information\nLocation: ${locationText}`;
+            
+            updates.location = formattedLocation;
+          }
+        }
+        
+        // Add the new image and possibly update location
+        const updatedObservation = await dataStorage.updateObservation(id, updates);
         
         console.log('Image added to observation successfully');
         
@@ -383,10 +403,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Get current images or initialize an empty array
           const currentImages: ImageInfo[] = observation.images || [];
           
-          // Add the new image
-          const updatedObservation = await dataStorage.updateObservation(id, {
+          // Check if we should add location information automatically
+          const updates: Partial<InsertObservation> = {
             images: [...currentImages, validatedImage]
-          });
+          };
+          
+          // If there's location text in the metadata, add it to the location field
+          if (metadata.locationText) {
+            const currentLocation = observation.location || '';
+            const locationText = metadata.locationText;
+            
+            // Only add if it's not already in the location text
+            if (!currentLocation.includes(locationText)) {
+              const formattedLocation = currentLocation.trim() 
+                ? currentLocation.includes("Location Information")
+                  ? `${currentLocation}\nLocation: ${locationText}`
+                  : `${currentLocation}\nLocation Information\nLocation: ${locationText}`
+                : `Location Information\nLocation: ${locationText}`;
+              
+              updates.location = formattedLocation;
+            }
+          }
+          
+          // Add the new image and possibly update location
+          const updatedObservation = await dataStorage.updateObservation(id, updates);
           
           res.status(201).json({ 
             message: "Mobile image uploaded successfully", 
