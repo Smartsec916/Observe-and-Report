@@ -5,8 +5,10 @@ import { z } from "zod";
 // Person information schema
 export const personSchema = z.object({
   name: z.string().optional(),
-  height: z.string().optional(),
-  build: z.string().optional(),
+  heightMin: z.string().optional(),
+  heightMax: z.string().optional(),
+  buildPrimary: z.string().optional(),
+  buildSecondary: z.string().optional(),
   hairColor: z.string().optional(),
   eyeColor: z.string().optional(),
   skinTone: z.string().optional(),
@@ -16,17 +18,25 @@ export const personSchema = z.object({
   email: z.string().optional(),
   workAddress: z.string().optional(),
   workPhone: z.string().optional(),
+  
+  // Keep the original fields for backward compatibility
+  height: z.string().optional(),
+  build: z.string().optional(),
 });
 
 // Vehicle information schema
 export const vehicleSchema = z.object({
   make: z.string().optional(),
   model: z.string().optional(), 
-  year: z.string().optional(),
+  yearMin: z.string().optional(),
+  yearMax: z.string().optional(),
   color: z.string().optional(),
   licensePlate: z.array(z.string().optional()).length(7).optional(),
   additionalLocations: z.array(z.string()).optional(),
   notes: z.string().optional(),
+  
+  // Keep the original field for backward compatibility
+  year: z.string().optional(),
 });
 
 // Observation schema for database

@@ -25,8 +25,28 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
     const { person } = observation;
     const details = [];
 
-    if (person.height) details.push(getHeightLabel(person.height));
-    if (person.build) details.push(`${person.build} build`);
+    // Handle height display with preference for min/max ranges
+    if (person.heightMin && person.heightMax) {
+      details.push(`${getHeightLabel(person.heightMin)} to ${getHeightLabel(person.heightMax)}`);
+    } else if (person.heightMin) {
+      details.push(`Min: ${getHeightLabel(person.heightMin)}`);
+    } else if (person.heightMax) {
+      details.push(`Max: ${getHeightLabel(person.heightMax)}`);
+    } else if (person.height) {
+      details.push(getHeightLabel(person.height));
+    }
+    
+    // Handle build display with preference for primary/secondary
+    if (person.buildPrimary && person.buildSecondary) {
+      details.push(`${person.buildPrimary}-${person.buildSecondary} build`);
+    } else if (person.buildPrimary) {
+      details.push(`${person.buildPrimary} build`);
+    } else if (person.buildSecondary) {
+      details.push(`${person.buildSecondary} build`);
+    } else if (person.build) {
+      details.push(`${person.build} build`);
+    }
+    
     if (person.hairColor) details.push(`${person.hairColor} hair`);
     if (person.eyeColor) details.push(`${person.eyeColor} eyes`);
 
@@ -41,7 +61,17 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
     if (vehicle.color) details.push(vehicle.color);
     if (vehicle.make) details.push(vehicle.make);
     if (vehicle.model) details.push(vehicle.model);
-    if (vehicle.year) details.push(vehicle.year);
+    
+    // Handle year display with preference for min/max ranges
+    if (vehicle.yearMin && vehicle.yearMax) {
+      details.push(`${vehicle.yearMin} to ${vehicle.yearMax}`);
+    } else if (vehicle.yearMin) {
+      details.push(`Min Year: ${vehicle.yearMin}`);
+    } else if (vehicle.yearMax) {
+      details.push(`Max Year: ${vehicle.yearMax}`);
+    } else if (vehicle.year) {
+      details.push(vehicle.year);
+    }
 
     const licensePlate = vehicle.licensePlate?.filter(char => char).join("") || "";
     if (licensePlate) {

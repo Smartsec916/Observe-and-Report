@@ -86,47 +86,103 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="vehicleYear" className="block text-xs font-medium text-[#8A8A8A] mb-1">
-                Year
-              </Label>
-              <Select
-                value={vehicle.year || ""}
-                onValueChange={(value) => handleChange("year", value)}
-              >
-                <SelectTrigger
-                  id="vehicleYear"
-                  className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+          <div>
+            <Label className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              Year Range
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="vehicleYearMin" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                  Minimum Year
+                </Label>
+                <Select
+                  value={vehicle.yearMin || ""}
+                  onValueChange={(value) => {
+                    handleChange("yearMin", value);
+                    // Update legacy year field for backward compatibility
+                    if (vehicle.yearMax) {
+                      const range = `${value}-${vehicle.yearMax}`;
+                      handleChange("year", range);
+                    }
+                  }}
                 >
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px] overflow-y-auto">
-                  {/* First show placeholder, unknown, and pre-1980 options */}
-                  {vehicleYearOptions.slice(0, 3).map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
-                      {option.label}
+                  <SelectTrigger
+                    id="vehicleYearMin"
+                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  >
+                    <SelectValue placeholder="Min year" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px] overflow-y-auto">
+                    {/* Show placeholder and unknown options */}
+                    {vehicleYearOptions.slice(0, 2).map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                    
+                    {/* Show pre-1980 option */}
+                    <SelectItem key="pre1980" value="pre1980" className="text-white">
+                      Pre 1980
                     </SelectItem>
-                  ))}
-                  
-                  {/* Then show a separator */}
-                  <Separator className="my-1 bg-[#3A3A3A]" />
-                  
-                  {/* Then show all year options (which start at index 3) */}
-                  {vehicleYearOptions.slice(3, -1).map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                  
-                  {/* Then show a separator and variable option */}
-                  <Separator className="my-1 bg-[#3A3A3A]" />
-                  <SelectItem key="variable" value="variable" className="text-white">
-                    Variable (Multiple Years)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                    
+                    {/* Show separator */}
+                    <Separator className="my-1 bg-[#3A3A3A]" />
+                    
+                    {/* Show all year options */}
+                    {vehicleYearOptions.slice(3, -1).map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="vehicleYearMax" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                  Maximum Year
+                </Label>
+                <Select
+                  value={vehicle.yearMax || ""}
+                  onValueChange={(value) => {
+                    handleChange("yearMax", value);
+                    // Update legacy year field for backward compatibility
+                    if (vehicle.yearMin) {
+                      const range = `${vehicle.yearMin}-${value}`;
+                      handleChange("year", range);
+                    }
+                  }}
+                >
+                  <SelectTrigger
+                    id="vehicleYearMax"
+                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  >
+                    <SelectValue placeholder="Max year" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px] overflow-y-auto">
+                    {/* Show placeholder and unknown options */}
+                    {vehicleYearOptions.slice(0, 2).map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                    
+                    {/* Show separator */}
+                    <Separator className="my-1 bg-[#3A3A3A]" />
+                    
+                    {/* Show all year options */}
+                    {vehicleYearOptions.slice(3, -1).map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+          </div>
+            
+          <div>
             <div>
               <Label htmlFor="vehicleColor" className="block text-xs font-medium text-[#8A8A8A] mb-1">
                 Color

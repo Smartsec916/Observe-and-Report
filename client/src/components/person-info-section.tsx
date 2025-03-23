@@ -52,53 +52,143 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
             />
           </div>
 
-          {/* Physical attributes */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="personHeight" className="block text-xs font-medium text-[#8A8A8A] mb-1">
-                Height
-              </Label>
-              <Select
-                value={person.height || ""}
-                onValueChange={(value) => handleChange("height", value)}
-              >
-                <SelectTrigger
-                  id="personHeight"
-                  className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+          {/* Height Range */}
+          <div>
+            <Label className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              Height Range
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="personHeightMin" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                  Minimum
+                </Label>
+                <Select
+                  value={person.heightMin || ""}
+                  onValueChange={(value) => {
+                    handleChange("heightMin", value);
+                    // Also update the legacy height field for backward compatibility
+                    if (person.heightMax) {
+                      const range = `${value}-${person.heightMax}`;
+                      handleChange("height", range);
+                    }
+                  }}
                 >
-                  <SelectValue placeholder="Select height" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
-                  {heightOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    id="personHeightMin"
+                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  >
+                    <SelectValue placeholder="Min height" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                    {heightOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="personHeightMax" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                  Maximum
+                </Label>
+                <Select
+                  value={person.heightMax || ""}
+                  onValueChange={(value) => {
+                    handleChange("heightMax", value);
+                    // Also update the legacy height field for backward compatibility
+                    if (person.heightMin) {
+                      const range = `${person.heightMin}-${value}`;
+                      handleChange("height", range);
+                    }
+                  }}
+                >
+                  <SelectTrigger
+                    id="personHeightMax"
+                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  >
+                    <SelectValue placeholder="Max height" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                    {heightOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="personBuild" className="block text-xs font-medium text-[#8A8A8A] mb-1">
-                Build
-              </Label>
-              <Select
-                value={person.build || ""}
-                onValueChange={(value) => handleChange("build", value)}
-              >
-                <SelectTrigger
-                  id="personBuild"
-                  className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+          </div>
+
+          {/* Build Options */}
+          <div>
+            <Label className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              Build
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="personBuildPrimary" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                  Primary
+                </Label>
+                <Select
+                  value={person.buildPrimary || ""}
+                  onValueChange={(value) => {
+                    handleChange("buildPrimary", value);
+                    // Also update the legacy build field for backward compatibility
+                    if (person.buildSecondary) {
+                      const combined = `${value}-${person.buildSecondary}`;
+                      handleChange("build", combined);
+                    } else {
+                      handleChange("build", value);
+                    }
+                  }}
                 >
-                  <SelectValue placeholder="Select build" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
-                  {buildOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    id="personBuildPrimary"
+                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  >
+                    <SelectValue placeholder="Primary build" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                    {buildOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="personBuildSecondary" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                  Secondary (optional)
+                </Label>
+                <Select
+                  value={person.buildSecondary || ""}
+                  onValueChange={(value) => {
+                    handleChange("buildSecondary", value);
+                    // Also update the legacy build field for backward compatibility
+                    if (person.buildPrimary) {
+                      const combined = `${person.buildPrimary}-${value}`;
+                      handleChange("build", combined);
+                    }
+                  }}
+                >
+                  <SelectTrigger
+                    id="personBuildSecondary"
+                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  >
+                    <SelectValue placeholder="Secondary build" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                    {buildOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
