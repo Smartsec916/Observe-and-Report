@@ -10,14 +10,12 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/auth-context';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ForgotCredentials } from '@/components/forgot-credentials';
 
 const loginFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
   rememberUsername: z.boolean().optional().default(false),
   rememberPassword: z.boolean().optional().default(false),
-  forgotCredentials: z.boolean().optional().default(false),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -26,7 +24,6 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
-  const [forgotCredentialsOpen, setForgotCredentialsOpen] = useState(false);
   
   // Load saved username from localStorage if available
   const savedUsername = localStorage.getItem('rememberedUsername');
@@ -39,7 +36,6 @@ export default function LoginPage() {
       password: savedPassword || '',
       rememberUsername: !!savedUsername,
       rememberPassword: !!savedPassword,
-      forgotCredentials: false,
     },
   });
   
@@ -89,13 +85,6 @@ export default function LoginPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <ForgotCredentials 
-              isOpen={forgotCredentialsOpen} 
-              onClose={() => {
-                setForgotCredentialsOpen(false);
-                form.setValue('forgotCredentials', false);
-              }}
-            />
               <FormField
                 control={form.control}
                 name="username"
@@ -159,31 +148,6 @@ export default function LoginPage() {
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
                           Remember my password
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="forgotCredentials"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox 
-                          checked={field.value} 
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            if (checked) {
-                              setForgotCredentialsOpen(true);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-normal">
-                          Forgot password or Username
                         </FormLabel>
                       </div>
                     </FormItem>
