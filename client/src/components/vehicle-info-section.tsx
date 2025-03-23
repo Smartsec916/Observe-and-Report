@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { ChevronDown, ChevronUp, Plus, X } from "lucide-react";
 import { VehicleInfo, vehicleYearOptions, vehicleColorOptions } from "@/lib/types";
 import { LicensePlateInput } from "./license-plate-input";
@@ -88,7 +89,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="vehicleYear" className="block text-xs font-medium text-[#8A8A8A] mb-1">
-                Year Range
+                Year
               </Label>
               <Select
                 value={vehicle.year || ""}
@@ -98,14 +99,31 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                   id="vehicleYear"
                   className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                 >
-                  <SelectValue placeholder="Select year range" />
+                  <SelectValue placeholder="Select year" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
-                  {vehicleYearOptions.map((option) => (
+                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px] overflow-y-auto">
+                  {/* First show placeholder, unknown, and pre-1980 options */}
+                  {vehicleYearOptions.slice(0, 3).map((option) => (
                     <SelectItem key={option.value} value={option.value} className="text-white">
                       {option.label}
                     </SelectItem>
                   ))}
+                  
+                  {/* Then show a separator */}
+                  <Separator className="my-1 bg-[#3A3A3A]" />
+                  
+                  {/* Then show all year options (which start at index 3) */}
+                  {vehicleYearOptions.slice(3, -1).map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-white">
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                  
+                  {/* Then show a separator and variable option */}
+                  <Separator className="my-1 bg-[#3A3A3A]" />
+                  <SelectItem key="variable" value="variable" className="text-white">
+                    Variable (Multiple Years)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

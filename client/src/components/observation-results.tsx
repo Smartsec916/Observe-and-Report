@@ -54,12 +54,19 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
   // Convert height value to readable label
   const getHeightLabel = (heightValue: string) => {
     const heightMap: Record<string, string> = {
+      "unknown": "Unknown Height",
+      "variable": "Variable Height",
       "under5ft": "Under 5'0\"",
-      "5ft0-5ft3": "5'0\" - 5'3\"",
-      "5ft4-5ft7": "5'4\" - 5'7\"",
-      "5ft8-5ft11": "5'8\" - 5'11\"",
-      "6ft0-6ft3": "6'0\" - 6'3\"",
-      "over6ft3": "Over 6'3\""
+      "5ft0-5ft1": "5'0\" - 5'1\"",
+      "5ft2-5ft3": "5'2\" - 5'3\"",
+      "5ft4-5ft5": "5'4\" - 5'5\"",
+      "5ft6-5ft7": "5'6\" - 5'7\"",
+      "5ft8-5ft9": "5'8\" - 5'9\"",
+      "5ft10-5ft11": "5'10\" - 5'11\"",
+      "6ft0-6ft1": "6'0\" - 6'1\"",
+      "6ft2-6ft3": "6'2\" - 6'3\"",
+      "6ft4-6ft5": "6'4\" - 6'5\"",
+      "over6ft5": "Over 6'5\""
     };
     
     return heightMap[heightValue] || heightValue;

@@ -25,12 +25,19 @@ export interface SearchParams {
 // Options for dropdowns
 export const heightOptions = [
   { value: "placeholder", label: "Select height" },
+  { value: "unknown", label: "Unknown" },
   { value: "under5ft", label: "Under 5'0\"" },
-  { value: "5ft0-5ft3", label: "5'0\" - 5'3\"" },
-  { value: "5ft4-5ft7", label: "5'4\" - 5'7\"" },
-  { value: "5ft8-5ft11", label: "5'8\" - 5'11\"" },
-  { value: "6ft0-6ft3", label: "6'0\" - 6'3\"" },
-  { value: "over6ft3", label: "Over 6'3\"" }
+  { value: "5ft0-5ft1", label: "5'0\" - 5'1\"" },
+  { value: "5ft2-5ft3", label: "5'2\" - 5'3\"" },
+  { value: "5ft4-5ft5", label: "5'4\" - 5'5\"" },
+  { value: "5ft6-5ft7", label: "5'6\" - 5'7\"" },
+  { value: "5ft8-5ft9", label: "5'8\" - 5'9\"" },
+  { value: "5ft10-5ft11", label: "5'10\" - 5'11\"" },
+  { value: "6ft0-6ft1", label: "6'0\" - 6'1\"" },
+  { value: "6ft2-6ft3", label: "6'2\" - 6'3\"" },
+  { value: "6ft4-6ft5", label: "6'4\" - 6'5\"" },
+  { value: "over6ft5", label: "Over 6'5\"" },
+  { value: "variable", label: "Variable Height" }
 ];
 
 export const buildOptions = [
@@ -75,16 +82,19 @@ export const skinToneOptions = [
   { value: "darkBrown", label: "Dark Brown" }
 ];
 
+// Generate individual years from 1980 to current year
+const currentYear = new Date().getFullYear();
+const years = [];
+for (let year = 1980; year <= currentYear; year++) {
+  years.push({ value: year.toString(), label: year.toString() });
+}
+
 export const vehicleYearOptions = [
-  { value: "placeholder", label: "Select year range" },
-  { value: "pre1990", label: "Pre 1990s" },
-  { value: "1990-1995", label: "1990-1995" },
-  { value: "1996-2000", label: "1996-2000" },
-  { value: "2001-2005", label: "2001-2005" },
-  { value: "2006-2010", label: "2006-2010" },
-  { value: "2011-2015", label: "2011-2015" },
-  { value: "2016-2020", label: "2016-2020" },
-  { value: "2021-present", label: "2021-Present" }
+  { value: "placeholder", label: "Select year" },
+  { value: "unknown", label: "Unknown" },
+  { value: "pre1980", label: "Pre 1980" },
+  ...years,
+  { value: "variable", label: "Variable (Multiple Years)" }
 ];
 
 export const vehicleColorOptions = [
@@ -105,5 +115,23 @@ export const vehicleColorOptions = [
 export const licensePlateOptions = [
   { value: "placeholder", label: "?" },
   ...'0123456789'.split('').map(char => ({ value: char, label: char })),
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(char => ({ value: char, label: char }))
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(char => ({ value: char, label: char })),
+  // Special characters commonly found on license plates
+  { value: "-", label: "-" },
+  { value: "•", label: "•" },
+  { value: "*", label: "*" },
+  { value: "+", label: "+" },
+  { value: "=", label: "=" },
+  { value: "/", label: "/" },
+  { value: "\\", label: "\\" },
+  { value: "#", label: "#" },
+  { value: "@", label: "@" },
+  { value: "&", label: "&" },
+  { value: "%", label: "%" },
+  { value: "$", label: "$" },
+  { value: "!", label: "!" },
+  { value: "?", label: "?" },
+  { value: "<", label: "<" },
+  { value: ">", label: ">" },
+  { value: "unknown", label: "Unknown" }
 ];

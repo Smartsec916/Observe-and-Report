@@ -18,17 +18,18 @@ export function DateTimePicker({
   onTimeChange,
   className,
 }: DateTimePickerProps) {
-  // Initialize with current date and time on first render
+  // Initialize with current date and time only once on first render
   useEffect(() => {
-    if (!date || !time) {
-      const now = new Date();
-      const currentDate = now.toISOString().split("T")[0];
-      const currentTime = now.toTimeString().slice(0, 5);
-      
-      if (!date) onDateChange(currentDate);
-      if (!time) onTimeChange(currentTime);
-    }
-  }, [date, time, onDateChange, onTimeChange]);
+    const now = new Date();
+    const currentDate = now.toISOString().split("T")[0];
+    const currentTime = now.toTimeString().slice(0, 5);
+    
+    // Only set initial values if they're not already set
+    if (!date) onDateChange(currentDate);
+    if (!time) onTimeChange(currentTime);
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array ensures this only runs once
 
   return (
     <div className={cn("bg-[#1E1E1E] rounded-lg p-4 shadow-md border border-[#3A3A3A]", className)}>
