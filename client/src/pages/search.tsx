@@ -6,6 +6,8 @@ import { ObservationResults } from "@/components/observation-results";
 import { SearchParams, Observation } from "@/lib/types";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function SearchPage() {
   const [, setLocation] = useLocation();
@@ -61,7 +63,7 @@ export default function SearchPage() {
   const isLoading = searchMutation.isPending;
 
   return (
-    <div className="px-4 py-3 h-full">
+    <div className="px-4 py-3 h-full relative">
       <div className="space-y-6 pb-20">
         {/* Search Filters */}
         <SearchFilters
@@ -87,6 +89,14 @@ export default function SearchPage() {
           </div>
         )}
       </div>
+      
+      {/* Floating Add Button */}
+      <Button
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-[#0F52BA] hover:bg-[#0A3A8C] shadow-lg flex items-center justify-center"
+        onClick={() => setLocation('/input')}
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
     </div>
   );
 }
