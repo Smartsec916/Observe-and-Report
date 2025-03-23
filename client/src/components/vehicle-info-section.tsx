@@ -120,9 +120,9 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                       </SelectItem>
                     ))}
                     
-                    {/* Show pre-1980 option */}
-                    <SelectItem key="pre1980" value="pre1980" className="text-white">
-                      Pre 1980
+                    {/* Show pre-1950 option */}
+                    <SelectItem key="pre1950" value="pre1950" className="text-white">
+                      Pre 1950
                     </SelectItem>
                     
                     {/* Show separator */}

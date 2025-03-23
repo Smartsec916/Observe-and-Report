@@ -82,17 +82,17 @@ export const skinToneOptions = [
   { value: "darkBrown", label: "Dark Brown" }
 ];
 
-// Generate individual years from 1980 to current year
+// Generate individual years from 1950 to current year
 const currentYear = new Date().getFullYear();
 const years = [];
-for (let year = 1980; year <= currentYear; year++) {
+for (let year = 1950; year <= currentYear; year++) {
   years.push({ value: year.toString(), label: year.toString() });
 }
 
 export const vehicleYearOptions = [
   { value: "placeholder", label: "Select year" },
   { value: "unknown", label: "Unknown" },
-  { value: "pre1980", label: "Pre 1980" },
+  { value: "pre1950", label: "Pre 1950" },
   ...years,
   { value: "variable", label: "Variable (Multiple Years)" }
 ];
