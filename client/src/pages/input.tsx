@@ -69,11 +69,12 @@ export default function InputPage({ id }: InputPageProps = {}) {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/observations"] });
       
-      // Show success toast
+      // Show success toast with instructions for adding images
       toast({
         title: "Observation saved",
-        description: "Your observation has been recorded successfully.",
+        description: "Your observation has been recorded. You can now add images.",
         variant: "default",
+        duration: 5000, // Show toast longer to ensure user notices
       });
       
       // Navigate to edit view to allow adding images
@@ -211,13 +212,23 @@ export default function InputPage({ id }: InputPageProps = {}) {
           </div>
         </div>
         
-        {/* Image Gallery - Show if in edit mode or if we have observation ID */}
-        {(isEditMode && observationId) ? (
-          <ImageGallery 
-            images={images} 
-            observationId={observationId} 
-          />
-        ) : null}
+        {/* Image Gallery - Only show if we have an observation ID */}
+        {observationId ? (
+          <div className="rounded-lg shadow bg-card p-4 space-y-3">
+            <h3 className="text-base font-medium">Images</h3>
+            <ImageGallery 
+              images={images} 
+              observationId={observationId} 
+            />
+          </div>
+        ) : (
+          <div className="rounded-lg shadow bg-card p-4 space-y-3">
+            <h3 className="text-base font-medium">Images</h3>
+            <p className="text-sm text-muted-foreground">
+              Images can be added after saving the observation.
+            </p>
+          </div>
+        )}
         
         {/* Submit and Cancel Buttons */}
         <div className="flex justify-between gap-4 pt-2 pb-4">

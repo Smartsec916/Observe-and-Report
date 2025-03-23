@@ -230,6 +230,11 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                     alt={image.description || `Image ${index + 1}`}
                     className="h-full w-full object-cover"
                   />
+                  {image.metadata && Object.keys(image.metadata).length > 0 && (
+                    <div className="absolute bottom-1 right-1 bg-black/60 rounded-full p-1">
+                      <Info className="h-3 w-3 text-blue-400" />
+                    </div>
+                  )}
                 </div>
               </DialogTrigger>
               
