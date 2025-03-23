@@ -245,29 +245,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get current images or initialize an empty array
         const currentImages: ImageInfo[] = observation.images || [];
         
-        // Check if we should add location information automatically
+        // Simply add the image to the observation
         const updates: Partial<InsertObservation> = {
           images: [...currentImages, validatedImage]
         };
         
-        // If there's location text in the metadata, add it to the location field
-        if (metadata.locationText) {
-          const currentLocation = observation.location || '';
-          const locationText = metadata.locationText;
-          
-          // Only add if it's not already in the location text
-          if (!currentLocation.includes(locationText)) {
-            const formattedLocation = currentLocation.trim() 
-              ? currentLocation.includes("Location Information")
-                ? `${currentLocation}\nLocation: ${locationText}`
-                : `${currentLocation}\nLocation Information\nLocation: ${locationText}`
-              : `Location Information\nLocation: ${locationText}`;
-            
-            updates.location = formattedLocation;
-          }
-        }
-        
-        // Add the new image and possibly update location
+        // Add the new image to the observation
         const updatedObservation = await dataStorage.updateObservation(id, updates);
         
         console.log('Image added to observation successfully');
@@ -398,45 +381,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Get current images or initialize an empty array
           const currentImages: ImageInfo[] = observation.images || [];
           
-          // Check if we should add location information automatically
+          // Simply add the image to the observation
           const updates: Partial<InsertObservation> = {
             images: [...currentImages, validatedImage]
           };
           
-          // Always add location information from image metadata if available
-          const locationInfo: string[] = [];
-            
-          // Add text location if available
-          if (metadata.locationText) {
-            const locationText = metadata.locationText;
-            locationInfo.push(`Location: ${locationText}`);
-          }
-            
-          // Add GPS coordinates if available
-          if (metadata.gpsCoordinates) {
-            const gpsCoordinates = metadata.gpsCoordinates;
-            locationInfo.push(`GPS: ${gpsCoordinates}`);
-          }
-            
-          // If we have location information to add
-          if (locationInfo.length > 0) {
-            const currentLocation = observation.location || '';
-            const formattedLocationInfo = locationInfo.join('\n');
-              
-            // Format the location information
-            const formattedLocation = currentLocation.trim() 
-              ? currentLocation.includes("Location Information")
-                ? `${currentLocation}\n${formattedLocationInfo}`
-                : `${currentLocation}\nLocation Information\n${formattedLocationInfo}`
-              : `Location Information\n${formattedLocationInfo}`;
-                
-            // Add to the updates object
-            updates.location = formattedLocation;
-              
-            console.log("Added location information from image metadata:", formattedLocationInfo);
-          }
-          
-          // Add the new image and possibly update location
+          // Add the new image to the observation
           const updatedObservation = await dataStorage.updateObservation(id, updates);
           
           res.status(201).json({ 
