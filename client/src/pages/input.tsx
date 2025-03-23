@@ -8,7 +8,7 @@ import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { PersonInfo, VehicleInfo, Observation } from "@/lib/types";
 import { useLocation, useParams } from "wouter";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Search } from "lucide-react";
 
 interface InputPageProps {
   id?: string;
@@ -151,7 +151,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
   }
 
   return (
-    <div className="px-4 py-3 h-full">
+    <div className="px-4 py-3 h-full relative">
       {/* Header with back button in edit mode */}
       {isEditMode && (
         <div className="mb-4 flex items-center">
@@ -204,6 +204,16 @@ export default function InputPage({ id }: InputPageProps = {}) {
           </Button>
         </div>
       </form>
+      
+      {/* Floating Search Button */}
+      {!isEditMode && (
+        <Button
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-[#0F52BA] hover:bg-[#0A3A8C] shadow-lg flex items-center justify-center"
+          onClick={() => navigate('/search')}
+        >
+          <Search className="h-6 w-6" />
+        </Button>
+      )}
     </div>
   );
 }
