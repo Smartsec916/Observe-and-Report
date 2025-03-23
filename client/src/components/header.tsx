@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function Header() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -47,6 +48,8 @@ export function Header() {
               </Link>
             </>
           )}
+          
+          <ThemeToggle />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

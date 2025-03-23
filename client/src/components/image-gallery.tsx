@@ -363,10 +363,10 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                         const currentLocation = currentObservation?.location || '';
                                         
                                         // Format location information
-                                        let locationInfo = [];
+                                        const locationInfo: string[] = [];
                                         
                                         // Add GPS coordinates if available
-                                        if (hasGPS) {
+                                        if (hasGPS && selectedImage.metadata?.gpsCoordinates) {
                                           const gpsCoordinates = selectedImage.metadata.gpsCoordinates;
                                           
                                           // Check if the GPS coordinates are already in the location
@@ -381,7 +381,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                         }
                                         
                                         // Add text location if available
-                                        if (hasLocationText) {
+                                        if (hasLocationText && selectedImage.metadata?.locationText) {
                                           const locationText = selectedImage.metadata.locationText;
                                           
                                           // Check if the location text is already in the location

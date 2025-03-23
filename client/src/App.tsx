@@ -9,6 +9,7 @@ import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 import CreateAccountPage from "@/pages/create-account";
 import { AuthProvider } from "@/contexts/auth-context";
+import { ThemeProvider } from "@/contexts/theme-context";
 import { ProtectedRoute } from "@/components/protected-route";
 import { Header } from "@/components/header";
 import { BottomNav } from "@/components/bottom-nav";
@@ -69,10 +70,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Router />
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
