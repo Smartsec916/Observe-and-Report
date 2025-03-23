@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import { 
   SearchParams, heightOptions, buildOptions, hairColorOptions, 
-  eyeColorOptions, skinToneOptions, vehicleColorOptions, vehicleYearOptions 
+  eyeColorOptions, skinToneOptions, vehicleColorOptions, vehicleYearOptions,
+  PersonInfo, VehicleInfo
 } from "@/lib/types";
 import { LicensePlateInput } from "./license-plate-input";
 
@@ -26,21 +27,27 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
     onSearchParamsChange({ ...searchParams, query: e.target.value });
   };
 
-  const handlePersonChange = (field: string, value: string) => {
+  const handlePersonChange = (field: keyof PersonInfo, value: string) => {
     // Don't save placeholder values to the search params
     const newValue = value === "placeholder" ? "" : value;
+    // Create a completely new object to avoid React not detecting the change
+    const newPerson = { ...(searchParams.person || {}) } as Partial<PersonInfo>;
+    newPerson[field] = newValue;
     onSearchParamsChange({ 
       ...searchParams, 
-      person: { ...(searchParams.person || {}), [field]: newValue } 
+      person: newPerson 
     });
   };
 
-  const handleVehicleChange = (field: string, value: any) => {
+  const handleVehicleChange = (field: keyof VehicleInfo, value: any) => {
     // Don't save placeholder values to the search params
     const newValue = value === "placeholder" ? "" : value;
+    // Create a completely new object to avoid React not detecting the change
+    const newVehicle = { ...(searchParams.vehicle || {}) } as Partial<VehicleInfo>;
+    newVehicle[field] = newValue;
     onSearchParamsChange({ 
       ...searchParams, 
-      vehicle: { ...(searchParams.vehicle || {}), [field]: newValue } 
+      vehicle: newVehicle 
     });
   };
 
