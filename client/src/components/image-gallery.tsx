@@ -98,7 +98,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     const formData = new FormData();
     
     // Append the file with 'image' as the field name
-    formData.append('image', file);
+    formData.append('image', file, file.name);
     
     // Optional description
     formData.append('description', '');
@@ -107,15 +107,52 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     
     try {
       console.log("Uploading file to observation ID:", observationId);
-      uploadMutation.mutate(formData);
+      
+      // Use mobile-specific endpoint for better handling on mobile devices
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const endpoint = isMobile 
+        ? `/api/observations/${observationId}/mobile-upload`
+        : `/api/observations/${observationId}/images`;
+        
+      console.log(`Using ${isMobile ? 'mobile' : 'standard'} upload endpoint`);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+        // Important: Don't set Content-Type header, browser will set it with correct boundary
+      });
+      
+      if (!response.ok) {
+        let errorMessage = 'Upload failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          console.error('Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const result = await response.json();
+      console.log("Upload successful:", result);
+      
+      // Invalidate query to refresh the data
+      queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
+      
+      toast({
+        title: "Image uploaded",
+        description: "Your image has been successfully attached to the observation.",
+      });
     } catch (error) {
       console.error("Error in file upload:", error);
-      setIsUploading(false);
       toast({
         title: "Upload failed",
         description: error instanceof Error ? error.message : "Failed to upload image",
         variant: "destructive",
       });
+    } finally {
+      setIsUploading(false);
     }
     
     // Reset the file input

@@ -34,13 +34,19 @@ const multerStorage = multer.diskStorage({
   }
 });
 
-// Configure multer upload
+// Configure multer upload with improved error handling
 const upload = multer({
   storage: multerStorage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
+    fileSize: 10 * 1024 * 1024, // 10MB
+    fieldSize: 10 * 1024 * 1024, // 10MB field size limit
+    fields: 10,
+    files: 1,
+    parts: 20
   },
   fileFilter: function (req, file, cb) {
+    console.log('Received file in multer:', file.originalname, file.mimetype);
+    
     // Accept only images
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -136,6 +142,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Route to upload an image and attach it to an observation
   app.post("/api/observations/:id/images", isAuthenticated, (req, res) => {
+    console.log('Image upload request received - headers:', JSON.stringify(req.headers, null, 2));
+    
     // Use single upload with error handling
     upload.single('image')(req, res, async (err) => {
       // Handle multer errors
@@ -217,6 +225,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ message: `Failed to upload image: ${errorMessage}` });
       }
     });
+  });
+  
+  // Mobile-friendly image upload endpoint (alternative)
+  app.post("/api/observations/:id/mobile-upload", isAuthenticated, async (req, res) => {
+    try {
+      console.log('Mobile upload request received');
+      
+      // Handle the request without multer to see if that resolves the issue
+      const id = parseInt(req.params.id);
+      const observation = await dataStorage.getObservation(id);
+      
+      if (!observation) {
+        return res.status(404).json({ message: "Observation not found" });
+      }
+      
+      if (!req.headers['content-type']?.includes('multipart/form-data')) {
+        return res.status(400).json({ 
+          message: "Invalid content type. Must use multipart/form-data",
+          receivedType: req.headers['content-type'] 
+        });
+      }
+      
+      // Create a temporary file path
+      const fileName = `${uuidv4()}.jpg`;
+      const uploadsDir = path.join(__dirname, '../public/uploads');
+      
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      
+      const filePath = path.join(uploadsDir, fileName);
+      
+      // Manual handling of the request to save the file
+      let fileData = Buffer.alloc(0);
+      let isProcessingFile = false;
+      
+      req.on('data', (chunk) => {
+        console.log(`Received chunk of size: ${chunk.length}`);
+        if (!isProcessingFile) {
+          const str = chunk.toString();
+          if (str.includes('Content-Type: image/')) {
+            isProcessingFile = true;
+            
+            // Extract the portion of the chunk that contains file data
+            const contentTypeIndex = str.indexOf('Content-Type: image/');
+            if (contentTypeIndex !== -1) {
+              const lineBreakAfterContentType = str.indexOf('\r\n\r\n', contentTypeIndex);
+              if (lineBreakAfterContentType !== -1) {
+                const fileDataStart = lineBreakAfterContentType + 4;
+                const fileDataPart = chunk.slice(fileDataStart);
+                fileData = Buffer.concat([fileData, fileDataPart]);
+              }
+            }
+          }
+        } else {
+          fileData = Buffer.concat([fileData, chunk]);
+        }
+      });
+      
+      req.on('end', async () => {
+        if (fileData.length === 0) {
+          return res.status(400).json({ message: "No file data received" });
+        }
+        
+        try {
+          // Find the boundary of the multipart data
+          const boundaryStr = '--' + req.headers['content-type']?.split('boundary=')[1];
+          const boundaryBuf = Buffer.from(`\r\n${boundaryStr}--\r\n`);
+          const boundaryIndex = fileData.indexOf(boundaryBuf);
+          
+          if (boundaryIndex !== -1) {
+            // Trim the data to exclude the final boundary
+            fileData = fileData.slice(0, boundaryIndex);
+          }
+          
+          // Write the file to disk
+          fs.writeFileSync(filePath, fileData);
+          console.log('Successfully wrote file to:', filePath);
+          
+          // Extract metadata from the image
+          const metadata = await extractImageMetadata(filePath);
+          
+          // Create image data with metadata
+          const imageData = {
+            url: `/uploads/${fileName}`,
+            name: 'Mobile Upload',
+            description: '',
+            dateAdded: new Date().toISOString().split('T')[0],
+            metadata: metadata
+          };
+          
+          // Validate the image data
+          const validatedImage = imageSchema.parse(imageData);
+          
+          // Get current images or initialize an empty array
+          const currentImages: ImageInfo[] = observation.images || [];
+          
+          // Add the new image
+          const updatedObservation = await dataStorage.updateObservation(id, {
+            images: [...currentImages, validatedImage]
+          });
+          
+          res.status(201).json({ 
+            message: "Mobile image uploaded successfully", 
+            image: validatedImage,
+            observation: updatedObservation
+          });
+        } catch (error) {
+          console.error("Error processing mobile upload:", error);
+          
+          // Clean up file if it was created
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+          
+          return res.status(500).json({ 
+            message: "Failed to process uploaded image",
+            error: error instanceof Error ? error.message : "Unknown error"
+          });
+        }
+      });
+      
+      req.on('error', (error) => {
+        console.error("Error in mobile upload request:", error);
+        
+        // Clean up file if it was created
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+        
+        res.status(500).json({ 
+          message: "Upload request failed",
+          error: error.message
+        });
+      });
+      
+    } catch (error) {
+      console.error("Mobile upload error:", error);
+      res.status(500).json({ 
+        message: "Failed to upload image", 
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
   });
 
   // Route to delete an image from an observation
