@@ -1,10 +1,14 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { observationInputSchema } from "@shared/schema";
+import { observationInputSchema, imageSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { isAuthenticated } from "./auth";
+import fileUpload from "express-fileupload";
+import path from "path";
+import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all observations

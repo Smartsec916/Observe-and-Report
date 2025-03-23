@@ -39,6 +39,14 @@ export const vehicleSchema = z.object({
   year: z.string().optional(),
 });
 
+// Image attachment schema
+export const imageSchema = z.object({
+  url: z.string(), // URL or base64 data
+  name: z.string().optional(),
+  description: z.string().optional(),
+  dateAdded: z.string().optional(),
+});
+
 // Observation schema for database
 export const observations = pgTable("observations", {
   id: serial("id").primaryKey(),
@@ -46,6 +54,7 @@ export const observations = pgTable("observations", {
   time: text("time").notNull(),
   person: json("person").$type<z.infer<typeof personSchema>>(),
   vehicle: json("vehicle").$type<z.infer<typeof vehicleSchema>>(),
+  images: json("images").$type<z.infer<typeof imageSchema>[]>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -55,6 +64,7 @@ export const insertObservationSchema = createInsertSchema(observations).pick({
   time: true,
   person: true,
   vehicle: true,
+  images: true,
 });
 
 // Zod validation schema for observation input
@@ -63,9 +73,11 @@ export const observationInputSchema = z.object({
   time: z.string(),
   person: personSchema,
   vehicle: vehicleSchema,
+  images: z.array(imageSchema).optional().default([]),
 });
 
 export type InsertObservation = z.infer<typeof insertObservationSchema>;
 export type Observation = typeof observations.$inferSelect;
 export type PersonInfo = z.infer<typeof personSchema>;
 export type VehicleInfo = z.infer<typeof vehicleSchema>;
+export type ImageInfo = z.infer<typeof imageSchema>;
