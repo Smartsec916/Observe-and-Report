@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response } from "express";
 import { createServer, type Server } from "http";
 import { storage as dataStorage } from "./storage";
 import { z } from "zod";
-import { observationInputSchema, imageSchema, ImageInfo } from "@shared/schema";
+import { observationInputSchema, imageSchema, ImageInfo, imageMetadataSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { isAuthenticated } from "./auth";
 import multer from "multer";
@@ -10,6 +10,7 @@ import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { fileURLToPath } from "url";
+import { ExifImage } from "exif";
 
 // Get the directory name equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);

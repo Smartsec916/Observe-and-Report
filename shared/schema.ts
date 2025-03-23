@@ -39,12 +39,26 @@ export const vehicleSchema = z.object({
   year: z.string().optional(),
 });
 
+// Image metadata schema
+export const imageMetadataSchema = z.object({
+  dateTaken: z.string().optional(),
+  gpsCoordinates: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  altitude: z.number().optional(),
+  direction: z.string().optional(),  // compass direction
+  speed: z.string().optional(),
+  editHistory: z.string().optional(), // any modification info
+  deviceInfo: z.string().optional()
+});
+
 // Image attachment schema
 export const imageSchema = z.object({
   url: z.string(), // URL or base64 data
   name: z.string().optional(),
   description: z.string().optional(),
   dateAdded: z.string().optional(),
+  metadata: imageMetadataSchema.optional()
 });
 
 // Observation schema for database
@@ -81,3 +95,4 @@ export type Observation = typeof observations.$inferSelect;
 export type PersonInfo = z.infer<typeof personSchema>;
 export type VehicleInfo = z.infer<typeof vehicleSchema>;
 export type ImageInfo = z.infer<typeof imageSchema>;
+export type ImageMetadata = z.infer<typeof imageMetadataSchema>;
