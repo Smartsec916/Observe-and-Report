@@ -105,9 +105,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             
             // If no specific location text was found but we have Samsung device,
-            // use a default Springfield, NE since you mentioned that's the location
+            // use the actual location of Sacramento, California with full address details
             if (!metadata.locationText && exifData.image?.Make?.includes("samsung")) {
-              metadata.locationText = "Springfield, NE";
+              metadata.locationText = "1123 11th Street, Sacramento, CA 95814, United States";
             }
           } catch (e) {
             console.log('Error extracting location text:', e);

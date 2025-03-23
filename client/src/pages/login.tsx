@@ -119,9 +119,29 @@ export default function LoginPage() {
     }
   }
   
+  // Function to handle input focus and adjust scroll position
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Delay the scroll to ensure keyboard is fully shown
+    setTimeout(() => {
+      // The element to scroll
+      const scrollContainer = document.querySelector('.scroll-container');
+      if (scrollContainer) {
+        // Scroll to top to ensure form is visible above keyboard
+        scrollContainer.scrollTop = 0;
+        
+        // Calculate how far to scroll based on input position
+        const inputRect = e.target.getBoundingClientRect();
+        const scrollTop = inputRect.top - 150; // Adjust 150px above the input
+        
+        // Scroll the container
+        scrollContainer.scrollTop = scrollTop;
+      }
+    }, 300); // Small delay to ensure keyboard is visible
+  };
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex justify-center items-start min-h-screen bg-background p-4 scroll-container" style={{ paddingTop: '10vh', overflowY: 'auto' }}>
+      <Card className="w-full max-w-md mb-40"> {/* Add bottom margin to ensure room for keyboard */}
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-semibold">Login</CardTitle>
           <CardDescription>
@@ -138,7 +158,11 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your username" {...field} />
+                      <Input 
+                        placeholder="Enter your username" 
+                        {...field} 
+                        onFocus={handleInputFocus}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +176,12 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="Enter your password" 
+                        {...field} 
+                        onFocus={handleInputFocus}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
