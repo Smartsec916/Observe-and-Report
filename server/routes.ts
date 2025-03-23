@@ -86,17 +86,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // First check UserComment which often contains location info
             if (exifData.exif?.UserComment) {
               const userComment = exifData.exif.UserComment.toString();
-              if (userComment.includes("Springfield") || userComment.includes("NE")) {
-                metadata.locationText = userComment.trim();
-              }
+              // Extract any location information that might be in user comments
+              metadata.locationText = userComment.trim();
             }
             
             // Check for MakerNote (often contains manufacturer-specific data including location)
             if (exifData.exif?.MakerNote) {
               const makerNote = exifData.exif.MakerNote.toString();
-              if (makerNote.includes("Springfield") || makerNote.includes("NE")) {
-                metadata.locationText = makerNote.trim();
-              }
+              // Use the actual maker note data without filtering for specific locations
+              metadata.makerNote = makerNote.trim();
             }
             
             // Samsung devices often store location in ImageDescription or other EXIF fields
@@ -104,11 +102,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               metadata.locationText = exifData.image.ImageDescription.trim();
             }
             
-            // If no specific location text was found but we have Samsung device,
-            // use the actual location of Sacramento, California with full address details
-            if (!metadata.locationText && exifData.image?.Make?.includes("samsung")) {
-              metadata.locationText = "1123 11th Street, Sacramento, CA 95814, United States";
-            }
+            // Only use actual metadata from the image without creating fake data
+            // Don't add any default locations if they're not in the image
           } catch (e) {
             console.log('Error extracting location text:', e);
           }
