@@ -354,12 +354,28 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                     className="text-xs w-full bg-gray-800 border-gray-700 mt-1"
                                     onClick={() => {
                                       if (selectedImage.metadata?.gpsCoordinates) {
-                                        // Use the queryClient to get current observation
-                                        const currentObservation = queryClient.getQueryData([`/api/observations/${observationId}`]);
+                                        // Get current observation
+                                        const currentObservation = queryClient.getQueryData([`/api/observations/${observationId}`]) as Observation | undefined;
+                                        const currentLocation = currentObservation?.location || '';
+                                        const gpsCoordinates = selectedImage.metadata.gpsCoordinates;
                                         
-                                        // Update the observation with a new location
+                                        // Check if the GPS coordinates are already in the location
+                                        if (currentLocation.includes(gpsCoordinates)) {
+                                          toast({
+                                            title: "Location Already Added",
+                                            description: "These GPS coordinates are already in the location list.",
+                                          });
+                                          return;
+                                        }
+                                        
+                                        // Add GPS coordinates as a new line in the location
+                                        const newLocationText = currentLocation.trim() 
+                                          ? `${currentLocation}\nGPS: ${gpsCoordinates}` 
+                                          : `GPS: ${gpsCoordinates}`;
+                                        
+                                        // Update the observation with the new location
                                         const locationUpdate = {
-                                          location: selectedImage.metadata.gpsCoordinates
+                                          location: newLocationText
                                         };
                                         
                                         // Send PATCH request to update location
@@ -377,7 +393,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                           
                                           toast({
                                             title: "Location Updated",
-                                            description: "GPS coordinates copied to observation location",
+                                            description: "GPS coordinates added to locations list",
                                           });
                                         })
                                         .catch(error => {
@@ -391,7 +407,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                       }
                                     }}
                                   >
-                                    Copy GPS to Observation Location
+                                    Add GPS to Additional Locations
                                   </Button>
                                 </div>
                               )}
