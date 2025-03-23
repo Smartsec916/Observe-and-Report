@@ -195,29 +195,29 @@ export default function InputPage({ id }: InputPageProps = {}) {
           <h3 className="text-base font-medium">Location Information</h3>
           <div className="space-y-2">
             <label htmlFor="location" className="text-sm font-medium">
-              GPS Coordinates
+              Location
             </label>
             <input
               id="location"
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. 37.7749, -122.4194"
+              placeholder="Enter location description or address"
               className="w-full px-3 py-2 border border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:border-[#2979FF]"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              GPS coordinates may be automatically added when uploading images with location data.
+              Enter a location description. GPS coordinates will be automatically added when uploading images with location data.
             </p>
           </div>
         </div>
         
-        {/* Image Gallery - Only show in edit mode or after creating an observation */}
-        {isEditMode && observationId && (
+        {/* Image Gallery - Show if in edit mode or if we have observation ID */}
+        {(isEditMode && observationId) ? (
           <ImageGallery 
             images={images} 
             observationId={observationId} 
           />
-        )}
+        ) : null}
         
         {/* Submit and Cancel Buttons */}
         <div className="flex justify-between gap-4 pt-2 pb-4">
