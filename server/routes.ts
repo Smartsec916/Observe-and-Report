@@ -16,26 +16,51 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Helper function to handle image upload
-const handleImageUpload = (req: any) => {
+const handleImageUpload = async (req: any) => {
   if (!req.files || Object.keys(req.files).length === 0) {
+    console.log('No files in request:', req.files);
     return null;
   }
 
-  const uploadedFile = req.files.image;
-  const fileExt = path.extname(uploadedFile.name);
-  const fileName = `${uuidv4()}${fileExt}`;
-  const uploadPath = path.join(__dirname, '../public/uploads', fileName);
+  try {
+    const uploadedFile = req.files.image;
+    console.log('Received file:', uploadedFile.name, 'Size:', uploadedFile.size);
+    
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(__dirname, '../public/uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    const fileExt = path.extname(uploadedFile.name);
+    const fileName = `${uuidv4()}${fileExt}`;
+    const uploadPath = path.join(uploadsDir, fileName);
 
-  // Move the file to the upload directory
-  uploadedFile.mv(uploadPath);
+    // Move the file to the upload directory
+    await new Promise<void>((resolve, reject) => {
+      uploadedFile.mv(uploadPath, (err: any) => {
+        if (err) {
+          console.error('File upload error:', err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
 
-  // Return image metadata
-  return {
-    url: `/uploads/${fileName}`,
-    name: uploadedFile.name,
-    description: req.body.description || '',
-    dateAdded: new Date().toISOString().split('T')[0]
-  };
+    console.log('File saved successfully to:', uploadPath);
+
+    // Return image metadata
+    return {
+      url: `/uploads/${fileName}`,
+      name: uploadedFile.name,
+      description: req.body.description || '',
+      dateAdded: new Date().toISOString().split('T')[0]
+    };
+  } catch (error) {
+    console.error('Error in handleImageUpload:', error);
+    throw error;
+  }
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -48,20 +73,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Route to upload an image and attach it to an observation
   app.post("/api/observations/:id/images", isAuthenticated, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const observation = await storage.getObservation(id);
+      console.log('Processing image upload request for observation');
       
+      // Check if request has files
+      if (!req.files) {
+        console.log('No files in request, checking if files object exists');
+        return res.status(400).json({ message: "No files were uploaded" });
+      }
+      
+      console.log('Files in request:', Object.keys(req.files));
+      
+      const id = parseInt(req.params.id);
+      console.log('Looking for observation with ID:', id);
+      
+      const observation = await storage.getObservation(id);
       if (!observation) {
         return res.status(404).json({ message: "Observation not found" });
       }
       
-      const imageData = handleImageUpload(req);
+      console.log('Found observation, processing image upload');
+      
+      const imageData = await handleImageUpload(req);
       if (!imageData) {
-        return res.status(400).json({ message: "No file uploaded" });
+        return res.status(400).json({ message: "No file uploaded or upload failed" });
       }
       
       // Validate the image data
       const validatedImage = imageSchema.parse(imageData);
+      console.log('Image data validated:', validatedImage.url);
       
       // Get current images or initialize an empty array
       const currentImages = observation.images || [];
@@ -70,6 +109,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedObservation = await storage.updateObservation(id, {
         images: [...currentImages, validatedImage]
       });
+      
+      console.log('Image added to observation successfully');
       
       res.status(201).json({ 
         message: "Image uploaded successfully", 
@@ -84,7 +125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: error.errors 
         });
       }
-      res.status(500).json({ message: "Failed to upload image" });
+      const errorMessage = error instanceof Error ? error.message : "Unexpected error";
+      res.status(500).json({ message: `Failed to upload image: ${errorMessage}` });
     }
   });
 

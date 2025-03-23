@@ -25,12 +25,19 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
       const response = await fetch(`/api/observations/${observationId}/images`, {
         method: "POST",
         body: formData,
-        // Don't set Content-Type header as browser sets it with boundary for FormData
+        credentials: 'include', // Include cookies for authentication
+        // Don't set Content-Type header as browser sets it automatically with proper boundary
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Upload failed');
+        let errorMessage = 'Upload failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          console.error('Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
       }
       
       return response.json();
@@ -83,14 +90,31 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     if (!files || files.length === 0) return;
     
     const file = files[0];
+    console.log("Selected file:", file.name, "Size:", file.size, "Type:", file.type);
+    
+    // Create a new FormData instance
     const formData = new FormData();
+    
+    // Append the file with 'image' as the field name
     formData.append('image', file);
     
     // Optional description
     formData.append('description', '');
     
     setIsUploading(true);
-    uploadMutation.mutate(formData);
+    
+    try {
+      console.log("Uploading file to observation ID:", observationId);
+      uploadMutation.mutate(formData);
+    } catch (error) {
+      console.error("Error in file upload:", error);
+      setIsUploading(false);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
+      });
+    }
     
     // Reset the file input
     e.target.value = '';
