@@ -403,7 +403,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                           console.error("Error updating location:", error);
                                           toast({
                                             title: "Update Failed",
-                                            description: "Could not copy GPS coordinates to location",
+                                            description: error instanceof Error ? error.message : "Could not add GPS coordinates to location",
                                             variant: "destructive",
                                           });
                                         });
