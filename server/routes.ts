@@ -1,8 +1,8 @@
-import express, { type Express, type Request } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import { createServer, type Server } from "http";
 import { storage as dataStorage } from "./storage";
 import { z } from "zod";
-import { observationInputSchema, imageSchema } from "@shared/schema";
+import { observationInputSchema, imageSchema, ImageInfo } from "@shared/schema";
 import { ZodError } from "zod";
 import { isAuthenticated } from "./auth";
 import multer from "multer";
@@ -136,7 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const currentImages = observation.images || [];
-      const imageIndex = currentImages.findIndex((img: any) => img.url === imageUrl);
+      const imageIndex = currentImages.findIndex((img) => img.url === imageUrl);
       
       if (imageIndex === -1) {
         return res.status(404).json({ message: "Image not found" });
@@ -169,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all observations
   app.get("/api/observations", isAuthenticated, async (req, res) => {
     try {
-      const observations = await storage.getAllObservations();
+      const observations = await dataStorage.getAllObservations();
       res.json(observations);
     } catch (error) {
       res.status(500).json({ message: "Failed to retrieve observations" });
@@ -180,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const observation = await storage.getObservation(id);
+      const observation = await dataStorage.getObservation(id);
       
       if (!observation) {
         return res.status(404).json({ message: "Observation not found" });
@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/observations", isAuthenticated, async (req, res) => {
     try {
       const validatedData = observationInputSchema.parse(req.body);
-      const newObservation = await storage.createObservation(validatedData);
+      const newObservation = await dataStorage.createObservation(validatedData);
       res.status(201).json(newObservation);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -219,7 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const partialSchema = observationInputSchema.partial();
       partialSchema.parse(updates);
       
-      const updatedObservation = await storage.updateObservation(id, updates);
+      const updatedObservation = await dataStorage.updateObservation(id, updates);
       
       if (!updatedObservation) {
         return res.status(404).json({ message: "Observation not found" });
@@ -241,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const success = await storage.deleteObservation(id);
+      const success = await dataStorage.deleteObservation(id);
       
       if (!success) {
         return res.status(404).json({ message: "Observation not found" });
@@ -263,7 +263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Height search request - Min: ${searchParams.person.heightMin || 'none'}, Max: ${searchParams.person.heightMax || 'none'}`);
       }
       
-      const results = await storage.searchObservations(searchParams);
+      const results = await dataStorage.searchObservations(searchParams);
       console.log(`Search returned ${results.length} results`);
       res.json(results);
     } catch (error) {
