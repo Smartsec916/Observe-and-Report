@@ -368,23 +368,26 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                           return;
                                         }
                                         
+                                        // Format coordinates for better readability
+                                        const formattedGPS = `GPS: ${gpsCoordinates}`;
+                                        
                                         // Add GPS coordinates as a new line in the location
                                         const newLocationText = currentLocation.trim() 
-                                          ? `${currentLocation}\nGPS: ${gpsCoordinates}` 
-                                          : `GPS: ${gpsCoordinates}`;
+                                          ? `${currentLocation}\n${formattedGPS}` 
+                                          : formattedGPS;
                                         
                                         // Update the observation with the new location
                                         const locationUpdate = {
                                           location: newLocationText
                                         };
                                         
-                                        // Send PATCH request to update location
-                                        fetch(`/api/observations/${observationId}`, {
+                                        // Send PATCH request to update location using apiRequest
+                                        apiRequest(`/api/observations/${observationId}`, {
                                           method: 'PATCH',
+                                          body: JSON.stringify(locationUpdate),
                                           headers: {
                                             'Content-Type': 'application/json'
-                                          },
-                                          body: JSON.stringify(locationUpdate)
+                                          }
                                         })
                                         .then(response => response.json())
                                         .then(() => {
@@ -393,7 +396,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                           
                                           toast({
                                             title: "Location Updated",
-                                            description: "GPS coordinates added to locations list",
+                                            description: "GPS coordinates added to location information",
                                           });
                                         })
                                         .catch(error => {
@@ -407,7 +410,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                       }
                                     }}
                                   >
-                                    Add GPS to Additional Locations
+                                    Add GPS to Location
                                   </Button>
                                 </div>
                               )}
