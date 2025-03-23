@@ -84,9 +84,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : "Welcome back!",
         });
         
-        // Redirect to create account page if default admin
+        // Redirect based on user type
         if (isDefaultAdmin) {
           setLocation('/create-account');
+        } else {
+          // For regular users, redirect to home page
+          setLocation('/');
         }
         
         return true;

@@ -38,9 +38,8 @@ export default function LoginPage() {
     try {
       const success = await login(data.username, data.password);
       
-      if (success) {
-        setLocation("/");
-      }
+      // Don't redirect here - the auth context will handle the redirect
+      // based on whether this is a default admin account or not
     } catch (error) {
       toast({
         title: "Login failed",
