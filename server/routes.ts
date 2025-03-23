@@ -1,11 +1,11 @@
-import type { Express, Request } from "express";
+import express, { type Express, type Request } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage as dataStorage } from "./storage";
 import { z } from "zod";
 import { observationInputSchema, imageSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { isAuthenticated } from "./auth";
-import fileUpload from "express-fileupload";
+import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
@@ -15,88 +15,71 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Helper function to handle image upload
-const handleImageUpload = async (req: any) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    console.log('No files in request:', req.files);
-    return null;
-  }
-
-  try {
-    const uploadedFile = req.files.image;
-    console.log('Received file:', uploadedFile.name, 'Size:', uploadedFile.size);
-    
-    // Create uploads directory if it doesn't exist
+// Configure multer storage
+const multerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
     const uploadsDir = path.join(__dirname, '../public/uploads');
+    // Create directory if it doesn't exist
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
-    
-    const fileExt = path.extname(uploadedFile.name);
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const fileExt = path.extname(file.originalname);
     const fileName = `${uuidv4()}${fileExt}`;
-    const uploadPath = path.join(uploadsDir, fileName);
-
-    // Move the file to the upload directory
-    await new Promise<void>((resolve, reject) => {
-      uploadedFile.mv(uploadPath, (err: any) => {
-        if (err) {
-          console.error('File upload error:', err);
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-
-    console.log('File saved successfully to:', uploadPath);
-
-    // Return image metadata
-    return {
-      url: `/uploads/${fileName}`,
-      name: uploadedFile.name,
-      description: req.body.description || '',
-      dateAdded: new Date().toISOString().split('T')[0]
-    };
-  } catch (error) {
-    console.error('Error in handleImageUpload:', error);
-    throw error;
+    cb(null, fileName);
   }
-};
+});
+
+// Configure multer upload
+const upload = multer({
+  storage: multerStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: function (req, file, cb) {
+    // Accept only images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure file upload middleware
-  app.use(fileUpload({
-    createParentPath: true,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  }));
+  // Set up static serving for uploads folder
+  app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
   // Route to upload an image and attach it to an observation
-  app.post("/api/observations/:id/images", isAuthenticated, async (req, res) => {
+  app.post("/api/observations/:id/images", isAuthenticated, upload.single('image'), async (req, res) => {
     try {
       console.log('Processing image upload request for observation');
       
-      // Check if request has files
-      if (!req.files) {
-        console.log('No files in request, checking if files object exists');
-        return res.status(400).json({ message: "No files were uploaded" });
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file uploaded" });
       }
       
-      console.log('Files in request:', Object.keys(req.files));
+      console.log('Received file:', req.file.originalname, 'Size:', req.file.size);
       
       const id = parseInt(req.params.id);
       console.log('Looking for observation with ID:', id);
       
-      const observation = await storage.getObservation(id);
+      const observation = await dataStorage.getObservation(id);
       if (!observation) {
+        // Remove uploaded file if observation not found
+        fs.unlinkSync(req.file.path);
         return res.status(404).json({ message: "Observation not found" });
       }
       
-      console.log('Found observation, processing image upload');
-      
-      const imageData = await handleImageUpload(req);
-      if (!imageData) {
-        return res.status(400).json({ message: "No file uploaded or upload failed" });
-      }
+      // Create image metadata
+      const imageData = {
+        url: `/uploads/${req.file.filename}`,
+        name: req.file.originalname,
+        description: req.body.description || '',
+        dateAdded: new Date().toISOString().split('T')[0]
+      };
       
       // Validate the image data
       const validatedImage = imageSchema.parse(imageData);
@@ -106,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentImages = observation.images || [];
       
       // Add the new image
-      const updatedObservation = await storage.updateObservation(id, {
+      const updatedObservation = await dataStorage.updateObservation(id, {
         images: [...currentImages, validatedImage]
       });
       
@@ -119,12 +102,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Image upload error:", error);
+      
+      // Remove uploaded file in case of error
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (e) {
+          console.error('Failed to delete uploaded file:', e);
+        }
+      }
+      
       if (error instanceof ZodError) {
         return res.status(400).json({ 
           message: "Invalid image data", 
           errors: error.errors 
         });
       }
+      
       const errorMessage = error instanceof Error ? error.message : "Unexpected error";
       res.status(500).json({ message: `Failed to upload image: ${errorMessage}` });
     }
@@ -136,13 +130,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const imageUrl = decodeURIComponent(req.params.imageUrl);
       
-      const observation = await storage.getObservation(id);
+      const observation = await dataStorage.getObservation(id);
       if (!observation) {
         return res.status(404).json({ message: "Observation not found" });
       }
       
       const currentImages = observation.images || [];
-      const imageIndex = currentImages.findIndex(img => img.url === imageUrl);
+      const imageIndex = currentImages.findIndex((img: any) => img.url === imageUrl);
       
       if (imageIndex === -1) {
         return res.status(404).json({ message: "Image not found" });
@@ -153,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedImages.splice(imageIndex, 1);
       
       // Update the observation
-      const updatedObservation = await storage.updateObservation(id, {
+      const updatedObservation = await dataStorage.updateObservation(id, {
         images: updatedImages
       });
       
