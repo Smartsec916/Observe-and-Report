@@ -20,8 +20,10 @@ export default function SearchPage() {
   // Search mutation
   const searchMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/observations/search", searchParams);
-      return response.json() as Promise<Observation[]>;
+      return await apiRequest("/api/observations/search", {
+        method: "POST",
+        body: JSON.stringify(searchParams),
+      }) as Observation[];
     },
     onError: (error) => {
       toast({

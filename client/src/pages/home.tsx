@@ -40,8 +40,12 @@ export default function HomePage() {
       {/* Main Content Area - Ensuring proper spacing at the bottom */}
       <main className="flex-1 overflow-y-auto pb-24">
         <Switch>
-          <Route path="/" component={InputPage} />
-          <Route path="/search" component={SearchPage} />
+          <Route path="/">
+            {() => <InputPage />}
+          </Route>
+          <Route path="/search">
+            {() => <SearchPage />}
+          </Route>
         </Switch>
       </main>
 

@@ -39,9 +39,9 @@ function Router() {
           )}
         </Route>
         <Route path="/input/:id">
-          {(params) => (
+          {({ id }) => (
             <ProtectedRoute>
-              <InputPage id={params.id} />
+              <InputPage id={id} />
             </ProtectedRoute>
           )}
         </Route>
