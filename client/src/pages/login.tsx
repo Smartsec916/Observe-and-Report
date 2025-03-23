@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useLocation } from 'wouter';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/contexts/auth-context';
 
 const loginFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -30,20 +30,15 @@ export default function LoginPage() {
     },
   });
   
+  const { login } = useAuth();
+  
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest('/api/login', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const success = await login(data.username, data.password);
       
-      if (response.success) {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
+      if (success) {
         setLocation("/");
       }
     } catch (error) {
