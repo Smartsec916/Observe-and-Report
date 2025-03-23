@@ -48,6 +48,7 @@ export const imageMetadataSchema = z.object({
   altitude: z.number().refine(val => !isNaN(val), { message: "Must be a valid number" }).optional(),
   direction: z.string().optional(),  // compass direction
   speed: z.string().optional(),
+  locationText: z.string().optional(), // Textual location (e.g., "Springfield, NE")
   editHistory: z.string().optional(), // any modification info
   deviceInfo: z.string().optional()
 });

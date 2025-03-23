@@ -353,30 +353,60 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                     size="sm"
                                     className="text-xs w-full bg-gray-800 border-gray-700 mt-1"
                                     onClick={() => {
-                                      if (selectedImage.metadata?.gpsCoordinates) {
+                                      // Check if we have location information
+                                      const hasGPS = selectedImage.metadata?.gpsCoordinates;
+                                      const hasLocationText = selectedImage.metadata?.locationText;
+                                      
+                                      if (hasGPS || hasLocationText) {
                                         // Get current observation
                                         const currentObservation = queryClient.getQueryData([`/api/observations/${observationId}`]) as Observation | undefined;
                                         const currentLocation = currentObservation?.location || '';
-                                        const gpsCoordinates = selectedImage.metadata.gpsCoordinates;
                                         
-                                        // Check if the GPS coordinates are already in the location
-                                        if (currentLocation.includes(gpsCoordinates)) {
-                                          toast({
-                                            title: "Location Already Added",
-                                            description: "These GPS coordinates are already in the location list.",
-                                          });
+                                        // Format location information
+                                        let locationInfo = [];
+                                        
+                                        // Add GPS coordinates if available
+                                        if (hasGPS) {
+                                          const gpsCoordinates = selectedImage.metadata.gpsCoordinates;
+                                          
+                                          // Check if the GPS coordinates are already in the location
+                                          if (currentLocation.includes(gpsCoordinates)) {
+                                            toast({
+                                              title: "GPS Coordinates Already Added",
+                                              description: "These GPS coordinates are already in the location list.",
+                                            });
+                                          } else {
+                                            locationInfo.push(`GPS: ${gpsCoordinates}`);
+                                          }
+                                        }
+                                        
+                                        // Add text location if available
+                                        if (hasLocationText) {
+                                          const locationText = selectedImage.metadata.locationText;
+                                          
+                                          // Check if the location text is already in the location
+                                          if (currentLocation.includes(locationText)) {
+                                            toast({
+                                              title: "Location Already Added",
+                                              description: "This location is already in the location list.",
+                                            });
+                                          } else {
+                                            locationInfo.push(`Location: ${locationText}`);
+                                          }
+                                        }
+                                        
+                                        // If nothing new to add, return
+                                        if (locationInfo.length === 0) {
                                           return;
                                         }
                                         
-                                        // Format coordinates for better readability
-                                        const formattedGPS = `GPS: ${gpsCoordinates}`;
-                                        
-                                        // Add GPS coordinates as a new line in the location, under Location Information
+                                        // Add location information as a new line in the location, under Location Information
+                                        const formattedLocationInfo = locationInfo.join('\n');
                                         const newLocationText = currentLocation.trim() 
                                           ? currentLocation.includes("Location Information")
-                                            ? `${currentLocation}\n${formattedGPS}`
-                                            : `${currentLocation}\nLocation Information\n${formattedGPS}`
-                                          : `Location Information\n${formattedGPS}`;
+                                            ? `${currentLocation}\n${formattedLocationInfo}`
+                                            : `${currentLocation}\nLocation Information\n${formattedLocationInfo}`
+                                          : `Location Information\n${formattedLocationInfo}`;
                                         
                                         // Update the observation with the new location
                                         const locationUpdate = {
@@ -412,7 +442,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                       }
                                     }}
                                   >
-                                    Add GPS to Location
+                                    Add Location Information
                                   </Button>
                                 </div>
                               )}
