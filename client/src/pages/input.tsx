@@ -9,7 +9,7 @@ import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { PersonInfo, VehicleInfo, ImageInfo, Observation } from "@/lib/types";
 import { useLocation, useParams } from "wouter";
-import { ChevronLeft, Search, PlusCircle } from "lucide-react";
+import { ChevronLeft, Search } from "lucide-react";
 
 interface InputPageProps {
   id?: string;
@@ -29,7 +29,6 @@ export default function InputPage({ id }: InputPageProps = {}) {
   const [person, setPerson] = useState<PersonInfo>({});
   const [vehicle, setVehicle] = useState<VehicleInfo>({});
   const [images, setImages] = useState<ImageInfo[]>([]);
-  const [location, setLocation] = useState<string>("");
 
   // Fetch observation data if in edit mode
   const { data: existingObservation, isLoading } = useQuery({
@@ -47,7 +46,6 @@ export default function InputPage({ id }: InputPageProps = {}) {
       setPerson(existingObservation.person ?? {});
       setVehicle(existingObservation.vehicle ?? {});
       setImages(existingObservation.images ?? []);
-      setLocation(existingObservation.location ?? "");
     }
   }, [existingObservation]);
 
@@ -61,7 +59,6 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
-          location: "", // Empty string for location since we've removed the section
         }),
       });
     },
@@ -102,7 +99,6 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
-          location: "", // Empty string for location since we've removed the section
         }),
       });
     },
