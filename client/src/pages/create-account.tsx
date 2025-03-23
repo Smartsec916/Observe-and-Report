@@ -39,7 +39,7 @@ export default function CreateAccountPage() {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest('/api/create-account', {
+      await apiRequest('/api/create-account', {
         method: 'POST',
         body: JSON.stringify({
           username: data.username,
@@ -47,13 +47,12 @@ export default function CreateAccountPage() {
         }),
       });
       
-      if (response.success) {
-        toast({
-          title: "Account created",
-          description: "Your account has been created successfully. Please log in with your new credentials.",
-        });
-        setLocation("/login");
-      }
+      // If we get here, the request was successful
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully. Please log in with your new credentials.",
+      });
+      setLocation("/login");
     } catch (error) {
       toast({
         title: "Failed to create account",
