@@ -91,76 +91,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     }
   };
 
-  // Handle location data copying
-  const handleAddLocationInfo = (image: ImageInfo) => {
-    if (!image.metadata) return;
-    const hasGPS = image.metadata?.gpsCoordinates;
-    const hasLocationText = image.metadata?.locationText;
-    
-    if (!hasGPS && !hasLocationText) return;
-    
-    // Get current observation
-    const currentObservation = queryClient.getQueryData([`/api/observations/${observationId}`]) as Observation | undefined;
-    const currentLocation = currentObservation?.location || '';
-    
-    // Format location information
-    const locationInfo: string[] = [];
-    
-    // Add GPS coordinates if available
-    if (hasGPS && image.metadata?.gpsCoordinates) {
-      const gpsCoordinates = image.metadata.gpsCoordinates;
-      if (!currentLocation.includes(gpsCoordinates)) {
-        locationInfo.push(`GPS: ${gpsCoordinates}`);
-      }
-    }
-    
-    // Add text location if available
-    if (hasLocationText && image.metadata?.locationText) {
-      const locationText = image.metadata.locationText;
-      if (!currentLocation.includes(locationText)) {
-        locationInfo.push(`Location: ${locationText}`);
-      }
-    }
-    
-    // If nothing new to add, return
-    if (locationInfo.length === 0) {
-      toast({
-        title: "No new information",
-        description: "This location information is already included."
-      });
-      return;
-    }
-    
-    // Add location information
-    const formattedLocationInfo = locationInfo.join('\n');
-    const newLocationText = currentLocation.trim() 
-      ? currentLocation.includes("Location Information")
-        ? `${currentLocation}\n${formattedLocationInfo}`
-        : `${currentLocation}\nLocation Information\n${formattedLocationInfo}`
-      : `Location Information\n${formattedLocationInfo}`;
-    
-    // Update the observation
-    apiRequest(`/api/observations/${observationId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ location: newLocationText }),
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(() => {
-      queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
-      toast({
-        title: "Location Updated",
-        description: "Location information added to observation"
-      });
-    })
-    .catch(() => {
-      toast({
-        title: "Update Failed",
-        description: "Could not add location information",
-        variant: "destructive"
-      });
-    });
-  };
+  // Removed location-adding functionality as requested by user
 
   // Empty state handler
   if (images.length === 0 && readOnly) {
@@ -349,14 +280,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                             </div>
                           )}
                           
-                          {/* Location information notice */}
-                          {!readOnly && image.metadata && (image.metadata.gpsCoordinates || image.metadata.locationText) && (
-                            <div className="mt-3 pt-2 border-t border-gray-700">
-                              <p className="text-xs text-gray-400 italic text-center">
-                                Location data is available. You can add it manually to the location field.
-                              </p>
-                            </div>
-                          )}
+                          {/* Removed location information notice as requested */}
                         </div>
                       </ScrollArea>
                     )}

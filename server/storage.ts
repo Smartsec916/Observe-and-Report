@@ -270,13 +270,29 @@ export class MemStorage implements IStorage {
         });
       }
       
-      // Handle all other person attributes with exact matching
+      // Handle all other person attributes with special handling for builds
       Object.entries(otherPersonParams).forEach(([key, value]) => {
         if (value) {
-          results = results.filter(obs => 
-            obs.person && 
-            obs.person[key as keyof PersonInfo] === value
-          );
+          // Special handling for build fields to search across both primary and secondary builds
+          if (key === 'buildPrimary') {
+            results = results.filter(obs => 
+              obs.person && 
+              (obs.person.buildPrimary === value || obs.person.buildSecondary === value)
+            );
+          } 
+          else if (key === 'buildSecondary') {
+            results = results.filter(obs => 
+              obs.person && 
+              (obs.person.buildSecondary === value || obs.person.buildPrimary === value)
+            );
+          }
+          // Normal exact matching for other fields
+          else {
+            results = results.filter(obs => 
+              obs.person && 
+              obs.person[key as keyof PersonInfo] === value
+            );
+          }
         }
       });
     }
