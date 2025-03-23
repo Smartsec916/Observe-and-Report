@@ -151,7 +151,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
   }
 
   return (
-    <div className="px-4 py-3 h-full relative">
+    <div className="px-4 py-3 h-full">
       {/* Header with back button in edit mode */}
       {isEditMode && (
         <div className="mb-4 flex items-center">
@@ -182,8 +182,8 @@ export default function InputPage({ id }: InputPageProps = {}) {
         {/* Vehicle Information Section */}
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
         
-        {/* Submit and Cancel Buttons - Adding extra bottom padding to avoid navigation overlap */}
-        <div className="flex justify-between gap-4 pt-2 pb-20">
+        {/* Submit and Cancel Buttons */}
+        <div className="flex justify-between gap-4 pt-2 pb-4">
           {isEditMode && (
             <Button
               type="button"
@@ -204,16 +204,6 @@ export default function InputPage({ id }: InputPageProps = {}) {
           </Button>
         </div>
       </form>
-      
-      {/* Floating Search Button */}
-      {!isEditMode && (
-        <Button
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-[#0F52BA] hover:bg-[#0A3A8C] shadow-lg flex items-center justify-center"
-          onClick={() => navigate('/search')}
-        >
-          <Search className="h-6 w-6" />
-        </Button>
-      )}
     </div>
   );
 }
