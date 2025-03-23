@@ -17,7 +17,7 @@ interface SearchFiltersProps {
   onSubmit: () => void;
 }
 
-type FilterCategory = "person" | "vehicle" | "date" | "location";
+type FilterCategory = "person" | "vehicle" | "date";
 
 export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: SearchFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
@@ -153,18 +153,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                 >
                   Date Range
                 </Button>
-                <Button
-                  type="button"
-                  variant={activeCategories.includes("location") ? "default" : "secondary"}
-                  className={`text-xs py-2 px-3 rounded-md ${
-                    activeCategories.includes("location") 
-                      ? "bg-[#0F52BA] text-white" 
-                      : "bg-[#3A3A3A] hover:bg-[#5A5A5A] text-[#8A8A8A]"
-                  }`}
-                  onClick={() => toggleCategory("location")}
-                >
-                  Locations
-                </Button>
+
               </div>
               
               {/* Person Filters */}
@@ -438,34 +427,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                 </div>
               )}
               
-              {/* Location Filters */}
-              {activeCategories.includes("location") && (
-                <div className="space-y-3 border-t border-[#3A3A3A] pt-3">
-                  <h3 className="text-xs font-medium text-[#8A8A8A]">Location Search</h3>
-                  
-                  <div>
-                    <Label className="block text-xs text-[#8A8A8A] mb-1">Address</Label>
-                    <Input
-                      type="text"
-                      placeholder="Enter address to search"
-                      value={(searchParams.person?.address) || ""}
-                      onChange={(e) => handlePersonChange("address", e.target.value)}
-                      className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label className="block text-xs text-[#8A8A8A] mb-1">Work Address</Label>
-                    <Input
-                      type="text"
-                      placeholder="Enter work address to search"
-                      value={(searchParams.person?.workAddress) || ""}
-                      onChange={(e) => handlePersonChange("workAddress", e.target.value)}
-                      className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
-                    />
-                  </div>
-                </div>
-              )}
+
               
               <div className="pt-2">
                 <Button 
