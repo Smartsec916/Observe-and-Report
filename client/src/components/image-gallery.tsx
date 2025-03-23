@@ -349,17 +349,12 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                             </div>
                           )}
                           
-                          {/* Add location button */}
+                          {/* Location information notice */}
                           {!readOnly && image.metadata && (image.metadata.gpsCoordinates || image.metadata.locationText) && (
                             <div className="mt-3 pt-2 border-t border-gray-700">
-                              <Button 
-                                variant="outline"
-                                size="sm"
-                                className="text-xs w-full bg-gray-800 border-gray-700 mt-1"
-                                onClick={() => handleAddLocationInfo(image)}
-                              >
-                                Add Location Information
-                              </Button>
+                              <p className="text-xs text-gray-400 italic text-center">
+                                Location data is available. You can add it manually to the location field.
+                              </p>
                             </div>
                           )}
                         </div>
@@ -371,21 +366,24 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
               
               {/* View MetaData button below image */}
               {image.metadata && Object.keys(image.metadata).length > 0 && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-xs flex items-center justify-center gap-1 py-1 h-6 text-blue-400 w-full"
-                  onClick={() => {
+                <div className="text-xs flex items-center justify-center gap-1 py-1 h-6 text-blue-400 w-full cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setShowMetadata(true);
-                    // Find and click the dialog trigger for this image
-                    document.querySelectorAll('[role="button"]')[index]?.dispatchEvent(
-                      new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
-                    );
+                    
+                    // Find the right dialog trigger - get all image containers first
+                    const imageContainers = document.querySelectorAll('.aspect-square.rounded-md');
+                    // Then click on the one at this index
+                    if (imageContainers[index]) {
+                      imageContainers[index].dispatchEvent(
+                        new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
+                      );
+                    }
                   }}
                 >
                   <Info className="h-3 w-3" />
                   <span>View MetaData</span>
-                </Button>
+                </div>
               )}
             </div>
           ))}
