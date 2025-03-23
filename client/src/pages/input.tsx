@@ -61,7 +61,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
-          location,
+          location: "", // Empty string for location since we've removed the section
         }),
       });
     },
@@ -102,7 +102,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
-          location,
+          location: "", // Empty string for location since we've removed the section
         }),
       });
     },
@@ -191,28 +191,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
         {/* Vehicle Information Section */}
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
         
-        {/* Location Information Section */}
-        <div className="rounded-lg shadow bg-card p-4 space-y-3">
-          <div className="flex justify-between items-center">
-            <h3 className="text-base font-medium">Location Information</h3>
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="location" className="text-sm font-medium">
-              Locations
-            </label>
-            <textarea
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Enter location descriptions or addresses"
-              className="w-full px-3 py-2 border border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:border-[#2979FF] min-h-[100px]"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Enter multiple location descriptions, each on a new line.
-            </p>
-          </div>
-        </div>
+        {/* Location Information Section removed as requested */}
         
         {/* Image Gallery - Only show if we have an observation ID */}
         {observationId ? (
