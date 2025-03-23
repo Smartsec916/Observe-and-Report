@@ -140,8 +140,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-background p-4 scroll-container" style={{ paddingTop: '10vh', overflowY: 'auto' }}>
-      <Card className="w-full max-w-md mb-40"> {/* Add bottom margin to ensure room for keyboard */}
+    <div className="flex justify-center items-start min-h-screen bg-background p-4 scroll-container" style={{ paddingTop: '10vh', overflowY: 'auto', paddingBottom: '40vh' }}>
+      <Card className="w-full max-w-md mb-60"> {/* Increased bottom margin to ensure room for keyboard */}
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-semibold">Login</CardTitle>
           <CardDescription>
@@ -268,10 +268,10 @@ export default function LoginPage() {
       
       {/* Forgot Credentials Dialog */}
       <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby="forgot-dialog-description">
           <DialogHeader>
             <DialogTitle>Recover your credentials</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="forgot-dialog-description">
               Enter the email address you used during registration. We'll send you instructions to recover your username and/or reset your password.
             </DialogDescription>
           </DialogHeader>
