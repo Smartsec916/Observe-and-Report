@@ -98,10 +98,11 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 <Select
                   value={vehicle.yearMin || ""}
                   onValueChange={(value) => {
-                    handleChange("yearMin", value);
+                    const newValue = value === "placeholder" ? "" : value;
+                    handleChange("yearMin", newValue);
                     // Update legacy year field for backward compatibility
                     if (vehicle.yearMax) {
-                      const range = `${value}-${vehicle.yearMax}`;
+                      const range = `${newValue}-${vehicle.yearMax}`;
                       handleChange("year", range);
                     }
                   }}
@@ -145,10 +146,11 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 <Select
                   value={vehicle.yearMax || ""}
                   onValueChange={(value) => {
-                    handleChange("yearMax", value);
+                    const newValue = value === "placeholder" ? "" : value;
+                    handleChange("yearMax", newValue);
                     // Update legacy year field for backward compatibility
                     if (vehicle.yearMin) {
-                      const range = `${vehicle.yearMin}-${value}`;
+                      const range = `${vehicle.yearMin}-${newValue}`;
                       handleChange("year", range);
                     }
                   }}
