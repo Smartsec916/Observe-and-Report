@@ -101,6 +101,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
+          location,
         }),
       });
     },
@@ -188,6 +189,27 @@ export default function InputPage({ id }: InputPageProps = {}) {
         
         {/* Vehicle Information Section */}
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
+        
+        {/* Location Information Section */}
+        <div className="rounded-lg shadow bg-card p-4 space-y-3">
+          <h3 className="text-base font-medium">Location Information</h3>
+          <div className="space-y-2">
+            <label htmlFor="location" className="text-sm font-medium">
+              GPS Coordinates
+            </label>
+            <input
+              id="location"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g. 37.7749, -122.4194"
+              className="w-full px-3 py-2 border border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:border-[#2979FF]"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              GPS coordinates may be automatically added when uploading images with location data.
+            </p>
+          </div>
+        </div>
         
         {/* Image Gallery - Only show in edit mode or after creating an observation */}
         {isEditMode && observationId && (

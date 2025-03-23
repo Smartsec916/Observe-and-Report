@@ -14,6 +14,7 @@ export interface Observation {
   vehicle: VehicleInfo;
   createdAt: Date;
   images?: ImageInfo[];
+  location?: string;
 }
 
 export interface SearchParams {
