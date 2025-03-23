@@ -98,9 +98,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/observations/search", isAuthenticated, async (req, res) => {
     try {
       const searchParams = req.body;
+      console.log("Search request with params:", JSON.stringify(searchParams, null, 2));
+      
+      if (searchParams.person?.heightMin || searchParams.person?.heightMax) {
+        console.log(`Height search request - Min: ${searchParams.person.heightMin || 'none'}, Max: ${searchParams.person.heightMax || 'none'}`);
+      }
+      
       const results = await storage.searchObservations(searchParams);
+      console.log(`Search returned ${results.length} results`);
       res.json(results);
     } catch (error) {
+      console.error("Search error:", error);
       res.status(500).json({ message: "Failed to search observations" });
     }
   });

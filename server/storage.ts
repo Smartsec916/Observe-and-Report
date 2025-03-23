@@ -1,5 +1,31 @@
 import { observations, type Observation, type InsertObservation, PersonInfo, VehicleInfo } from "@shared/schema";
 
+// Helper functions moved outside for reuse
+function getHeightInInches(heightStr: string): number {
+  if (!heightStr || heightStr === 'placeholder' || heightStr === 'unknown') return -1;
+  
+  if (heightStr === 'under4ft10') return 58; // 4'10" minus a little (4'8" + 10")
+  if (heightStr === 'over6ft8') return 80; // 6'8" = 80"
+  if (heightStr === 'variable') return -1; // Cannot be compared
+  
+  // Extract feet and inches, format expected: "5ft10" for 5'10"
+  const match = heightStr.match(/(\d+)ft(\d+)/);
+  if (match) {
+    const feet = parseInt(match[1], 10);
+    const inches = parseInt(match[2], 10);
+    return feet * 12 + inches; // Convert to total inches
+  }
+  
+  return -1;
+}
+
+function heightToString(inches: number): string {
+  if (inches < 0) return "Unknown";
+  const feet = Math.floor(inches / 12);
+  const remainingInches = inches % 12;
+  return `${feet}'${remainingInches}"`;
+}
+
 // Interface for storage operations
 export interface IStorage {
   getObservation(id: number): Promise<Observation | undefined>;
@@ -65,24 +91,7 @@ export class MemStorage implements IStorage {
     return this.observations.delete(id);
   }
 
-  // Helper function to convert height string to numeric value for comparison
-  private getHeightValue(heightStr: string): number {
-    if (!heightStr || heightStr === 'placeholder' || heightStr === 'unknown') return -1;
-    
-    if (heightStr === 'under4ft10') return 0;
-    if (heightStr === 'over6ft8') return 700; // A value higher than any specific height
-    if (heightStr === 'variable') return -1; // Cannot be compared
-    
-    // Extract feet and inches, format expected: "5ft10" for 5'10"
-    const match = heightStr.match(/(\d+)ft(\d+)/);
-    if (match) {
-      const feet = parseInt(match[1], 10);
-      const inches = parseInt(match[2], 10);
-      return feet * 12 + inches; // Convert to total inches
-    }
-    
-    return -1;
-  }
+  // Use the shared height conversion methods instead of private methods
 
   async searchObservations(searchParams: SearchParams): Promise<Observation[]> {
     let results = Array.from(this.observations.values());
@@ -134,27 +143,52 @@ export class MemStorage implements IStorage {
       
       // Handle height range filtering if either min or max is specified
       if (heightMin || heightMax) {
-        const searchMinHeight = heightMin ? this.getHeightValue(heightMin) : 0;
-        const searchMaxHeight = heightMax ? this.getHeightValue(heightMax) : 1000; // Large value if not specified
+        const searchMinHeight = heightMin ? getHeightInInches(heightMin) : 0;
+        const searchMaxHeight = heightMax ? getHeightInInches(heightMax) : 1000; // Large value if not specified
+        
+        console.log(`Searching for height range: ${heightToString(searchMinHeight)} to ${heightToString(searchMaxHeight)}`);
         
         results = results.filter(obs => {
           if (!obs.person) return false;
           
+          // Name-based filtering should happen separately when other fields are checked
+          if (heightMin && heightMin === "4ft11" && obs.person.name?.includes("John")) {
+            console.log(`Found John with name: ${obs.person.name}, testing height...`);
+          }
+          
           let personHeightMatch = false;
           
-          // Case 1: Person has specific height
+          // Case 1: Person has specific height (legacy field)
           if (obs.person.height) {
             // For backward compatibility with single height values
-            const personHeight = this.getHeightValue(obs.person.height);
+            const personHeight = getHeightInInches(obs.person.height);
             personHeightMatch = personHeight >= searchMinHeight && personHeight <= searchMaxHeight;
+            console.log(`Comparing legacy height ${obs.person.height} (${heightToString(personHeight)}) - match: ${personHeightMatch}`);
           } 
-          // Case 2: Person has height range (min/max)
+          // Case 2: Person has height range (min/max fields)
           else if (obs.person.heightMin || obs.person.heightMax) {
-            const personMinHeight = obs.person.heightMin ? this.getHeightValue(obs.person.heightMin) : 0;
-            const personMaxHeight = obs.person.heightMax ? this.getHeightValue(obs.person.heightMax) : personMinHeight;
+            const personMinHeight = obs.person.heightMin ? getHeightInInches(obs.person.heightMin) : 0;
+            const personMaxHeight = obs.person.heightMax ? getHeightInInches(obs.person.heightMax) : personMinHeight || 1000;
             
-            // Match if there's any overlap in the height ranges
-            personHeightMatch = !(personMaxHeight < searchMinHeight || personMinHeight > searchMaxHeight);
+            console.log(`Comparing person height range: ${obs.person.heightMin || 'none'}-${obs.person.heightMax || 'none'} ` +
+                        `(${heightToString(personMinHeight)} to ${heightToString(personMaxHeight)})`);
+            
+            // Check if there's any overlap between the ranges
+            // Two ranges overlap unless one ends before the other starts
+            // No overlap if: person's max < search min OR person's min > search max
+            personHeightMatch = !(
+              (personMaxHeight < searchMinHeight) || 
+              (personMinHeight > searchMaxHeight)
+            );
+            
+            // Special debugging for our test case
+            if (heightMin && heightMin === "4ft11" && obs.person.name?.includes("John")) {
+              console.log(`JOHN TEST CASE - Range match: ${personHeightMatch}`);
+              console.log(`  Person height range: ${personMinHeight}-${personMaxHeight} inches`); 
+              console.log(`  Search height range: ${searchMinHeight}-${searchMaxHeight} inches`);
+              console.log(`  personMaxHeight < searchMinHeight: ${personMaxHeight < searchMinHeight}`);
+              console.log(`  personMinHeight > searchMaxHeight: ${personMinHeight > searchMaxHeight}`);
+            }
           }
           
           return personHeightMatch;
@@ -182,6 +216,8 @@ export class MemStorage implements IStorage {
         const searchMinYear = yearMin ? parseInt(yearMin, 10) : 0;
         const searchMaxYear = yearMax ? parseInt(yearMax, 10) : 3000; // Large value if not specified
         
+        console.log(`Searching for year range: ${searchMinYear} to ${searchMaxYear}`);
+        
         results = results.filter(obs => {
           if (!obs.vehicle) return false;
           
@@ -192,14 +228,23 @@ export class MemStorage implements IStorage {
             // For backward compatibility with single year values
             const vehicleYear = parseInt(obs.vehicle.year, 10) || 0;
             vehicleYearMatch = vehicleYear >= searchMinYear && vehicleYear <= searchMaxYear;
+            console.log(`Comparing legacy year ${obs.vehicle.year} - match: ${vehicleYearMatch}`);
           } 
           // Case 2: Vehicle has year range
           else if (obs.vehicle.yearMin || obs.vehicle.yearMax) {
             const vehicleMinYear = obs.vehicle.yearMin ? parseInt(obs.vehicle.yearMin, 10) : 0;
-            const vehicleMaxYear = obs.vehicle.yearMax ? parseInt(obs.vehicle.yearMax, 10) : vehicleMinYear;
+            const vehicleMaxYear = obs.vehicle.yearMax ? parseInt(obs.vehicle.yearMax, 10) : vehicleMinYear || 3000;
             
-            // Match if there's any overlap in the year ranges
-            vehicleYearMatch = !(vehicleMaxYear < searchMinYear || vehicleMinYear > searchMaxYear);
+            console.log(`Comparing vehicle year range: ${obs.vehicle.yearMin || 'none'}-${obs.vehicle.yearMax || 'none'}`);
+            
+            // Check if there's any overlap between the ranges - same logic as height
+            vehicleYearMatch = !(
+              (vehicleMaxYear < searchMinYear) || 
+              (vehicleMinYear > searchMaxYear)
+            );
+            
+            console.log(`  Year range match: ${vehicleYearMatch} (vehicleMinYear=${vehicleMinYear}, ` +
+                      `vehicleMaxYear=${vehicleMaxYear}, searchMinYear=${searchMinYear}, searchMaxYear=${searchMaxYear})`);
           }
           
           return vehicleYearMatch;
