@@ -17,7 +17,10 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
   const handleChange = (field: keyof PersonInfo, value: string) => {
     // Don't save placeholder values to the actual data
     const newValue = value === "placeholder" ? "" : value;
-    onChange({ ...person, [field]: newValue });
+    // Create a completely new object to avoid React not detecting the change
+    const newPerson = { ...person } as PersonInfo;
+    newPerson[field] = newValue;
+    onChange(newPerson);
   };
 
   return (

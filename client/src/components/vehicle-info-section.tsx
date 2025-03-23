@@ -20,7 +20,10 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
   const handleChange = (field: keyof VehicleInfo, value: any) => {
     // Don't save placeholder values to the actual data
     const newValue = value === "placeholder" ? "" : value;
-    onChange({ ...vehicle, [field]: newValue });
+    // Create a completely new object to avoid React not detecting the change
+    const newVehicle = { ...vehicle } as VehicleInfo;
+    newVehicle[field] = newValue;
+    onChange(newVehicle);
   };
 
   const handleAddLocation = () => {
