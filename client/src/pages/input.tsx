@@ -10,7 +10,11 @@ import { PersonInfo, VehicleInfo, Observation } from "@/lib/types";
 import { useLocation, useParams } from "wouter";
 import { ChevronLeft } from "lucide-react";
 
-export default function InputPage() {
+interface InputPageProps {
+  id?: string;
+}
+
+export default function InputPage({ id }: InputPageProps = {}) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -45,13 +49,15 @@ export default function InputPage() {
   // Create mutation for saving new observations
   const createObservation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/observations", {
-        date,
-        time,
-        person,
-        vehicle,
+      return await apiRequest("/api/observations", {
+        method: "POST",
+        body: JSON.stringify({
+          date,
+          time,
+          person,
+          vehicle,
+        }),
       });
-      return response.json();
     },
     onSuccess: () => {
       // Reset form (except date/time) after successful submission
@@ -81,13 +87,15 @@ export default function InputPage() {
   // Update mutation for editing existing observations
   const updateObservation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("PATCH", `/api/observations/${observationId}`, {
-        date,
-        time,
-        person,
-        vehicle,
+      return await apiRequest(`/api/observations/${observationId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          date,
+          time,
+          person,
+          vehicle,
+        }),
       });
-      return response.json();
     },
     onSuccess: () => {
       // Invalidate queries to refresh data
