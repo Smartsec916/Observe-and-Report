@@ -2,7 +2,6 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupAuth } from "./auth";
-import fileUpload from "express-fileupload";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -14,14 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Set up the file upload middleware
-app.use(fileUpload({
-  createParentPath: true,
-  limits: { 
-    fileSize: 10 * 1024 * 1024 // 10MB max file size
-  },
-  abortOnLimit: true
-}));
+// File upload handling is now managed by multer in routes.ts
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../public/uploads');
