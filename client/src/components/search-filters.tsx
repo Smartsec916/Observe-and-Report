@@ -152,7 +152,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
               </div>
               
               {/* Person Filters */}
-              {activeCategory === "person" && (
+              {activeCategories.includes("person") && (
                 <div className="space-y-3 border-t border-[#3A3A3A] pt-3">
                   <h3 className="text-xs font-medium text-[#8A8A8A]">Person Filters</h3>
                   
@@ -311,7 +311,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
               )}
               
               {/* Vehicle Filters */}
-              {activeCategory === "vehicle" && (
+              {activeCategories.includes("vehicle") && (
                 <div className="space-y-3 border-t border-[#3A3A3A] pt-3">
                   <h3 className="text-xs font-medium text-[#8A8A8A]">Vehicle Filters</h3>
                   
@@ -395,7 +395,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
               )}
               
               {/* Date Range Filters */}
-              {activeCategory === "date" && (
+              {activeCategories.includes("date") && (
                 <div className="space-y-3 border-t border-[#3A3A3A] pt-3">
                   <h3 className="text-xs font-medium text-[#8A8A8A]">Date Range</h3>
                   
@@ -423,7 +423,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
               )}
               
               {/* Location Filters */}
-              {activeCategory === "location" && (
+              {activeCategories.includes("location") && (
                 <div className="space-y-3 border-t border-[#3A3A3A] pt-3">
                   <h3 className="text-xs font-medium text-[#8A8A8A]">Location Search</h3>
                   
