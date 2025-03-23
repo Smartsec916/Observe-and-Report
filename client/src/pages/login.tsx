@@ -10,6 +10,14 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/auth-context';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const loginFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -25,6 +33,8 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
+  const [showForgotDialog, setShowForgotDialog] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
   
   // Load saved username from localStorage if available
   const savedUsername = localStorage.getItem('rememberedUsername');
@@ -37,12 +47,47 @@ export default function LoginPage() {
       password: savedPassword || '',
       rememberUsername: !!savedUsername,
       rememberPassword: !!savedPassword,
+      forgotCredentials: false,
     },
   });
   
   const { login } = useAuth();
+
+  // Handle the checkbox change for "Forgot credentials"
+  const handleForgotCredentialsChange = (checked: boolean) => {
+    form.setValue("forgotCredentials", checked);
+    if (checked) {
+      setShowForgotDialog(true);
+    }
+  };
+  
+  // Handle the forgot credentials submission
+  const handleForgotSubmit = () => {
+    if (!forgotEmail) {
+      toast({
+        title: "Email required",
+        description: "Please enter the email you used during registration.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Recovery email sent",
+      description: "If this email is registered in our system, you will receive instructions to recover your credentials.",
+    });
+    
+    setShowForgotDialog(false);
+    form.setValue("forgotCredentials", false);
+  };
   
   async function onSubmit(data: LoginFormValues) {
+    // If the forgot credentials checkbox is checked, show the dialog
+    if (data.forgotCredentials) {
+      setShowForgotDialog(true);
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -154,6 +199,26 @@ export default function LoginPage() {
                     </FormItem>
                   )}
                 />
+                
+                <FormField
+                  control={form.control}
+                  name="forgotCredentials"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
+                      <FormControl>
+                        <Checkbox 
+                          checked={field.value} 
+                          onCheckedChange={handleForgotCredentialsChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-normal">
+                          Forgot my username or password
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
               </div>
               
               <Button type="submit" className="w-full" disabled={isLoading}>
@@ -171,6 +236,50 @@ export default function LoginPage() {
           </p>
         </CardFooter>
       </Card>
+      
+      {/* Forgot Credentials Dialog */}
+      <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Recover your credentials</DialogTitle>
+            <DialogDescription>
+              Enter the email address you used during registration. We'll send you instructions to recover your username and/or reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center space-x-2 py-4">
+            <div className="grid flex-1 gap-2">
+              <FormLabel htmlFor="forgotEmail">Email</FormLabel>
+              <Input
+                id="forgotEmail"
+                type="email"
+                placeholder="your.email@example.com"
+                className="w-full"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button 
+              type="button" 
+              variant="default" 
+              onClick={handleForgotSubmit}
+            >
+              Recover credentials
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                setShowForgotDialog(false);
+                form.setValue("forgotCredentials", false);
+              }}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

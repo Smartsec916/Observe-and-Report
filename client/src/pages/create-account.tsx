@@ -12,6 +12,7 @@ import { apiRequest } from '@/lib/queryClient';
 
 const createAccountSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
 }).refine(data => data.password === data.confirmPassword, {
@@ -30,6 +31,7 @@ export default function CreateAccountPage() {
     resolver: zodResolver(createAccountSchema),
     defaultValues: {
       username: '',
+      email: '',
       password: '',
       confirmPassword: '',
     },
@@ -43,6 +45,7 @@ export default function CreateAccountPage() {
         method: 'POST',
         body: JSON.stringify({
           username: data.username,
+          email: data.email,
           password: data.password,
         }),
       });
@@ -91,6 +94,24 @@ export default function CreateAccountPage() {
                     <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input placeholder="Choose a username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="email" 
+                        placeholder="your.email@example.com" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
