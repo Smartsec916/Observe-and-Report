@@ -170,7 +170,7 @@ export class MemStorage implements IStorage {
         
         // Check vehicle fields
         let vehicleMatch = Object.entries(vehicle).some(([key, value]) => {
-          if (key === 'licensePlate' || key === 'additionalLocations') return false;
+          if (key === 'licensePlate') return false;
           return value && typeof value === 'string' && value.toLowerCase().includes(query);
         });
         
