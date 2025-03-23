@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,13 @@ import { useLocation } from 'wouter';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/auth-context';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const loginFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
+  rememberUsername: z.boolean().optional().default(false),
+  rememberPassword: z.boolean().optional().default(false),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -22,11 +25,17 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
   
+  // Load saved username from localStorage if available
+  const savedUsername = localStorage.getItem('rememberedUsername');
+  const savedPassword = localStorage.getItem('rememberedPassword');
+  
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      username: '',
-      password: '',
+      username: savedUsername || '',
+      password: savedPassword || '',
+      rememberUsername: !!savedUsername,
+      rememberPassword: !!savedPassword,
     },
   });
   
@@ -36,6 +45,19 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
+      // Handle remember me functionality
+      if (data.rememberUsername) {
+        localStorage.setItem('rememberedUsername', data.username);
+      } else {
+        localStorage.removeItem('rememberedUsername');
+      }
+      
+      if (data.rememberPassword) {
+        localStorage.setItem('rememberedPassword', data.password);
+      } else {
+        localStorage.removeItem('rememberedPassword');
+      }
+      
       const success = await login(data.username, data.password);
       
       // Don't redirect here - the auth context will handle the redirect
@@ -90,6 +112,48 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
+              
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="rememberUsername"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox 
+                          checked={field.value} 
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-normal">
+                          Remember my username
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="rememberPassword"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox 
+                          checked={field.value} 
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-normal">
+                          Remember my password
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
