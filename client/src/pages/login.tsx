@@ -73,8 +73,8 @@ export default function LoginPage() {
     }
     
     toast({
-      title: "Recovery email sent",
-      description: "If this email is registered in our system, you will receive instructions to recover your credentials.",
+      title: "Credentials recovery initiated",
+      description: "If this email is registered, we'll send your username and password reset instructions to your email.",
     });
     
     setShowForgotDialog(false);
@@ -242,7 +242,7 @@ export default function LoginPage() {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
-                          Forgot my username or password
+                          Email me my forgotten credentials
                         </FormLabel>
                       </div>
                     </FormItem>
@@ -267,17 +267,22 @@ export default function LoginPage() {
       </Card>
       
       {/* Forgot Credentials Dialog */}
-      <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
-        <DialogContent className="sm:max-w-md" aria-describedby="forgot-dialog-description">
+      <Dialog open={showForgotDialog} onOpenChange={(open) => {
+        setShowForgotDialog(open);
+        if (!open) form.setValue("forgotCredentials", false);
+      }}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Recover your credentials</DialogTitle>
-            <DialogDescription id="forgot-dialog-description">
-              Enter the email address you used during registration. We'll send you instructions to recover your username and/or reset your password.
+            <DialogDescription>
+              We can email your forgotten credentials to your registered email address.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center space-x-2 py-4">
-            <div className="grid flex-1 gap-2">
-              <FormLabel htmlFor="forgotEmail">Email</FormLabel>
+          <div className="flex flex-col space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="forgotEmail" className="text-sm font-medium">
+                Email address
+              </label>
               <Input
                 id="forgotEmail"
                 type="email"
@@ -286,6 +291,9 @@ export default function LoginPage() {
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">
+                Enter the email address you used during registration
+              </p>
             </div>
           </div>
           <DialogFooter className="sm:justify-start">
@@ -294,7 +302,7 @@ export default function LoginPage() {
               variant="default" 
               onClick={handleForgotSubmit}
             >
-              Recover credentials
+              Email my credentials
             </Button>
             <Button 
               type="button" 
