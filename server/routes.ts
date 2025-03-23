@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Image data validated:', validatedImage.url);
       
       // Get current images or initialize an empty array
-      const currentImages = observation.images || [];
+      const currentImages: ImageInfo[] = observation.images || [];
       
       // Add the new image
       const updatedObservation = await dataStorage.updateObservation(id, {
@@ -135,7 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Observation not found" });
       }
       
-      const currentImages = observation.images || [];
+      const currentImages: ImageInfo[] = observation.images || [];
       const imageIndex = currentImages.findIndex((img) => img.url === imageUrl);
       
       if (imageIndex === -1) {
@@ -143,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Remove the image from the array
-      const updatedImages = [...currentImages];
+      const updatedImages: ImageInfo[] = [...currentImages];
       updatedImages.splice(imageIndex, 1);
       
       // Update the observation

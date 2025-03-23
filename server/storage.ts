@@ -121,7 +121,12 @@ export class MemStorage implements IStorage {
   async createObservation(insertObservation: InsertObservation): Promise<Observation> {
     const id = this.currentId++;
     const createdAt = new Date();
-    const observation: Observation = { ...insertObservation, id, createdAt };
+    // Ensure proper type casting for TypeScript
+    const observation = { 
+      ...insertObservation, 
+      id, 
+      createdAt 
+    } as Observation;
     this.observations.set(id, observation);
     return observation;
   }
@@ -132,10 +137,11 @@ export class MemStorage implements IStorage {
       return undefined;
     }
 
-    const updatedObservation: Observation = {
+    // Use type assertion for safer updates
+    const updatedObservation = {
       ...observation,
       ...updates,
-    };
+    } as Observation;
 
     this.observations.set(id, updatedObservation);
     return updatedObservation;
