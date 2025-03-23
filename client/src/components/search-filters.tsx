@@ -20,7 +20,7 @@ type FilterCategory = "person" | "vehicle" | "date" | "location";
 
 export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: SearchFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<FilterCategory | null>(null);
+  const [activeCategories, setActiveCategories] = useState<FilterCategory[]>([]);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchParamsChange({ ...searchParams, query: e.target.value });
@@ -55,7 +55,12 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
   };
 
   const toggleCategory = (category: FilterCategory) => {
-    setActiveCategory(activeCategory === category ? null : category);
+    // Allow multiple categories to be active at once
+    if (activeCategories.includes(category)) {
+      setActiveCategories(activeCategories.filter(c => c !== category));
+    } else {
+      setActiveCategories([...activeCategories, category]);
+    }
   };
 
   return (
@@ -98,9 +103,9 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
-                  variant={activeCategory === "person" ? "default" : "secondary"}
+                  variant={activeCategories.includes("person") ? "default" : "secondary"}
                   className={`text-xs py-2 px-3 rounded-md ${
-                    activeCategory === "person" 
+                    activeCategories.includes("person") 
                       ? "bg-[#0F52BA] text-white" 
                       : "bg-[#3A3A3A] hover:bg-[#5A5A5A] text-[#8A8A8A]"
                   }`}
@@ -110,9 +115,9 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                 </Button>
                 <Button
                   type="button"
-                  variant={activeCategory === "vehicle" ? "default" : "secondary"}
+                  variant={activeCategories.includes("vehicle") ? "default" : "secondary"}
                   className={`text-xs py-2 px-3 rounded-md ${
-                    activeCategory === "vehicle" 
+                    activeCategories.includes("vehicle") 
                       ? "bg-[#0F52BA] text-white" 
                       : "bg-[#3A3A3A] hover:bg-[#5A5A5A] text-[#8A8A8A]"
                   }`}
@@ -122,9 +127,9 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                 </Button>
                 <Button
                   type="button"
-                  variant={activeCategory === "date" ? "default" : "secondary"}
+                  variant={activeCategories.includes("date") ? "default" : "secondary"}
                   className={`text-xs py-2 px-3 rounded-md ${
-                    activeCategory === "date" 
+                    activeCategories.includes("date") 
                       ? "bg-[#0F52BA] text-white" 
                       : "bg-[#3A3A3A] hover:bg-[#5A5A5A] text-[#8A8A8A]"
                   }`}
@@ -134,9 +139,9 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                 </Button>
                 <Button
                   type="button"
-                  variant={activeCategory === "location" ? "default" : "secondary"}
+                  variant={activeCategories.includes("location") ? "default" : "secondary"}
                   className={`text-xs py-2 px-3 rounded-md ${
-                    activeCategory === "location" 
+                    activeCategories.includes("location") 
                       ? "bg-[#0F52BA] text-white" 
                       : "bg-[#3A3A3A] hover:bg-[#5A5A5A] text-[#8A8A8A]"
                   }`}
@@ -151,20 +156,66 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                 <div className="space-y-3 border-t border-[#3A3A3A] pt-3">
                   <h3 className="text-xs font-medium text-[#8A8A8A]">Person Filters</h3>
                   
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* Height Range (Min/Max) */}
+                  <div className="mb-2">
+                    <Label className="block text-xs text-[#8A8A8A] mb-1">Height Range</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Select
+                          value={(searchParams.person?.heightMin) || ""}
+                          onValueChange={(value) => handlePersonChange("heightMin", value)}
+                        >
+                          <SelectTrigger
+                            className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                          >
+                            <SelectValue placeholder="Min height" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                            {heightOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value} className="text-white">
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Select
+                          value={(searchParams.person?.heightMax) || ""}
+                          onValueChange={(value) => handlePersonChange("heightMax", value)}
+                        >
+                          <SelectTrigger
+                            className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                          >
+                            <SelectValue placeholder="Max height" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                            {heightOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value} className="text-white">
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Build Options (Primary/Secondary) */}
+                  <div className="grid grid-cols-2 gap-2 mb-2">
                     <div>
-                      <Label className="block text-xs text-[#8A8A8A] mb-1">Height Range</Label>
+                      <Label className="block text-xs text-[#8A8A8A] mb-1">Primary Build</Label>
                       <Select
-                        value={(searchParams.person?.height) || ""}
-                        onValueChange={(value) => handlePersonChange("height", value)}
+                        value={(searchParams.person?.buildPrimary) || ""}
+                        onValueChange={(value) => handlePersonChange("buildPrimary", value)}
                       >
                         <SelectTrigger
                           className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                         >
-                          <SelectValue placeholder="Any height" />
+                          <SelectValue placeholder="Any build" />
                         </SelectTrigger>
                         <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
-                          {heightOptions.map((option) => (
+                          {buildOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value} className="text-white">
                               {option.label}
                             </SelectItem>
@@ -173,10 +224,10 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                       </Select>
                     </div>
                     <div>
-                      <Label className="block text-xs text-[#8A8A8A] mb-1">Build</Label>
+                      <Label className="block text-xs text-[#8A8A8A] mb-1">Secondary Build</Label>
                       <Select
-                        value={(searchParams.person?.build) || ""}
-                        onValueChange={(value) => handlePersonChange("build", value)}
+                        value={(searchParams.person?.buildSecondary) || ""}
+                        onValueChange={(value) => handlePersonChange("buildSecondary", value)}
                       >
                         <SelectTrigger
                           className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
@@ -264,47 +315,72 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                 <div className="space-y-3 border-t border-[#3A3A3A] pt-3">
                   <h3 className="text-xs font-medium text-[#8A8A8A]">Vehicle Filters</h3>
                   
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="block text-xs text-[#8A8A8A] mb-1">Year Range</Label>
-                      <Select
-                        value={(searchParams.vehicle?.year) || ""}
-                        onValueChange={(value) => handleVehicleChange("year", value)}
-                      >
-                        <SelectTrigger
-                          className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  {/* Vehicle Year Range (Min/Max) */}
+                  <div className="mb-2">
+                    <Label className="block text-xs text-[#8A8A8A] mb-1">Vehicle Year Range</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Select
+                          value={(searchParams.vehicle?.yearMin) || ""}
+                          onValueChange={(value) => handleVehicleChange("yearMin", value)}
                         >
-                          <SelectValue placeholder="Any year" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
-                          {vehicleYearOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value} className="text-white">
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="block text-xs text-[#8A8A8A] mb-1">Color</Label>
-                      <Select
-                        value={(searchParams.vehicle?.color) || ""}
-                        onValueChange={(value) => handleVehicleChange("color", value)}
-                      >
-                        <SelectTrigger
-                          className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                          <SelectTrigger
+                            className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                          >
+                            <SelectValue placeholder="Minimum year" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px]">
+                            <SelectItem value="pre1950" className="text-white">Pre 1950</SelectItem>
+                            {vehicleYearOptions.slice(3, -1).map((option) => (
+                              <SelectItem key={option.value} value={option.value} className="text-white">
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Select
+                          value={(searchParams.vehicle?.yearMax) || ""}
+                          onValueChange={(value) => handleVehicleChange("yearMax", value)}
                         >
-                          <SelectValue placeholder="Any color" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
-                          {vehicleColorOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value} className="text-white">
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                          <SelectTrigger
+                            className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                          >
+                            <SelectValue placeholder="Maximum year" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px]">
+                            {vehicleYearOptions.slice(3, -1).map((option) => (
+                              <SelectItem key={option.value} value={option.value} className="text-white">
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
+                  </div>
+                  
+                  {/* Vehicle Color */}
+                  <div>
+                    <Label className="block text-xs text-[#8A8A8A] mb-1">Color</Label>
+                    <Select
+                      value={(searchParams.vehicle?.color) || ""}
+                      onValueChange={(value) => handleVehicleChange("color", value)}
+                    >
+                      <SelectTrigger
+                        className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                      >
+                        <SelectValue placeholder="Any color" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                        {vehicleColorOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value} className="text-white">
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div>

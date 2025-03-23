@@ -26,7 +26,7 @@ export function LicensePlateInput({
     onChange(newPlate);
   };
 
-  const selectWidth = compact ? "w-8" : "w-10";
+  const selectWidth = compact ? "w-11" : "w-14";
   const paddingY = compact ? "py-1" : "py-2";
   const textSize = compact ? "text-xs" : "text-sm";
 
