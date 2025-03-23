@@ -8,6 +8,20 @@ function getHeightInInches(heightStr: string): number {
   if (heightStr === 'over6ft8') return 80; // 6'8" = 80"
   if (heightStr === 'variable') return -1; // Cannot be compared
   
+  // Check for a range format first - "4ft10-5ft2"
+  const rangeMatch = heightStr.match(/(\d+)ft(\d+)-(\d+)ft(\d+)/);
+  if (rangeMatch) {
+    // This is a range, so we'll return the min height for now
+    // The range handling will happen in the search logic
+    const minFeet = parseInt(rangeMatch[1], 10);
+    const minInches = parseInt(rangeMatch[2], 10);
+    const maxFeet = parseInt(rangeMatch[3], 10);
+    const maxInches = parseInt(rangeMatch[4], 10);
+    
+    console.log(`Parsed height range: ${minFeet}'${minInches}" to ${maxFeet}'${maxInches}"`);
+    return minFeet * 12 + minInches; // Return the min height in inches
+  }
+  
   // Extract feet and inches, format expected: "5ft10" for 5'10"
   const match = heightStr.match(/(\d+)ft(\d+)/);
   if (match) {
@@ -17,6 +31,46 @@ function getHeightInInches(heightStr: string): number {
   }
   
   return -1;
+}
+
+// Helper to parse a height range and return [min, max] in inches
+function parseHeightRange(heightStr: string): [number, number] {
+  if (!heightStr) return [-1, -1];
+  
+  // Check for a range format - "4ft10-5ft2"
+  const rangeMatch = heightStr.match(/(\d+)ft(\d+)-(\d+)ft(\d+)/);
+  if (rangeMatch) {
+    const minFeet = parseInt(rangeMatch[1], 10);
+    const minInches = parseInt(rangeMatch[2], 10);
+    const maxFeet = parseInt(rangeMatch[3], 10);
+    const maxInches = parseInt(rangeMatch[4], 10);
+    
+    return [
+      minFeet * 12 + minInches,
+      maxFeet * 12 + maxInches
+    ];
+  }
+  
+  // If it's not a range, use the single height value for both min and max
+  const height = getHeightInInches(heightStr);
+  return [height, height];
+}
+
+// Helper to parse a year range and return [min, max]
+function parseYearRange(yearStr: string): [number, number] {
+  if (!yearStr) return [-1, -1];
+  
+  // Check for a range format - "2010-2015"
+  const rangeMatch = yearStr.match(/(\d+)-(\d+)/);
+  if (rangeMatch) {
+    const minYear = parseInt(rangeMatch[1], 10);
+    const maxYear = parseInt(rangeMatch[2], 10);
+    return [minYear, maxYear];
+  }
+  
+  // If it's not a range, use the single year value for both min and max
+  const year = parseInt(yearStr, 10) || -1;
+  return [year, year];
 }
 
 function heightToString(inches: number): string {
@@ -158,12 +212,27 @@ export class MemStorage implements IStorage {
           
           let personHeightMatch = false;
           
-          // Case 1: Person has specific height (legacy field)
+          // Case 1: Person has legacy height field (could be a single value or a range)
           if (obs.person.height) {
-            // For backward compatibility with single height values
-            const personHeight = getHeightInInches(obs.person.height);
-            personHeightMatch = personHeight >= searchMinHeight && personHeight <= searchMaxHeight;
-            console.log(`Comparing legacy height ${obs.person.height} (${heightToString(personHeight)}) - match: ${personHeightMatch}`);
+            // For backward compatibility: Parse the height, which could be a range (e.g., "4ft10-5ft2")
+            const [personMinHeight, personMaxHeight] = parseHeightRange(obs.person.height);
+            
+            // Check if there's any overlap between the ranges
+            personHeightMatch = !(
+              (personMaxHeight < searchMinHeight) || 
+              (personMinHeight > searchMaxHeight)
+            );
+            
+            console.log(`Comparing legacy height ${obs.person.height} (${heightToString(personMinHeight)} to ${heightToString(personMaxHeight)}) - match: ${personHeightMatch}`);
+            
+            // Special debugging for our test case
+            if (heightMin && heightMin === "4ft11" && obs.person.name?.includes("John")) {
+              console.log(`JOHN LEGACY HEIGHT TEST CASE - Range match: ${personHeightMatch}`);
+              console.log(`  Legacy height parsed range: ${personMinHeight}-${personMaxHeight} inches`); 
+              console.log(`  Search height range: ${searchMinHeight}-${searchMaxHeight} inches`);
+              console.log(`  personMaxHeight < searchMinHeight: ${personMaxHeight < searchMinHeight}`);
+              console.log(`  personMinHeight > searchMaxHeight: ${personMinHeight > searchMaxHeight}`);
+            }
           } 
           // Case 2: Person has height range (min/max fields)
           else if (obs.person.heightMin || obs.person.heightMax) {
@@ -223,12 +292,18 @@ export class MemStorage implements IStorage {
           
           let vehicleYearMatch = false;
           
-          // Case 1: Vehicle has specific year
+          // Case 1: Vehicle has legacy year field (could be a single year or a range like "2015-2020")
           if (obs.vehicle.year) {
-            // For backward compatibility with single year values
-            const vehicleYear = parseInt(obs.vehicle.year, 10) || 0;
-            vehicleYearMatch = vehicleYear >= searchMinYear && vehicleYear <= searchMaxYear;
-            console.log(`Comparing legacy year ${obs.vehicle.year} - match: ${vehicleYearMatch}`);
+            // For backward compatibility: Parse the year, which could be a range
+            const [vehicleMinYear, vehicleMaxYear] = parseYearRange(obs.vehicle.year);
+            
+            // Check if there's any overlap between the ranges
+            vehicleYearMatch = !(
+              (vehicleMaxYear < searchMinYear) || 
+              (vehicleMinYear > searchMaxYear)
+            );
+            
+            console.log(`Comparing legacy year ${obs.vehicle.year} (${vehicleMinYear} to ${vehicleMaxYear}) - match: ${vehicleYearMatch}`);
           } 
           // Case 2: Vehicle has year range
           else if (obs.vehicle.yearMin || obs.vehicle.yearMax) {
