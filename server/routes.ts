@@ -4,10 +4,11 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { observationInputSchema } from "@shared/schema";
 import { ZodError } from "zod";
+import { isAuthenticated } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all observations
-  app.get("/api/observations", async (req, res) => {
+  app.get("/api/observations", isAuthenticated, async (req, res) => {
     try {
       const observations = await storage.getAllObservations();
       res.json(observations);
@@ -17,7 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get a single observation
-  app.get("/api/observations/:id", async (req, res) => {
+  app.get("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const observation = await storage.getObservation(id);
@@ -33,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a new observation
-  app.post("/api/observations", async (req, res) => {
+  app.post("/api/observations", isAuthenticated, async (req, res) => {
     try {
       const validatedData = observationInputSchema.parse(req.body);
       const newObservation = await storage.createObservation(validatedData);
@@ -50,7 +51,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update an observation
-  app.patch("/api/observations/:id", async (req, res) => {
+  app.patch("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
@@ -78,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete an observation
-  app.delete("/api/observations/:id", async (req, res) => {
+  app.delete("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteObservation(id);
