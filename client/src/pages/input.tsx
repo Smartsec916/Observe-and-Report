@@ -210,7 +210,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
                   // Create a new location entry that separates previous locations and new ones
                   setLocation(prev => {
                     if (prev.trim()) {
-                      return `${prev}\nAdditional Location`;
+                      return `${prev}\nLocation Information`;
                     }
                     return "New Location";
                   });

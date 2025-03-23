@@ -371,10 +371,12 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                         // Format coordinates for better readability
                                         const formattedGPS = `GPS: ${gpsCoordinates}`;
                                         
-                                        // Add GPS coordinates as a new line in the location
+                                        // Add GPS coordinates as a new line in the location, under Location Information
                                         const newLocationText = currentLocation.trim() 
-                                          ? `${currentLocation}\n${formattedGPS}` 
-                                          : formattedGPS;
+                                          ? currentLocation.includes("Location Information")
+                                            ? `${currentLocation}\n${formattedGPS}`
+                                            : `${currentLocation}\nLocation Information\n${formattedGPS}`
+                                          : `Location Information\n${formattedGPS}`;
                                         
                                         // Update the observation with the new location
                                         const locationUpdate = {
