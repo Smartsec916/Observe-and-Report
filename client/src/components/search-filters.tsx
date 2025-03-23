@@ -75,18 +75,27 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
       <h2 className="text-md font-medium mb-3">Search Observations</h2>
       
       <div className="space-y-4">
-        {/* Search Input */}
-        <div className="relative">
-          <Input
-            type="text"
-            placeholder="Search by name, license plate, address..."
-            value={searchParams.query || ""}
-            onChange={handleQueryChange}
-            className="w-full rounded-lg bg-[#3A3A3A] border-0 py-3 pl-10 pr-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
-          />
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-[#8A8A8A]" />
+        {/* Search Input with Button */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              type="text"
+              placeholder="Search by name, license plate, address..."
+              value={searchParams.query || ""}
+              onChange={handleQueryChange}
+              className="w-full rounded-lg bg-[#3A3A3A] border-0 py-3 pl-10 pr-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-[#8A8A8A]" />
+            </div>
           </div>
+          <Button 
+            type="button" 
+            onClick={onSubmit}
+            className="bg-[#0F52BA] hover:bg-[#0A3A8C] text-white rounded-md px-4"
+          >
+            Search
+          </Button>
         </div>
         
         {/* Search Filters */}
