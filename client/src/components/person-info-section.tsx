@@ -65,10 +65,11 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 <Select
                   value={person.heightMin || ""}
                   onValueChange={(value) => {
-                    handleChange("heightMin", value);
+                    const newValue = value === "placeholder" ? "" : value;
+                    handleChange("heightMin", newValue);
                     // Also update the legacy height field for backward compatibility
                     if (person.heightMax) {
-                      const range = `${value}-${person.heightMax}`;
+                      const range = `${newValue}-${person.heightMax}`;
                       handleChange("height", range);
                     }
                   }}
@@ -95,10 +96,11 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 <Select
                   value={person.heightMax || ""}
                   onValueChange={(value) => {
-                    handleChange("heightMax", value);
+                    const newValue = value === "placeholder" ? "" : value;
+                    handleChange("heightMax", newValue);
                     // Also update the legacy height field for backward compatibility
                     if (person.heightMin) {
-                      const range = `${person.heightMin}-${value}`;
+                      const range = `${person.heightMin}-${newValue}`;
                       handleChange("height", range);
                     }
                   }}
@@ -134,13 +136,14 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 <Select
                   value={person.buildPrimary || ""}
                   onValueChange={(value) => {
-                    handleChange("buildPrimary", value);
+                    const newValue = value === "placeholder" ? "" : value;
+                    handleChange("buildPrimary", newValue);
                     // Also update the legacy build field for backward compatibility
                     if (person.buildSecondary) {
-                      const combined = `${value}-${person.buildSecondary}`;
+                      const combined = `${newValue}-${person.buildSecondary}`;
                       handleChange("build", combined);
                     } else {
-                      handleChange("build", value);
+                      handleChange("build", newValue);
                     }
                   }}
                 >
@@ -166,10 +169,11 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 <Select
                   value={person.buildSecondary || ""}
                   onValueChange={(value) => {
-                    handleChange("buildSecondary", value);
+                    const newValue = value === "placeholder" ? "" : value;
+                    handleChange("buildSecondary", newValue);
                     // Also update the legacy build field for backward compatibility
                     if (person.buildPrimary) {
-                      const combined = `${person.buildPrimary}-${value}`;
+                      const combined = `${person.buildPrimary}-${newValue}`;
                       handleChange("build", combined);
                     }
                   }}
