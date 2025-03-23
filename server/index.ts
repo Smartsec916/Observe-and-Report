@@ -2,10 +2,36 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupAuth } from "./auth";
+import fileUpload from "express-fileupload";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Get the directory name equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Set up the file upload middleware
+app.use(fileUpload({
+  createParentPath: true,
+  limits: { 
+    fileSize: 10 * 1024 * 1024 // 10MB max file size
+  },
+  abortOnLimit: true
+}));
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../public/uploads');
+import fs from 'fs';
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(uploadsDir));
 
 // Setup authentication
 setupAuth(app);

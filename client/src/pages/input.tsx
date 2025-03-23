@@ -3,10 +3,11 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { PersonInfoSection } from "@/components/person-info-section";
 import { VehicleInfoSection } from "@/components/vehicle-info-section";
+import { ImageGallery } from "@/components/image-gallery";
 import { Button } from "@/components/ui/button";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { PersonInfo, VehicleInfo, Observation } from "@/lib/types";
+import { PersonInfo, VehicleInfo, ImageInfo, Observation } from "@/lib/types";
 import { useLocation, useParams } from "wouter";
 import { ChevronLeft, Search } from "lucide-react";
 
@@ -27,6 +28,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
   const [time, setTime] = useState("");
   const [person, setPerson] = useState<PersonInfo>({});
   const [vehicle, setVehicle] = useState<VehicleInfo>({});
+  const [images, setImages] = useState<ImageInfo[]>([]);
 
   // Fetch observation data if in edit mode
   const { data: existingObservation, isLoading } = useQuery({
@@ -43,6 +45,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
       setTime(existingObservation.time);
       setPerson(existingObservation.person ?? {});
       setVehicle(existingObservation.vehicle ?? {});
+      setImages(existingObservation.images ?? []);
     }
   }, [existingObservation]);
 
@@ -59,11 +62,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
         }),
       });
     },
-    onSuccess: () => {
-      // Reset form (except date/time) after successful submission
-      setPerson({});
-      setVehicle({});
-      
+    onSuccess: (data) => {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/observations"] });
       
@@ -73,6 +72,11 @@ export default function InputPage({ id }: InputPageProps = {}) {
         description: "Your observation has been recorded successfully.",
         variant: "default",
       });
+      
+      // Navigate to edit view to allow adding images
+      if (data && data.id) {
+        navigate(`/input/${data.id}`);
+      }
     },
     onError: (error) => {
       // Show error toast
@@ -181,6 +185,14 @@ export default function InputPage({ id }: InputPageProps = {}) {
         
         {/* Vehicle Information Section */}
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
+        
+        {/* Image Gallery - Only show in edit mode or after creating an observation */}
+        {isEditMode && observationId && (
+          <ImageGallery 
+            images={images} 
+            observationId={observationId} 
+          />
+        )}
         
         {/* Submit and Cancel Buttons */}
         <div className="flex justify-between gap-4 pt-2 pb-4">

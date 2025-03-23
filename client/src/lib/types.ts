@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { personSchema, vehicleSchema } from "@shared/schema";
+import { personSchema, vehicleSchema, imageSchema } from "@shared/schema";
 
 export type PersonInfo = z.infer<typeof personSchema>;
 export type VehicleInfo = z.infer<typeof vehicleSchema>;
+export type ImageInfo = z.infer<typeof imageSchema>;
 
 export interface Observation {
   id: number;
@@ -11,6 +12,7 @@ export interface Observation {
   person: PersonInfo;
   vehicle: VehicleInfo;
   createdAt: Date;
+  images?: ImageInfo[];
 }
 
 export interface SearchParams {
