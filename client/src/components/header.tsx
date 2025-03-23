@@ -23,28 +23,22 @@ export function Header() {
     <header className="border-b bg-background sticky top-0 z-50">
       <div className="container flex items-center justify-between h-16 px-4">
         <div className="flex items-center">
-          <Link href="/">
-            <a className="font-semibold text-lg">Observe & Report</a>
+          <Link href="/" className="font-semibold text-lg">
+            Observe & Report
           </Link>
         </div>
         
         <nav className="flex items-center space-x-4">
           {!isMobile && (
             <>
-              <Link href="/">
-                <a className="text-sm font-medium transition-colors hover:text-primary">
-                  Home
-                </a>
+              <Link href="/" className="text-sm font-medium transition-colors hover:text-primary">
+                Home
               </Link>
-              <Link href="/input">
-                <a className="text-sm font-medium transition-colors hover:text-primary">
-                  New Observation
-                </a>
+              <Link href="/input" className="text-sm font-medium transition-colors hover:text-primary">
+                New Observation
               </Link>
-              <Link href="/search">
-                <a className="text-sm font-medium transition-colors hover:text-primary">
-                  Search
-                </a>
+              <Link href="/search" className="text-sm font-medium transition-colors hover:text-primary">
+                Search
               </Link>
             </>
           )}
