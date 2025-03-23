@@ -225,12 +225,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                 </div>
                               )}
                               
-                              {image.metadata.locationText && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Location:</span>
-                                  <span className="text-right">{image.metadata.locationText}</span>
-                                </div>
-                              )}
+
                               
                               {image.metadata.gpsCoordinates && (
                                 <div className="flex justify-between">

@@ -79,33 +79,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             metadata.dateTaken = exifData.exif.DateTimeOriginal;
           }
           
-          // Look for location text in various places
-          // Check for common XMP/IPTC location fields in custom data
+          // Extract maker note if available (contains technical camera data)
           try {
-            // Check for location info in various metadata fields
-            // First check UserComment which often contains location info
-            if (exifData.exif?.UserComment) {
-              const userComment = exifData.exif.UserComment.toString();
-              // Extract any location information that might be in user comments
-              metadata.locationText = userComment.trim();
-            }
-            
-            // Check for MakerNote (often contains manufacturer-specific data including location)
+            // Check for MakerNote (contains manufacturer-specific technical data)
             if (exifData.exif?.MakerNote) {
               const makerNote = exifData.exif.MakerNote.toString();
-              // Use the actual maker note data without filtering for specific locations
               metadata.makerNote = makerNote.trim();
             }
-            
-            // Samsung devices often store location in ImageDescription or other EXIF fields
-            if (exifData.image?.ImageDescription) {
-              metadata.locationText = exifData.image.ImageDescription.trim();
-            }
-            
-            // Only use actual metadata from the image without creating fake data
-            // Don't add any default locations if they're not in the image
           } catch (e) {
-            console.log('Error extracting location text:', e);
+            console.log('Error extracting exif data:', e);
           }
           
           // GPS data
