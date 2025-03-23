@@ -43,9 +43,9 @@ export const vehicleSchema = z.object({
 export const imageMetadataSchema = z.object({
   dateTaken: z.string().optional(),
   gpsCoordinates: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  altitude: z.number().optional(),
+  latitude: z.number().refine(val => !isNaN(val), { message: "Must be a valid number" }).optional(),
+  longitude: z.number().refine(val => !isNaN(val), { message: "Must be a valid number" }).optional(),
+  altitude: z.number().refine(val => !isNaN(val), { message: "Must be a valid number" }).optional(),
   direction: z.string().optional(),  // compass direction
   speed: z.string().optional(),
   editHistory: z.string().optional(), // any modification info

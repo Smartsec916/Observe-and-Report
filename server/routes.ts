@@ -81,27 +81,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // GPS data
           if (exifData.gps) {
+            let validLatitude = false;
+            let validLongitude = false;
+            
             if (exifData.gps.GPSLatitude && exifData.gps.GPSLatitudeRef) {
-              const latDegrees = exifData.gps.GPSLatitude[0] + 
-                exifData.gps.GPSLatitude[1]/60 + 
-                exifData.gps.GPSLatitude[2]/3600;
-              metadata.latitude = exifData.gps.GPSLatitudeRef === 'N' ? latDegrees : -latDegrees;
+              try {
+                const latDegrees = exifData.gps.GPSLatitude[0] + 
+                  exifData.gps.GPSLatitude[1]/60 + 
+                  exifData.gps.GPSLatitude[2]/3600;
+                  
+                if (!isNaN(latDegrees)) {
+                  metadata.latitude = exifData.gps.GPSLatitudeRef === 'N' ? latDegrees : -latDegrees;
+                  validLatitude = true;
+                }
+              } catch (e) {
+                console.log('Error parsing latitude:', e);
+              }
             }
             
             if (exifData.gps.GPSLongitude && exifData.gps.GPSLongitudeRef) {
-              const longDegrees = exifData.gps.GPSLongitude[0] + 
-                exifData.gps.GPSLongitude[1]/60 + 
-                exifData.gps.GPSLongitude[2]/3600;
-              metadata.longitude = exifData.gps.GPSLongitudeRef === 'E' ? longDegrees : -longDegrees;
+              try {
+                const longDegrees = exifData.gps.GPSLongitude[0] + 
+                  exifData.gps.GPSLongitude[1]/60 + 
+                  exifData.gps.GPSLongitude[2]/3600;
+                  
+                if (!isNaN(longDegrees)) {
+                  metadata.longitude = exifData.gps.GPSLongitudeRef === 'E' ? longDegrees : -longDegrees;
+                  validLongitude = true;
+                }
+              } catch (e) {
+                console.log('Error parsing longitude:', e);
+              }
             }
             
-            if (metadata.latitude && metadata.longitude) {
+            if (validLatitude && validLongitude && metadata.latitude && metadata.longitude) {
               metadata.gpsCoordinates = `${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`;
             }
             
             // Altitude
             if (exifData.gps.GPSAltitude) {
-              metadata.altitude = exifData.gps.GPSAltitude;
+              try {
+                const altitude = exifData.gps.GPSAltitude;
+                if (!isNaN(altitude)) {
+                  metadata.altitude = altitude;
+                }
+              } catch (e) {
+                console.log('Error parsing altitude:', e);
+              }
             }
             
             // Direction/bearing
