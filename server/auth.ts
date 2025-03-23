@@ -5,13 +5,14 @@ import { Strategy as LocalStrategy } from "passport-local";
 import MemoryStore from "memorystore";
 
 // In-memory user store (in production, this would be a database)
-const users = new Map<string, { id: string; username: string; password: string }>();
+const users = new Map<string, { id: string; username: string; password: string; isDefault?: boolean }>();
 
 // Add a default admin user
 users.set("admin", { 
   id: "1", 
   username: "admin", 
-  password: "password123" // In production, this would be hashed
+  password: "password123", // In production, this would be hashed
+  isDefault: true
 });
 
 // Configure passport to use local strategy
@@ -92,9 +93,37 @@ export function setupAuth(app: any) {
   
   app.get("/api/current-user", (req: Request, res: Response) => {
     if (req.isAuthenticated()) {
-      res.json({ user: req.user });
+      const user = req.user as any;
+      res.json({ 
+        user,
+        requiresSetup: user?.isDefault === true
+      });
     } else {
       res.json({ user: null });
+    }
+  });
+  
+  // Create a new user account
+  app.post("/api/create-account", isAuthenticated, (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      // Basic validation
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+      
+      // Check if username already exists
+      if (users.has(username)) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+      
+      // Create new user
+      const newUser = addUser(username, password);
+      
+      res.json({ success: true, user: newUser });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create account" });
     }
   });
 }

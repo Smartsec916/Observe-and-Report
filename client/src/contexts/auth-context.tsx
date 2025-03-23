@@ -6,12 +6,14 @@ import { useLocation } from 'wouter';
 interface User {
   id: string;
   username: string;
+  isDefault?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  requiresSetup: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -21,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [requiresSetup, setRequiresSetup] = useState(false);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -35,6 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (data?.user) {
           setUser(data.user);
+          setRequiresSetup(data.requiresSetup === true);
+          
+          // Redirect to create account page if first-time login with default admin
+          if (data.requiresSetup) {
+            setLocation('/create-account');
+          }
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -44,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     checkAuthStatus();
-  }, []);
+  }, [setLocation]);
 
   // Login function
   async function login(username: string, password: string): Promise<boolean> {
@@ -58,10 +67,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (response?.success && response?.user) {
         setUser(response.user);
+        
+        // After login, fetch current user to check if this is a default admin
+        const userData = await apiRequest('/api/current-user', {
+          method: 'GET',
+          on401: 'returnNull',
+        });
+        
+        const isDefaultAdmin = userData?.requiresSetup === true;
+        setRequiresSetup(isDefaultAdmin);
+        
         toast({
           title: "Login successful",
-          description: "Welcome back!",
+          description: isDefaultAdmin 
+            ? "Please create your personal credentials" 
+            : "Welcome back!",
         });
+        
+        // Redirect to create account page if default admin
+        if (isDefaultAdmin) {
+          setLocation('/create-account');
+        }
+        
         return true;
       }
       
@@ -104,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     isLoading,
     isAuthenticated: !!user,
+    requiresSetup,
     login,
     logout,
   };
