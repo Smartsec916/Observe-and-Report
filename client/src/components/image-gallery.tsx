@@ -48,34 +48,46 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
       queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
       toast({
         title: "Image uploaded",
-        description: "Your image has been successfully attached to the observation.",
+        description: "Your image has been successfully uploaded.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Upload failed",
         description: error.message || "Failed to upload image. Please try again.",
         variant: "destructive",
       });
-    },
-    onSettled: () => {
-      setIsUploading(false);
     }
   });
-
+  
   const deleteMutation = useMutation({
     mutationFn: async (imageUrl: string) => {
-      const encodedUrl = encodeURIComponent(imageUrl);
-      return await apiRequest(`/api/observations/${observationId}/images/${encodedUrl}`, {
+      // URL encode the path to handle special characters
+      const encodedPath = encodeURIComponent(imageUrl);
+      
+      const response = await fetch(`/api/observations/${observationId}/images/${encodedPath}`, {
         method: "DELETE",
+        credentials: 'include', // Include cookies for authentication
       });
+      
+      if (!response.ok) {
+        let errorMessage = 'Deletion failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          console.error('Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
-      setSelectedImage(null);
       toast({
-        title: "Image removed",
-        description: "The image has been removed from this observation.",
+        title: "Image deleted",
+        description: "Your image has been successfully removed.",
       });
     },
     onError: (error) => {
@@ -142,21 +154,18 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
       
       toast({
         title: "Image uploaded",
-        description: "Your image has been successfully attached to the observation.",
+        description: "Your image has been successfully uploaded.",
       });
     } catch (error) {
-      console.error("Error in file upload:", error);
+      console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload image",
+        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
     }
-    
-    // Reset the file input
-    e.target.value = '';
   };
 
   const handleDeleteImage = (image: ImageInfo) => {
@@ -217,63 +226,58 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {images.map((image, index) => (
-            <Dialog key={image.url}>
-              <DialogTrigger asChild>
-                <div 
-                  className="relative aspect-square rounded-md overflow-hidden border border-gray-700 cursor-pointer"
-                  onClick={() => setSelectedImage(image)}
-                >
-                  <img
-                    src={image.url}
-                    alt={image.description || `Image ${index + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-                  {image.metadata && Object.keys(image.metadata).length > 0 && (
-                    <div className="absolute bottom-1 right-1 bg-black/60 rounded-full p-1">
-                      <Info className="h-3 w-3 text-blue-400" />
-                    </div>
-                  )}
-                </div>
-              </DialogTrigger>
-              
-              <DialogContent className="sm:max-w-xl p-1 bg-black">
-                <div className="relative">
-                  <img 
-                    src={selectedImage?.url} 
-                    alt={selectedImage?.description || "Observation image"} 
-                    className="w-full h-auto object-contain max-h-[70vh]" 
-                  />
-                  
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="rounded-full h-8 w-8 p-0 bg-black/50"
-                      onClick={() => setSelectedImage(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+            <div key={image.url} className="flex flex-col space-y-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div 
+                    className="aspect-square rounded-md overflow-hidden border border-gray-700 cursor-pointer"
+                    onClick={() => setSelectedImage(image)}
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.description || `Image ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </DialogTrigger>
+                
+                <DialogContent className="sm:max-w-xl p-1 bg-black">
+                  <div className="relative">
+                    <img 
+                      src={image.url} 
+                      alt={image.description || "Observation image"} 
+                      className="w-full h-auto object-contain max-h-[70vh]" 
+                    />
                     
-                    {!readOnly && (
+                    <div className="absolute top-2 right-2 flex gap-2">
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="rounded-full h-8 w-8 p-0 bg-black/50 text-red-500 border-red-500"
-                        onClick={() => handleDeleteImage(image)}
+                        className="rounded-full h-8 w-8 p-0 bg-black/50"
+                        onClick={() => setSelectedImage(null)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <X className="h-4 w-4" />
                       </Button>
-                    )}
-                  </div>
-                  
-                  <div className="absolute bottom-0 left-0 right-0 flex flex-col bg-black/70 p-2 text-white text-sm">
-                    {selectedImage?.description && (
-                      <div className="mb-2">{selectedImage.description}</div>
-                    )}
+                      
+                      {!readOnly && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="rounded-full h-8 w-8 p-0 bg-black/50 text-red-500 border-red-500"
+                          onClick={() => handleDeleteImage(image)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                     
-                    {selectedImage && (
+                    <div className="absolute bottom-0 left-0 right-0 flex flex-col bg-black/70 p-2 text-white text-sm">
+                      {image.description && (
+                        <div className="mb-2">{image.description}</div>
+                      )}
+                      
                       <div className="w-full">
                         <Button 
                           variant="outline"
@@ -288,54 +292,61 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                         {showMetadata && (
                           <ScrollArea className="h-[120px] w-full mt-2 rounded-md border border-gray-700 bg-gray-900 p-2">
                             <div className="space-y-1 text-xs">
-                              {selectedImage.metadata && Object.keys(selectedImage.metadata).length > 0 ? (
+                              {image.metadata && Object.keys(image.metadata).length > 0 ? (
                                 <>
-                                  {selectedImage.metadata.dateTaken && (
+                                  {image.metadata.dateTaken && (
                                     <div className="flex justify-between">
                                       <span className="font-medium text-gray-400">Date Taken:</span>
-                                      <span>{selectedImage.metadata.dateTaken}</span>
+                                      <span>{image.metadata.dateTaken}</span>
                                     </div>
                                   )}
                                   
-                                  {selectedImage.metadata.gpsCoordinates && (
+                                  {image.metadata.locationText && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Location:</span>
+                                      <span className="text-right">{image.metadata.locationText}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {image.metadata.gpsCoordinates && (
                                     <div className="flex justify-between">
                                       <span className="font-medium text-gray-400">GPS:</span>
-                                      <span className="text-right">{selectedImage.metadata.gpsCoordinates}</span>
+                                      <span className="text-right">{image.metadata.gpsCoordinates}</span>
                                     </div>
                                   )}
                                   
-                                  {selectedImage.metadata.altitude && (
+                                  {image.metadata.altitude && (
                                     <div className="flex justify-between">
                                       <span className="font-medium text-gray-400">Altitude:</span>
-                                      <span>{selectedImage.metadata.altitude} m</span>
+                                      <span>{image.metadata.altitude} m</span>
                                     </div>
                                   )}
                                   
-                                  {selectedImage.metadata.direction && (
+                                  {image.metadata.direction && (
                                     <div className="flex justify-between">
                                       <span className="font-medium text-gray-400">Direction:</span>
-                                      <span>{selectedImage.metadata.direction}</span>
+                                      <span>{image.metadata.direction}</span>
                                     </div>
                                   )}
                                   
-                                  {selectedImage.metadata.speed && (
+                                  {image.metadata.speed && (
                                     <div className="flex justify-between">
                                       <span className="font-medium text-gray-400">Speed:</span>
-                                      <span>{selectedImage.metadata.speed}</span>
+                                      <span>{image.metadata.speed}</span>
                                     </div>
                                   )}
                                   
-                                  {selectedImage.metadata.deviceInfo && (
+                                  {image.metadata.deviceInfo && (
                                     <div className="flex justify-between">
                                       <span className="font-medium text-gray-400">Device:</span>
-                                      <span>{selectedImage.metadata.deviceInfo}</span>
+                                      <span>{image.metadata.deviceInfo}</span>
                                     </div>
                                   )}
                                   
-                                  {selectedImage.metadata.editHistory && (
+                                  {image.metadata.editHistory && (
                                     <div className="flex justify-between">
                                       <span className="font-medium text-gray-400">Edit Info:</span>
-                                      <span>{selectedImage.metadata.editHistory}</span>
+                                      <span>{image.metadata.editHistory}</span>
                                     </div>
                                   )}
                                 </>
@@ -346,7 +357,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                               )}
                               
                               {/* Add a button to copy GPS coordinates to observation location */}
-                              {selectedImage.metadata && selectedImage.metadata.gpsCoordinates && !readOnly && (
+                              {!readOnly && image.metadata && (image.metadata.gpsCoordinates || image.metadata.locationText) && (
                                 <div className="mt-3 pt-2 border-t border-gray-700">
                                   <Button 
                                     variant="outline"
@@ -354,8 +365,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                     className="text-xs w-full bg-gray-800 border-gray-700 mt-1"
                                     onClick={() => {
                                       // Check if we have location information
-                                      const hasGPS = selectedImage.metadata?.gpsCoordinates;
-                                      const hasLocationText = selectedImage.metadata?.locationText;
+                                      const hasGPS = image.metadata?.gpsCoordinates;
+                                      const hasLocationText = image.metadata?.locationText;
                                       
                                       if (hasGPS || hasLocationText) {
                                         // Get current observation
@@ -366,8 +377,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                         const locationInfo: string[] = [];
                                         
                                         // Add GPS coordinates if available
-                                        if (hasGPS && selectedImage.metadata?.gpsCoordinates) {
-                                          const gpsCoordinates = selectedImage.metadata.gpsCoordinates;
+                                        if (hasGPS && image.metadata?.gpsCoordinates) {
+                                          const gpsCoordinates = image.metadata.gpsCoordinates;
                                           
                                           // Check if the GPS coordinates are already in the location
                                           if (currentLocation.includes(gpsCoordinates)) {
@@ -381,8 +392,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                         }
                                         
                                         // Add text location if available
-                                        if (hasLocationText && selectedImage.metadata?.locationText) {
-                                          const locationText = selectedImage.metadata.locationText;
+                                        if (hasLocationText && image.metadata?.locationText) {
+                                          const locationText = image.metadata.locationText;
                                           
                                           // Check if the location text is already in the location
                                           if (currentLocation.includes(locationText)) {
@@ -428,14 +439,14 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                           
                                           toast({
                                             title: "Location Updated",
-                                            description: "GPS coordinates added to location information",
+                                            description: "Location information added to observation",
                                           });
                                         })
                                         .catch(error => {
                                           console.error("Error updating location:", error);
                                           toast({
                                             title: "Update Failed",
-                                            description: error instanceof Error ? error.message : "Could not add GPS coordinates to location",
+                                            description: error instanceof Error ? error.message : "Could not add location information",
                                             variant: "destructive",
                                           });
                                         });
@@ -450,11 +461,41 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                           </ScrollArea>
                         )}
                       </div>
-                    )}
+                    </div>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+              
+              {/* Metadata button below the image */}
+              {image.metadata && Object.keys(image.metadata).length > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs flex items-center justify-center gap-1 py-1 h-6 text-blue-400 w-full"
+                  onClick={() => {
+                    setSelectedImage(image);
+                    setShowMetadata(true);
+                    
+                    // Find the dialog trigger for this image
+                    const dialogTriggers = document.querySelectorAll('[role="button"]');
+                    // This is the image's dialog trigger
+                    const imageDialogTrigger = dialogTriggers[index];
+                    if (imageDialogTrigger) {
+                      imageDialogTrigger.dispatchEvent(
+                        new MouseEvent('click', {
+                          bubbles: true,
+                          cancelable: true,
+                          view: window
+                        })
+                      );
+                    }
+                  }}
+                >
+                  <Info className="h-3 w-3" />
+                  <span>View Metadata</span>
+                </Button>
+              )}
+            </div>
           ))}
         </div>
       )}

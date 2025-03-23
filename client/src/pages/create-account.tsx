@@ -113,6 +113,9 @@ export default function CreateAccountPage() {
                         {...field} 
                       />
                     </FormControl>
+                    <FormDescription className="text-xs text-gray-500">
+                      Your email is only used for account recovery and will not be shared.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

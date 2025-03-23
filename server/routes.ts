@@ -408,21 +408,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
             images: [...currentImages, validatedImage]
           };
           
-          // If there's location text in the metadata, add it to the location field
-          if (metadata.locationText) {
-            const currentLocation = observation.location || '';
-            const locationText = metadata.locationText;
+          // Always add location information from image metadata if available
+          const locationInfo: string[] = [];
             
-            // Only add if it's not already in the location text
-            if (!currentLocation.includes(locationText)) {
-              const formattedLocation = currentLocation.trim() 
-                ? currentLocation.includes("Location Information")
-                  ? `${currentLocation}\nLocation: ${locationText}`
-                  : `${currentLocation}\nLocation Information\nLocation: ${locationText}`
-                : `Location Information\nLocation: ${locationText}`;
+          // Add text location if available
+          if (metadata.locationText) {
+            const locationText = metadata.locationText;
+            locationInfo.push(`Location: ${locationText}`);
+          }
+            
+          // Add GPS coordinates if available
+          if (metadata.gpsCoordinates) {
+            const gpsCoordinates = metadata.gpsCoordinates;
+            locationInfo.push(`GPS: ${gpsCoordinates}`);
+          }
+            
+          // If we have location information to add
+          if (locationInfo.length > 0) {
+            const currentLocation = observation.location || '';
+            const formattedLocationInfo = locationInfo.join('\n');
               
-              updates.location = formattedLocation;
-            }
+            // Format the location information
+            const formattedLocation = currentLocation.trim() 
+              ? currentLocation.includes("Location Information")
+                ? `${currentLocation}\n${formattedLocationInfo}`
+                : `${currentLocation}\nLocation Information\n${formattedLocationInfo}`
+              : `Location Information\n${formattedLocationInfo}`;
+                
+            // Add to the updates object
+            updates.location = formattedLocation;
+              
+            console.log("Added location information from image metadata:", formattedLocationInfo);
           }
           
           // Add the new image and possibly update location
