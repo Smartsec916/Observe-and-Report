@@ -26,22 +26,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
     onChange(newVehicle);
   };
 
-  const handleAddLocation = () => {
-    const currentLocations = vehicle.additionalLocations || [];
-    handleChange("additionalLocations", [...currentLocations, ""]);
-  };
-
-  const handleLocationChange = (index: number, value: string) => {
-    const newLocations = [...(vehicle.additionalLocations || [])];
-    newLocations[index] = value;
-    handleChange("additionalLocations", newLocations);
-  };
-
-  const handleRemoveLocation = (index: number) => {
-    const newLocations = [...(vehicle.additionalLocations || [])];
-    newLocations.splice(index, 1);
-    handleChange("additionalLocations", newLocations);
-  };
+  // Location-related functionality removed
 
   return (
     <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-md border border-[#3A3A3A]">
@@ -231,57 +216,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
             onChange={(plate) => handleChange("licensePlate", plate)}
           />
 
-          {/* Additional Locations */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <Label className="block text-xs font-medium text-[#8A8A8A]">
-                Additional Locations
-              </Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-xs text-[#0F52BA] hover:text-[#2979FF] h-6 px-2"
-                onClick={handleAddLocation}
-              >
-                <Plus className="h-3 w-3 mr-1" /> Add Location
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {(vehicle.additionalLocations || []).map((location, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Input
-                    type="text"
-                    placeholder="Enter location"
-                    value={location}
-                    onChange={(e) => handleLocationChange(index, e.target.value)}
-                    className="flex-1 rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-[#8A8A8A] hover:text-[#0F52BA] h-8 w-8"
-                    onClick={() => handleRemoveLocation(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              {(vehicle.additionalLocations || []).length === 0 && (
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="text"
-                    placeholder="Enter location"
-                    value=""
-                    onChange={(e) => handleLocationChange(0, e.target.value)}
-                    className="flex-1 rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Additional Locations section removed as requested */}
 
           {/* Notes */}
           <div>

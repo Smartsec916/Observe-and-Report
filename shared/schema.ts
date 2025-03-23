@@ -32,7 +32,7 @@ export const vehicleSchema = z.object({
   yearMax: z.string().optional(),
   color: z.string().optional(),
   licensePlate: z.array(z.string().optional()).length(7).optional(),
-  additionalLocations: z.array(z.string()).optional(),
+
   notes: z.string().optional(),
   
   // Keep the original field for backward compatibility

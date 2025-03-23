@@ -182,15 +182,7 @@ export class MemStorage implements IStorage {
           }
         }
         
-        // Check additional locations
-        if (vehicle.additionalLocations) {
-          const locationsMatch = vehicle.additionalLocations.some(
-            loc => loc.toLowerCase().includes(query)
-          );
-          if (locationsMatch) {
-            vehicleMatch = true;
-          }
-        }
+        // Additional locations functionality removed
         
         return personMatch || vehicleMatch;
       });
@@ -350,7 +342,7 @@ export class MemStorage implements IStorage {
       
       // Handle all other vehicle attributes with exact matching
       Object.entries(otherVehicleParams).forEach(([key, value]) => {
-        if (value && key !== 'licensePlate' && key !== 'additionalLocations') {
+        if (value && key !== 'licensePlate') {
           results = results.filter(obs => 
             obs.vehicle && 
             obs.vehicle[key as keyof VehicleInfo] === value
