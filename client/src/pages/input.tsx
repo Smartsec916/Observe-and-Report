@@ -29,6 +29,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
   const [person, setPerson] = useState<PersonInfo>({});
   const [vehicle, setVehicle] = useState<VehicleInfo>({});
   const [images, setImages] = useState<ImageInfo[]>([]);
+  const [location, setLocation] = useState<string>("");
 
   // Fetch observation data if in edit mode
   const { data: existingObservation, isLoading } = useQuery({
@@ -46,6 +47,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
       setPerson(existingObservation.person ?? {});
       setVehicle(existingObservation.vehicle ?? {});
       setImages(existingObservation.images ?? []);
+      setLocation(existingObservation.location ?? "");
     }
   }, [existingObservation]);
 
@@ -59,6 +61,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
+          location,
         }),
       });
     },
