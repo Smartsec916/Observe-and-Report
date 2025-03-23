@@ -218,20 +218,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
 
           {/* Additional Locations section removed as requested */}
 
-          {/* Notes */}
-          <div>
-            <Label htmlFor="vehicleNotes" className="block text-xs font-medium text-[#8A8A8A] mb-1">
-              Notes
-            </Label>
-            <Textarea
-              id="vehicleNotes"
-              placeholder="Additional details about the vehicle"
-              value={vehicle.notes || ""}
-              onChange={(e) => handleChange("notes", e.target.value)}
-              rows={3}
-              className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
-            />
-          </div>
+
         </div>
       )}
     </div>

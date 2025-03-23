@@ -32,8 +32,6 @@ export const vehicleSchema = z.object({
   yearMax: z.string().optional(),
   color: z.string().optional(),
   licensePlate: z.array(z.string().optional()).length(7).optional(),
-
-  notes: z.string().optional(),
   
   // Keep the original field for backward compatibility
   year: z.string().optional(),
@@ -68,6 +66,7 @@ export const observations = pgTable("observations", {
   time: text("time").notNull(),
   person: json("person").$type<z.infer<typeof personSchema>>(),
   vehicle: json("vehicle").$type<z.infer<typeof vehicleSchema>>(),
+  notes: text("notes"),
   images: json("images").$type<z.infer<typeof imageSchema>[]>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -78,6 +77,7 @@ export const insertObservationSchema = createInsertSchema(observations).pick({
   time: true,
   person: true,
   vehicle: true,
+  notes: true,
   images: true,
 });
 
@@ -87,6 +87,7 @@ export const observationInputSchema = z.object({
   time: z.string(),
   person: personSchema,
   vehicle: vehicleSchema,
+  notes: z.string().optional(),
   images: z.array(imageSchema).optional().default([]),
 });
 
