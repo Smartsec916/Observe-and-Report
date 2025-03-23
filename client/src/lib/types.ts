@@ -12,6 +12,7 @@ export interface Observation {
   time: string;
   person: PersonInfo;
   vehicle: VehicleInfo;
+  notes?: string;
   createdAt: Date;
   images?: ImageInfo[];
 }

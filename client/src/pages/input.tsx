@@ -5,11 +5,13 @@ import { PersonInfoSection } from "@/components/person-info-section";
 import { VehicleInfoSection } from "@/components/vehicle-info-section";
 import { ImageGallery } from "@/components/image-gallery";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { PersonInfo, VehicleInfo, ImageInfo, Observation } from "@/lib/types";
 import { useLocation, useParams } from "wouter";
-import { ChevronLeft, Search } from "lucide-react";
+import { ChevronLeft, Search, ChevronDown, ChevronUp } from "lucide-react";
 
 interface InputPageProps {
   id?: string;
@@ -28,7 +30,9 @@ export default function InputPage({ id }: InputPageProps = {}) {
   const [time, setTime] = useState("");
   const [person, setPerson] = useState<PersonInfo>({});
   const [vehicle, setVehicle] = useState<VehicleInfo>({});
+  const [notes, setNotes] = useState("");
   const [images, setImages] = useState<ImageInfo[]>([]);
+  const [notesExpanded, setNotesExpanded] = useState(true);
 
   // Fetch observation data if in edit mode
   const { data: existingObservation, isLoading } = useQuery({
@@ -45,6 +49,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
       setTime(existingObservation.time);
       setPerson(existingObservation.person ?? {});
       setVehicle(existingObservation.vehicle ?? {});
+      setNotes(existingObservation.notes ?? "");
       setImages(existingObservation.images ?? []);
     }
   }, [existingObservation]);
@@ -59,6 +64,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
+          notes,
         }),
       });
     },
@@ -99,6 +105,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
+          notes,
         }),
       });
     },
@@ -186,6 +193,34 @@ export default function InputPage({ id }: InputPageProps = {}) {
         
         {/* Vehicle Information Section */}
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
+        
+        {/* Notes Section */}
+        <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-md border border-[#3A3A3A]">
+          <button
+            type="button"
+            className="w-full flex justify-between items-center mb-2"
+            onClick={() => setNotesExpanded(!notesExpanded)}
+          >
+            <h2 className="text-md font-medium">Notes</h2>
+            {notesExpanded ? (
+              <ChevronUp className="h-5 w-5 text-[#0F52BA]" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-[#0F52BA]" />
+            )}
+          </button>
+
+          {notesExpanded && (
+            <div className="space-y-4">
+              <Textarea
+                placeholder="Additional notes about this observation"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              />
+            </div>
+          )}
+        </div>
         
         {/* Location Information Section removed as requested */}
         
