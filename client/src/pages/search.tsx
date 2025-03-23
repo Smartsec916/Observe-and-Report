@@ -48,14 +48,10 @@ export default function SearchPage() {
     setLocation(`/input/${id}`);
   };
 
-  // Handle viewing details of an observation
+  // Handle viewing details of an observation (now just redirects to edit page)
   const handleViewDetails = (id: number) => {
-    // Navigate to details page (not implemented in this version)
-    toast({
-      title: "View Observation Details",
-      description: `Detail view for observation ${id} will be implemented in a future version.`,
-      variant: "default",
-    });
+    // Navigate to input/edit page (same as edit function)
+    handleEdit(id);
   };
 
   // Get search results

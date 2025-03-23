@@ -143,15 +143,7 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
                 className="text-xs text-[#2979FF] hover:text-[#0F52BA] p-0 h-auto"
                 onClick={() => onEdit(observation.id)}
               >
-                Edit
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-[#2979FF] hover:text-[#0F52BA] p-0 h-auto"
-                onClick={() => onViewDetails(observation.id)}
-              >
-                View Details
+                View Details / Edit
               </Button>
             </div>
           </div>

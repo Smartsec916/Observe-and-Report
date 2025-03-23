@@ -69,6 +69,7 @@ export const observations = pgTable("observations", {
   person: json("person").$type<z.infer<typeof personSchema>>(),
   vehicle: json("vehicle").$type<z.infer<typeof vehicleSchema>>(),
   images: json("images").$type<z.infer<typeof imageSchema>[]>(),
+  location: text("location"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -79,6 +80,7 @@ export const insertObservationSchema = createInsertSchema(observations).pick({
   person: true,
   vehicle: true,
   images: true,
+  location: true,
 });
 
 // Zod validation schema for observation input
@@ -88,6 +90,7 @@ export const observationInputSchema = z.object({
   person: personSchema,
   vehicle: vehicleSchema,
   images: z.array(imageSchema).optional().default([]),
+  location: z.string().optional(),
 });
 
 export type InsertObservation = z.infer<typeof insertObservationSchema>;

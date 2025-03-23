@@ -268,7 +268,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                       <div className="mb-2">{selectedImage.description}</div>
                     )}
                     
-                    {selectedImage?.metadata && Object.keys(selectedImage.metadata).length > 0 && (
+                    {selectedImage && (
                       <div className="w-full">
                         <Button 
                           variant="outline"
@@ -283,52 +283,111 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                         {showMetadata && (
                           <ScrollArea className="h-[120px] w-full mt-2 rounded-md border border-gray-700 bg-gray-900 p-2">
                             <div className="space-y-1 text-xs">
-                              {selectedImage.metadata.dateTaken && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Date Taken:</span>
-                                  <span>{selectedImage.metadata.dateTaken}</span>
+                              {selectedImage.metadata && Object.keys(selectedImage.metadata).length > 0 ? (
+                                <>
+                                  {selectedImage.metadata.dateTaken && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Date Taken:</span>
+                                      <span>{selectedImage.metadata.dateTaken}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {selectedImage.metadata.gpsCoordinates && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">GPS:</span>
+                                      <span className="text-right">{selectedImage.metadata.gpsCoordinates}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {selectedImage.metadata.altitude && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Altitude:</span>
+                                      <span>{selectedImage.metadata.altitude} m</span>
+                                    </div>
+                                  )}
+                                  
+                                  {selectedImage.metadata.direction && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Direction:</span>
+                                      <span>{selectedImage.metadata.direction}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {selectedImage.metadata.speed && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Speed:</span>
+                                      <span>{selectedImage.metadata.speed}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {selectedImage.metadata.deviceInfo && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Device:</span>
+                                      <span>{selectedImage.metadata.deviceInfo}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {selectedImage.metadata.editHistory && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Edit Info:</span>
+                                      <span>{selectedImage.metadata.editHistory}</span>
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="flex justify-center items-center h-20">
+                                  <span className="text-gray-400">No metadata found in image</span>
                                 </div>
                               )}
                               
-                              {selectedImage.metadata.gpsCoordinates && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">GPS:</span>
-                                  <span>{selectedImage.metadata.gpsCoordinates}</span>
-                                </div>
-                              )}
-                              
-                              {selectedImage.metadata.altitude && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Altitude:</span>
-                                  <span>{selectedImage.metadata.altitude} m</span>
-                                </div>
-                              )}
-                              
-                              {selectedImage.metadata.direction && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Direction:</span>
-                                  <span>{selectedImage.metadata.direction}</span>
-                                </div>
-                              )}
-                              
-                              {selectedImage.metadata.speed && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Speed:</span>
-                                  <span>{selectedImage.metadata.speed}</span>
-                                </div>
-                              )}
-                              
-                              {selectedImage.metadata.deviceInfo && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Device:</span>
-                                  <span>{selectedImage.metadata.deviceInfo}</span>
-                                </div>
-                              )}
-                              
-                              {selectedImage.metadata.editHistory && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Edit Info:</span>
-                                  <span>{selectedImage.metadata.editHistory}</span>
+                              {/* Add a button to copy GPS coordinates to observation location */}
+                              {selectedImage.metadata && selectedImage.metadata.gpsCoordinates && !readOnly && (
+                                <div className="mt-3 pt-2 border-t border-gray-700">
+                                  <Button 
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs w-full bg-gray-800 border-gray-700 mt-1"
+                                    onClick={() => {
+                                      if (selectedImage.metadata?.gpsCoordinates) {
+                                        // Use the queryClient to get current observation
+                                        const currentObservation = queryClient.getQueryData([`/api/observations/${observationId}`]);
+                                        
+                                        // Update the observation with a new location
+                                        const locationUpdate = {
+                                          location: selectedImage.metadata.gpsCoordinates
+                                        };
+                                        
+                                        // Send PATCH request to update location
+                                        fetch(`/api/observations/${observationId}`, {
+                                          method: 'PATCH',
+                                          headers: {
+                                            'Content-Type': 'application/json'
+                                          },
+                                          body: JSON.stringify(locationUpdate)
+                                        })
+                                        .then(response => response.json())
+                                        .then(() => {
+                                          // Invalidate the query to refresh the data
+                                          queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
+                                          
+                                          toast({
+                                            title: "Location Updated",
+                                            description: "GPS coordinates copied to observation location",
+                                          });
+                                        })
+                                        .catch(error => {
+                                          console.error("Error updating location:", error);
+                                          toast({
+                                            title: "Update Failed",
+                                            description: "Could not copy GPS coordinates to location",
+                                            variant: "destructive",
+                                          });
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    Copy GPS to Observation Location
+                                  </Button>
                                 </div>
                               )}
                             </div>
