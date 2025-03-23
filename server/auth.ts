@@ -134,3 +134,9 @@ export function addUser(username: string, password: string) {
   users.set(username, { id, username, password });
   return { id, username };
 }
+
+// Function to check if we need to perform initial admin setup
+export function isInitialSetupNeeded(): boolean {
+  // Check if we only have the default admin user
+  return users.size === 1 && users.has('admin');
+}

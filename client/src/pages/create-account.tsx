@@ -73,6 +73,13 @@ export default function CreateAccountPage() {
           <CardDescription>
             Welcome to Observe &amp; Report! Set up your personal login credentials.
           </CardDescription>
+          <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-md text-sm">
+            <p className="text-blue-700 dark:text-blue-300">
+              <strong>First-time setup:</strong> You're logged in with the default admin account.
+              Create your personal credentials now for improved security.
+              After creating your account, you'll be redirected to login with your new credentials.
+            </p>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>

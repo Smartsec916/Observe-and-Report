@@ -7,6 +7,7 @@ import InputPage from "@/pages/input";
 import SearchPage from "@/pages/search";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
+import CreateAccountPage from "@/pages/create-account";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ProtectedRoute } from "@/components/protected-route";
 import { Header } from "@/components/header";
@@ -17,6 +18,13 @@ function Router() {
       <Header />
       <Switch>
         <Route path="/login" component={LoginPage} />
+        <Route path="/create-account">
+          {() => (
+            <ProtectedRoute>
+              <CreateAccountPage />
+            </ProtectedRoute>
+          )}
+        </Route>
         <Route path="/">
           {() => (
             <ProtectedRoute>

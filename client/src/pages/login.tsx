@@ -98,9 +98,12 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex flex-col items-center space-y-2">
           <p className="text-sm text-muted-foreground">
             Default credentials: admin / password123
+          </p>
+          <p className="text-xs text-muted-foreground text-center px-4">
+            First-time users: After logging in with the admin account, you'll be prompted to create your own personal credentials for increased security.
           </p>
         </CardFooter>
       </Card>
