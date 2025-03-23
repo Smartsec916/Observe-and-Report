@@ -1,0 +1,61 @@
+import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Person information schema
+export const personSchema = z.object({
+  name: z.string().optional(),
+  height: z.string().optional(),
+  build: z.string().optional(),
+  hairColor: z.string().optional(),
+  eyeColor: z.string().optional(),
+  skinTone: z.string().optional(),
+  tattoos: z.string().optional(),
+  address: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  email: z.string().optional(),
+  workAddress: z.string().optional(),
+  workPhone: z.string().optional(),
+});
+
+// Vehicle information schema
+export const vehicleSchema = z.object({
+  make: z.string().optional(),
+  model: z.string().optional(), 
+  year: z.string().optional(),
+  color: z.string().optional(),
+  licensePlate: z.array(z.string().optional()).length(7).optional(),
+  additionalLocations: z.array(z.string()).optional(),
+  notes: z.string().optional(),
+});
+
+// Observation schema for database
+export const observations = pgTable("observations", {
+  id: serial("id").primaryKey(),
+  date: text("date").notNull(),
+  time: text("time").notNull(),
+  person: json("person").$type<z.infer<typeof personSchema>>(),
+  vehicle: json("vehicle").$type<z.infer<typeof vehicleSchema>>(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schema for inserting a new observation
+export const insertObservationSchema = createInsertSchema(observations).pick({
+  date: true,
+  time: true,
+  person: true,
+  vehicle: true,
+});
+
+// Zod validation schema for observation input
+export const observationInputSchema = z.object({
+  date: z.string(),
+  time: z.string(),
+  person: personSchema,
+  vehicle: vehicleSchema,
+});
+
+export type InsertObservation = z.infer<typeof insertObservationSchema>;
+export type Observation = typeof observations.$inferSelect;
+export type PersonInfo = z.infer<typeof personSchema>;
+export type VehicleInfo = z.infer<typeof vehicleSchema>;
