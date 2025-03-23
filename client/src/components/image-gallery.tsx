@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ImageInfo, ImageMetadata } from "@/lib/types";
+import { ImageInfo, ImageMetadata, Observation } from "@/lib/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
