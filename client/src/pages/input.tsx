@@ -195,30 +195,6 @@ export default function InputPage({ id }: InputPageProps = {}) {
         <div className="rounded-lg shadow bg-card p-4 space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="text-base font-medium">Location Information</h3>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center text-xs"
-              onClick={() => {
-                // Add an empty location if nothing exists yet
-                if (!location.trim()) {
-                  setLocation("New Location");
-                }
-                // If we have a location already, check if it's not already a GPS coord
-                else if (!location.includes("°")) {
-                  // Create a new location entry that separates previous locations and new ones
-                  setLocation(prev => {
-                    if (prev.trim()) {
-                      return `${prev}\nLocation Information`;
-                    }
-                    return "New Location";
-                  });
-                }
-              }}
-            >
-              <PlusCircle className="h-3 w-3 mr-1" /> Add Location
-            </Button>
           </div>
           
           <div className="space-y-2">
@@ -233,7 +209,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
               className="w-full px-3 py-2 border border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:border-[#2979FF] min-h-[100px]"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Enter multiple location descriptions, each on a new line. GPS coordinates from uploaded images will be added here automatically.
+              Enter multiple location descriptions, each on a new line.
             </p>
           </div>
         </div>
