@@ -64,7 +64,7 @@ export default function SearchPage() {
 
   return (
     <div className="px-4 py-3 h-full">
-      <div className="space-y-6">
+      <div className="space-y-6 pb-20">
         {/* Search Filters */}
         <SearchFilters
           searchParams={searchParams}

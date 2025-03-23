@@ -41,7 +41,7 @@ export default function InputPage() {
       toast({
         title: "Observation saved",
         description: "Your observation has been recorded successfully.",
-        variant: "success",
+        variant: "default",
       });
     },
     onError: (error) => {
@@ -76,8 +76,8 @@ export default function InputPage() {
         {/* Vehicle Information Section */}
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
         
-        {/* Submit Button */}
-        <div className="flex justify-center pt-2 pb-8">
+        {/* Submit Button - Adding extra bottom padding to avoid navigation overlap */}
+        <div className="flex justify-center pt-2 pb-20">
           <Button
             type="submit"
             className="bg-[#0F52BA] hover:bg-[#0A3A8C] text-white font-medium px-6 py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:ring-opacity-50 transition-colors w-full"
