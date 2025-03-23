@@ -10,7 +10,8 @@ import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { fileURLToPath } from "url";
-import { ExifImage } from "exif";
+import exif from "exif";
+import type { ExifData } from "exif";
 
 // Get the directory name equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -53,76 +54,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up static serving for uploads folder
   app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
-  // Route to upload an image and attach it to an observation
-  app.post("/api/observations/:id/images", isAuthenticated, upload.single('image'), async (req, res) => {
-    try {
-      console.log('Processing image upload request for observation');
-      
-      if (!req.file) {
-        return res.status(400).json({ message: "No image file uploaded" });
-      }
-      
-      console.log('Received file:', req.file.originalname, 'Size:', req.file.size);
-      
-      const id = parseInt(req.params.id);
-      console.log('Looking for observation with ID:', id);
-      
-      const observation = await dataStorage.getObservation(id);
-      if (!observation) {
-        // Remove uploaded file if observation not found
-        fs.unlinkSync(req.file.path);
-        return res.status(404).json({ message: "Observation not found" });
-      }
-      
-      // Create image metadata
-      const imageData = {
-        url: `/uploads/${req.file.filename}`,
-        name: req.file.originalname,
-        description: req.body.description || '',
-        dateAdded: new Date().toISOString().split('T')[0]
-      };
-      
-      // Validate the image data
-      const validatedImage = imageSchema.parse(imageData);
-      console.log('Image data validated:', validatedImage.url);
-      
-      // Get current images or initialize an empty array
-      const currentImages: ImageInfo[] = observation.images || [];
-      
-      // Add the new image
-      const updatedObservation = await dataStorage.updateObservation(id, {
-        images: [...currentImages, validatedImage]
-      });
-      
-      console.log('Image added to observation successfully');
-      
-      res.status(201).json({ 
-        message: "Image uploaded successfully", 
-        image: validatedImage,
-        observation: updatedObservation
-      });
-    } catch (error) {
-      console.error("Image upload error:", error);
-      
-      // Remove uploaded file in case of error
-      if (req.file) {
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch (e) {
-          console.error('Failed to delete uploaded file:', e);
-        }
-      }
-      
-      if (error instanceof ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid image data", 
-          errors: error.errors 
+  // Function to extract EXIF data from an image
+  const extractImageMetadata = (filePath: string): Promise<Record<string, any>> => {
+    return new Promise((resolve) => {
+      try {
+        new exif.ExifImage({ image: filePath }, (error: Error | null, exifData: ExifData) => {
+          if (error) {
+            console.log('EXIF extraction error:', error.message);
+            resolve({}); // Return empty object if EXIF data can't be read
+            return;
+          }
+          
+          // Extract relevant metadata
+          const metadata: Record<string, any> = {};
+          
+          // Date and time
+          if (exifData.exif?.DateTimeOriginal) {
+            metadata.dateTaken = exifData.exif.DateTimeOriginal;
+          }
+          
+          // GPS data
+          if (exifData.gps) {
+            if (exifData.gps.GPSLatitude && exifData.gps.GPSLatitudeRef) {
+              const latDegrees = exifData.gps.GPSLatitude[0] + 
+                exifData.gps.GPSLatitude[1]/60 + 
+                exifData.gps.GPSLatitude[2]/3600;
+              metadata.latitude = exifData.gps.GPSLatitudeRef === 'N' ? latDegrees : -latDegrees;
+            }
+            
+            if (exifData.gps.GPSLongitude && exifData.gps.GPSLongitudeRef) {
+              const longDegrees = exifData.gps.GPSLongitude[0] + 
+                exifData.gps.GPSLongitude[1]/60 + 
+                exifData.gps.GPSLongitude[2]/3600;
+              metadata.longitude = exifData.gps.GPSLongitudeRef === 'E' ? longDegrees : -longDegrees;
+            }
+            
+            if (metadata.latitude && metadata.longitude) {
+              metadata.gpsCoordinates = `${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`;
+            }
+            
+            // Altitude
+            if (exifData.gps.GPSAltitude) {
+              metadata.altitude = exifData.gps.GPSAltitude;
+            }
+            
+            // Direction/bearing
+            if (exifData.gps.GPSImgDirection) {
+              metadata.direction = `${exifData.gps.GPSImgDirection}° ${exifData.gps.GPSImgDirectionRef || ''}`;
+            }
+            
+            // Speed
+            if (exifData.gps.GPSSpeed) {
+              metadata.speed = `${exifData.gps.GPSSpeed} ${exifData.gps.GPSSpeedRef || 'km/h'}`;
+            }
+          }
+          
+          // Device info
+          if (exifData.image) {
+            const deviceInfo = [];
+            if (exifData.image.Make) deviceInfo.push(exifData.image.Make);
+            if (exifData.image.Model) deviceInfo.push(exifData.image.Model);
+            if (deviceInfo.length > 0) {
+              metadata.deviceInfo = deviceInfo.join(' ');
+            }
+          }
+          
+          // Modification/Software info (could indicate editing)
+          if (exifData.image?.Software) {
+            metadata.editHistory = `Processed with ${exifData.image.Software}`;
+          }
+          
+          console.log('Extracted metadata:', metadata);
+          resolve(metadata);
         });
+      } catch (err) {
+        console.error('Failed to extract EXIF data:', err);
+        resolve({});
+      }
+    });
+  };
+
+  // Route to upload an image and attach it to an observation
+  app.post("/api/observations/:id/images", isAuthenticated, (req, res) => {
+    // Use single upload with error handling
+    upload.single('image')(req, res, async (err) => {
+      // Handle multer errors
+      if (err) {
+        console.error('Multer error:', err.message);
+        return res.status(400).json({ message: `Upload error: ${err.message}` });
       }
       
-      const errorMessage = error instanceof Error ? error.message : "Unexpected error";
-      res.status(500).json({ message: `Failed to upload image: ${errorMessage}` });
-    }
+      try {
+        console.log('Processing image upload request for observation');
+        
+        if (!req.file) {
+          return res.status(400).json({ message: "No image file uploaded" });
+        }
+        
+        console.log('Received file:', req.file.originalname, 'Size:', req.file.size);
+        
+        const id = parseInt(req.params.id);
+        console.log('Looking for observation with ID:', id);
+        
+        const observation = await dataStorage.getObservation(id);
+        if (!observation) {
+          // Remove uploaded file if observation not found
+          fs.unlinkSync(req.file.path);
+          return res.status(404).json({ message: "Observation not found" });
+        }
+        
+        // Extract metadata from the image
+        const metadata = await extractImageMetadata(req.file.path);
+        
+        // Create image data with metadata
+        const imageData = {
+          url: `/uploads/${req.file.filename}`,
+          name: req.file.originalname,
+          description: req.body.description || '',
+          dateAdded: new Date().toISOString().split('T')[0],
+          metadata: metadata
+        };
+        
+        // Validate the image data
+        const validatedImage = imageSchema.parse(imageData);
+        console.log('Image data validated:', validatedImage.url);
+        
+        // Get current images or initialize an empty array
+        const currentImages: ImageInfo[] = observation.images || [];
+        
+        // Add the new image
+        const updatedObservation = await dataStorage.updateObservation(id, {
+          images: [...currentImages, validatedImage]
+        });
+        
+        console.log('Image added to observation successfully');
+        
+        res.status(201).json({ 
+          message: "Image uploaded successfully", 
+          image: validatedImage,
+          observation: updatedObservation
+        });
+      } catch (error) {
+        console.error("Image upload error:", error);
+        
+        // Remove uploaded file in case of error
+        if (req.file) {
+          try {
+            fs.unlinkSync(req.file.path);
+          } catch (e) {
+            console.error('Failed to delete uploaded file:', e);
+          }
+        }
+        
+        if (error instanceof ZodError) {
+          return res.status(400).json({ 
+            message: "Invalid image data", 
+            errors: error.errors 
+          });
+        }
+        
+        const errorMessage = error instanceof Error ? error.message : "Unexpected error";
+        res.status(500).json({ message: `Failed to upload image: ${errorMessage}` });
+      }
+    });
   });
 
   // Route to delete an image from an observation

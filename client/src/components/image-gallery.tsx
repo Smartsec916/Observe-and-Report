@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { ImageInfo } from "@/lib/types";
+import { ImageInfo, ImageMetadata } from "@/lib/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { Camera, X, Plus, Upload, Trash2 } from "lucide-react";
+import { Camera, X, Plus, Upload, Trash2, Info } from "lucide-react";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface ImageGalleryProps {
   images: ImageInfo[];
@@ -18,6 +19,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
   const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState<ImageInfo | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showMetadata, setShowMetadata] = useState(false);
   
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -199,7 +201,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                   <img 
                     src={selectedImage?.url} 
                     alt={selectedImage?.description || "Observation image"} 
-                    className="w-full h-auto object-contain max-h-[80vh]" 
+                    className="w-full h-auto object-contain max-h-[70vh]" 
                   />
                   
                   <div className="absolute top-2 right-2 flex gap-2">
@@ -224,11 +226,80 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                     )}
                   </div>
                   
-                  {selectedImage?.description && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-white text-sm">
-                      {selectedImage.description}
-                    </div>
-                  )}
+                  <div className="absolute bottom-0 left-0 right-0 flex flex-col bg-black/70 p-2 text-white text-sm">
+                    {selectedImage?.description && (
+                      <div className="mb-2">{selectedImage.description}</div>
+                    )}
+                    
+                    {selectedImage?.metadata && Object.keys(selectedImage.metadata).length > 0 && (
+                      <div className="w-full">
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          className="text-xs w-full bg-gray-800 border-gray-700"
+                          onClick={() => setShowMetadata(!showMetadata)}
+                        >
+                          <Info className="h-3 w-3 mr-1" />
+                          {showMetadata ? "Hide Metadata" : "Show Metadata"}
+                        </Button>
+                        
+                        {showMetadata && (
+                          <ScrollArea className="h-[120px] w-full mt-2 rounded-md border border-gray-700 bg-gray-900 p-2">
+                            <div className="space-y-1 text-xs">
+                              {selectedImage.metadata.dateTaken && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Date Taken:</span>
+                                  <span>{selectedImage.metadata.dateTaken}</span>
+                                </div>
+                              )}
+                              
+                              {selectedImage.metadata.gpsCoordinates && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">GPS:</span>
+                                  <span>{selectedImage.metadata.gpsCoordinates}</span>
+                                </div>
+                              )}
+                              
+                              {selectedImage.metadata.altitude && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Altitude:</span>
+                                  <span>{selectedImage.metadata.altitude} m</span>
+                                </div>
+                              )}
+                              
+                              {selectedImage.metadata.direction && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Direction:</span>
+                                  <span>{selectedImage.metadata.direction}</span>
+                                </div>
+                              )}
+                              
+                              {selectedImage.metadata.speed && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Speed:</span>
+                                  <span>{selectedImage.metadata.speed}</span>
+                                </div>
+                              )}
+                              
+                              {selectedImage.metadata.deviceInfo && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Device:</span>
+                                  <span>{selectedImage.metadata.deviceInfo}</span>
+                                </div>
+                              )}
+                              
+                              {selectedImage.metadata.editHistory && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Edit Info:</span>
+                                  <span>{selectedImage.metadata.editHistory}</span>
+                                </div>
+                              )}
+                            </div>
+                          </ScrollArea>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
