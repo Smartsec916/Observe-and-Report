@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search observations
-  app.post("/api/observations/search", async (req, res) => {
+  app.post("/api/observations/search", isAuthenticated, async (req, res) => {
     try {
       const searchParams = req.body;
       const results = await storage.searchObservations(searchParams);

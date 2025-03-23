@@ -6,24 +6,58 @@ import HomePage from "@/pages/home";
 import InputPage from "@/pages/input";
 import SearchPage from "@/pages/search";
 import NotFound from "@/pages/not-found";
+import LoginPage from "@/pages/login";
+import { AuthProvider } from "@/contexts/auth-context";
+import { ProtectedRoute } from "@/components/protected-route";
+import { Header } from "@/components/header";
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/search" component={SearchPage} />
-      <Route path="/input" component={InputPage} />
-      <Route path="/input/:id" component={InputPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <Header />
+      <Switch>
+        <Route path="/login" component={LoginPage} />
+        <Route path="/">
+          {() => (
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/search">
+          {() => (
+            <ProtectedRoute>
+              <SearchPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/input">
+          {() => (
+            <ProtectedRoute>
+              <InputPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/input/:id">
+          {(params) => (
+            <ProtectedRoute>
+              <InputPage id={params.id} />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route component={NotFound} />
+      </Switch>
+    </>
   );
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
