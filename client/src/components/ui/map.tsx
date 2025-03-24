@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo, useState } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { ExternalLink, Navigation } from "lucide-react";
@@ -28,14 +28,16 @@ interface MapProps {
   height?: string;
 }
 
-export function LocationMap({ 
+// Use memo to prevent unnecessary re-renders of the map component
+const LocationMapComponent = memo(({ 
   latitude, 
   longitude, 
   address,
   className,
   height = "250px" 
-}: MapProps) {
+}: MapProps) => {
   const mapRef = useRef<L.Map>(null);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   // If GPS coordinates are not provided but address is, we could add geocoding here
   // For now, we'll just show a default location if coordinates are missing
@@ -62,8 +64,19 @@ export function LocationMap({
   useEffect(() => {
     if (hasCoordinates && mapRef.current) {
       mapRef.current.setView([latitude!, longitude!], 13);
+      setIsMapLoaded(true);
     }
   }, [latitude, longitude, hasCoordinates]);
+
+  // Clean up Leaflet map on unmount
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        // Clean up to prevent memory leaks
+        mapRef.current.remove();
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-2">
@@ -74,6 +87,7 @@ export function LocationMap({
         style={{ height, width: "100%" }}
         className={cn("rounded-md z-0", className)}
         ref={mapRef as any}
+        whenReady={() => setIsMapLoaded(true)}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -128,4 +142,10 @@ export function LocationMap({
       )}
     </div>
   );
-}
+});
+
+// For better debugging
+LocationMapComponent.displayName = 'LocationMap';
+
+// Export the memoized component
+export const LocationMap = LocationMapComponent;

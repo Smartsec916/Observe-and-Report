@@ -164,8 +164,12 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                       />
                       {/* Show location indicator on thumbnail if GPS data exists */}
                       {image.metadata?.latitude && image.metadata?.longitude && (
-                        <div className="absolute bottom-1 right-1 bg-black/70 rounded-full p-1">
-                          <MapPin className="h-3 w-3 text-green-400" />
+                        <div 
+                          className="absolute bottom-1 right-1 bg-black/70 rounded-md px-1.5 py-0.5 flex items-center"
+                          title="Contains location data"
+                        >
+                          <MapPin className="h-3 w-3 text-green-400 mr-1" />
+                          <span className="text-green-300 text-xs font-medium">GPS</span>
                         </div>
                       )}
                     </div>
@@ -181,19 +185,12 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                     <h2 id="dialog-title">Image Viewer</h2>
                     <p id="dialog-description">View image and metadata details</p>
                   </div>
-                  <button 
-                    onClick={() => {
-                      // Find the close button that's automatically added by the dialog
-                      const closeButton = document.querySelector('[data-radix-collection-item]');
-                      if (closeButton && closeButton instanceof HTMLElement) {
-                        closeButton.click();
-                      }
-                    }}
-                    className="absolute top-1 right-1 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center z-50"
-                    aria-label="Close dialog"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  {/* The Close button reuses the DialogClose component for better accessibility */}
+                  <DialogClose className="absolute top-1 right-1 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center z-50 border-0 hover:bg-black/70" asChild>
+                    <button aria-label="Close image view">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </DialogClose>
                   {/* Tabs for Image and Map */}
                   <Tabs defaultValue="image" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-1">
