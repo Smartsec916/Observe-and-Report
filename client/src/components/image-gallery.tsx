@@ -184,12 +184,13 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                 </DialogTrigger>
                 
                 <DialogContent 
-                  className="sm:max-w-xl p-1 bg-black relative"
+                  className="sm:max-w-xl p-0 pt-8 bg-black relative overflow-hidden flex flex-col"
+                  aria-describedby="dialog-description"
                 >
-                  <DialogTitle className="sr-only" id="dialog-title">Image Viewer</DialogTitle>
-                  <DialogDescription className="sr-only" id="dialog-description">
+                  <DialogTitle className="sr-only">Image Viewer</DialogTitle>
+                  <div id="dialog-description" className="sr-only">
                     View image and metadata details
-                  </DialogDescription>
+                  </div>
                   {/* The Close button reuses the DialogClose component for better accessibility */}
                   <DialogClose className="absolute top-1 right-1 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center z-50 border-0 hover:bg-black/70" asChild>
                     <button aria-label="Close image view">
@@ -197,8 +198,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                     </button>
                   </DialogClose>
                   {/* Tabs for Image and Map */}
-                  <Tabs defaultValue="image" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-1">
+                  <Tabs defaultValue="image" className="w-full flex-1 flex flex-col">
+                    <TabsList className="grid w-full grid-cols-2 mb-1 mx-1">
                       <TabsTrigger value="image">Image</TabsTrigger>
                       <TabsTrigger 
                         value="map" 
@@ -309,7 +310,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                   </Tabs>
                   
                   {/* Metadata section */}
-                  <div className="mt-4 p-3 border border-gray-700 rounded-md bg-gray-900/50">
+                  <div className="mt-1 mx-1 p-3 border border-gray-700 rounded-md bg-gray-900/50">
                     <Button 
                       variant="outline"
                       size="sm"
