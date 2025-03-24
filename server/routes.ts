@@ -562,6 +562,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export observations
+  app.post("/api/observations/export", isAuthenticated, async (req, res) => {
+    try {
+      const { ids } = req.body;
+      
+      // Check if we're exporting specific observations or all
+      let exportData;
+      if (ids && Array.isArray(ids) && ids.length > 0) {
+        console.log(`Exporting ${ids.length} observations`);
+        exportData = await dataStorage.exportObservations(ids);
+      } else {
+        console.log("Exporting all observations");
+        exportData = await dataStorage.exportObservations();
+      }
+      
+      // Set headers for file download
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename=observations-${new Date().toISOString().slice(0, 10)}.json`);
+      
+      res.send(exportData);
+    } catch (error) {
+      console.error("Export error:", error);
+      res.status(500).json({ message: "Failed to export observations" });
+    }
+  });
+
+  // Import observations
+  app.post("/api/observations/import", isAuthenticated, async (req, res) => {
+    try {
+      const importData = req.body.data;
+      
+      if (!importData) {
+        return res.status(400).json({ message: "No import data provided" });
+      }
+      
+      console.log("Importing observations...");
+      const result = await dataStorage.importObservations(importData);
+      
+      if (result.success) {
+        console.log(`Successfully imported ${result.count} observations`);
+        res.status(200).json({ 
+          message: `Successfully imported ${result.count} observations`,
+          count: result.count,
+          errors: result.errors
+        });
+      } else {
+        console.error("Import failed:", result.errors);
+        res.status(400).json({ 
+          message: "Failed to import observations",
+          errors: result.errors
+        });
+      }
+    } catch (error) {
+      console.error("Import error:", error);
+      res.status(500).json({ message: "Failed to import observations" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
