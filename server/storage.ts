@@ -97,6 +97,8 @@ export interface IStorage {
   updateObservation(id: number, observation: Partial<InsertObservation>): Promise<Observation | undefined>;
   deleteObservation(id: number): Promise<boolean>;
   searchObservations(searchParams: SearchParams): Promise<Observation[]>;
+  exportObservations(ids?: number[]): Promise<string>;
+  importObservations(data: string): Promise<{ success: boolean; count: number; errors?: string[] }>;
 }
 
 // Search parameters interface
@@ -117,6 +119,106 @@ export class MemStorage implements IStorage {
   constructor() {
     this.observations = new Map();
     this.currentId = 1;
+  }
+  
+  async exportObservations(ids?: number[]): Promise<string> {
+    try {
+      let observations: Observation[];
+      
+      // If specific IDs are provided, export only those observations
+      if (ids && ids.length > 0) {
+        observations = ids
+          .map(id => this.observations.get(id))
+          .filter((obs): obs is Observation => !!obs);
+      } else {
+        // Otherwise export all observations
+        observations = Array.from(this.observations.values());
+      }
+      
+      // Decrypt sensitive fields for export (they will be re-encrypted by the importer)
+      const decryptedObservations = observations.map(obs => 
+        decryptSensitiveFields(obs, SENSITIVE_FIELDS)
+      );
+      
+      // Create export object with metadata
+      const exportData = {
+        version: "1.0",
+        exportDate: new Date().toISOString(),
+        observations: decryptedObservations
+      };
+      
+      // Convert to JSON string
+      return JSON.stringify(exportData);
+    } catch (error) {
+      console.error("Export error:", error);
+      throw new Error("Failed to export observations");
+    }
+  }
+  
+  async importObservations(data: string): Promise<{ success: boolean; count: number; errors?: string[] }> {
+    try {
+      const errors: string[] = [];
+      
+      // Parse the imported data
+      const importData = JSON.parse(data);
+      
+      if (!importData || !importData.observations || !Array.isArray(importData.observations)) {
+        throw new Error("Invalid import data format");
+      }
+      
+      // Extract observations from the import data
+      const observations = importData.observations;
+      
+      // Track the number of successfully imported observations
+      let successCount = 0;
+      
+      // Process each observation
+      for (const obs of observations) {
+        try {
+          // Ensure the observation has required fields
+          if (!obs.date || !obs.time || !obs.person || !obs.vehicle) {
+            errors.push(`Invalid observation data: missing required fields`);
+            continue;
+          }
+          
+          // Prepare insert data (omitting id and createdAt which will be generated)
+          const { id, createdAt, ...insertData } = obs;
+          
+          // Encrypt sensitive fields before storage
+          const encryptedData = encryptSensitiveFields(insertData, SENSITIVE_FIELDS);
+          
+          // Create a new observation with a new ID
+          const newId = this.currentId++;
+          const newCreatedAt = new Date();
+          
+          const newObservation = {
+            ...encryptedData,
+            id: newId,
+            createdAt: newCreatedAt
+          } as Observation;
+          
+          // Add to storage
+          this.observations.set(newId, newObservation);
+          successCount++;
+        } catch (error) {
+          console.error("Error importing observation:", error);
+          errors.push(`Failed to import observation: ${(error as Error).message}`);
+        }
+      }
+      
+      return {
+        success: successCount > 0,
+        count: successCount,
+        errors: errors.length > 0 ? errors : undefined
+      };
+    } catch (error) {
+      console.error("Import error:", error);
+      return {
+        success: false,
+        count: 0,
+        errors: [`Failed to import observations: ${(error as Error).message}`]
+      };
+    }
   }
 
   async getObservation(id: number): Promise<Observation | undefined> {
