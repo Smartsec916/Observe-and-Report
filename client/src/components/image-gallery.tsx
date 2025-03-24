@@ -187,7 +187,11 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                 <SheetContent 
                   side="bottom" 
                   className="h-[90vh] p-0 pt-2 bg-black border-t border-gray-700 rounded-t-xl"
+                  aria-describedby="image-viewer-description"
                 >
+                  <div id="image-viewer-description" className="sr-only">
+                    View image details, metadata, and location information
+                  </div>
                   <SheetHeader className="px-4 pt-0 pb-2">
                     <SheetTitle className="text-sm text-center text-white">
                       Image Viewer
