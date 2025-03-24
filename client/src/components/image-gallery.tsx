@@ -4,7 +4,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from "./ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogTrigger, 
+  DialogClose,
+  DialogTitle,
+  DialogDescription 
+} from "./ui/dialog";
 import { Camera, X, Upload, Trash2, Info, MapPin, ExternalLink } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { LocationMap } from "./ui/map";
@@ -178,13 +185,11 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                 
                 <DialogContent 
                   className="sm:max-w-xl p-1 bg-black relative"
-                  aria-labelledby="dialog-title"
-                  aria-describedby="dialog-description"
                 >
-                  <div className="sr-only">
-                    <h2 id="dialog-title">Image Viewer</h2>
-                    <p id="dialog-description">View image and metadata details</p>
-                  </div>
+                  <DialogTitle className="sr-only" id="dialog-title">Image Viewer</DialogTitle>
+                  <DialogDescription className="sr-only" id="dialog-description">
+                    View image and metadata details
+                  </DialogDescription>
                   {/* The Close button reuses the DialogClose component for better accessibility */}
                   <DialogClose className="absolute top-1 right-1 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center z-50 border-0 hover:bg-black/70" asChild>
                     <button aria-label="Close image view">
