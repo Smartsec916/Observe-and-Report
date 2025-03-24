@@ -195,7 +195,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
         
         {/* Notes Section */}
-        <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-md border border-[#3A3A3A]">
+        <div className="bg-card rounded-lg p-4 shadow-md border border-border">
           <button
             type="button"
             className="w-full flex justify-between items-center mb-2"
@@ -216,7 +216,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
               />
             </div>
           )}

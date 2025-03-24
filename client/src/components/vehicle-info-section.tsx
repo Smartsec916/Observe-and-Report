@@ -29,7 +29,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
   // Location-related functionality removed
 
   return (
-    <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-md border border-[#3A3A3A]">
+    <div className="bg-card rounded-lg p-4 shadow-md border border-border">
       <button
         type="button"
         className="w-full flex justify-between items-center mb-2"
@@ -56,7 +56,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 placeholder="e.g. Toyota"
                 value={vehicle.make || ""}
                 onChange={(e) => handleChange("make", e.target.value)}
-                className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
               />
             </div>
             <div>
@@ -69,7 +69,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 placeholder="e.g. Camry"
                 value={vehicle.model || ""}
                 onChange={(e) => handleChange("model", e.target.value)}
-                className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
               />
             </div>
           </div>
@@ -103,7 +103,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 >
                   <SelectTrigger
                     id="vehicleYearMin"
-                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                   >
                     <SelectValue placeholder="Min year" />
                   </SelectTrigger>
@@ -157,7 +157,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 >
                   <SelectTrigger
                     id="vehicleYearMax"
-                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                   >
                     <SelectValue placeholder="Max year" />
                   </SelectTrigger>
@@ -195,7 +195,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
               >
                 <SelectTrigger
                   id="vehicleColor"
-                  className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                 >
                   <SelectValue placeholder="Select color" />
                 </SelectTrigger>
