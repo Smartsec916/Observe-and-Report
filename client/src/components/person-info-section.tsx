@@ -48,7 +48,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter name"
               value={person.name || ""}
               onChange={(e) => handleChange("name", e.target.value)}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
             />
           </div>
 
@@ -82,7 +82,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personHeightMin"
-                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   >
                     <SelectValue placeholder="Min height" />
                   </SelectTrigger>

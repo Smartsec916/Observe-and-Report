@@ -34,9 +34,9 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
       >
         <h2 className="text-md font-medium">Vehicle Information</h2>
         {isExpanded ? (
-          <ChevronUp className="h-5 w-5 text-[#0F52BA]" />
+          <ChevronUp className="h-5 w-5 text-primary" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-[#0F52BA]" />
+          <ChevronDown className="h-5 w-5 text-primary" />
         )}
       </button>
 
@@ -53,7 +53,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 placeholder="e.g. Toyota"
                 value={vehicle.make || ""}
                 onChange={(e) => handleChange("make", e.target.value)}
-                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
             <div>
@@ -66,7 +66,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 placeholder="e.g. Camry"
                 value={vehicle.model || ""}
                 onChange={(e) => handleChange("model", e.target.value)}
-                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
           </div>
@@ -100,7 +100,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 >
                   <SelectTrigger
                     id="vehicleYearMin"
-                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   >
                     <SelectValue placeholder="Min year" />
                   </SelectTrigger>
@@ -154,7 +154,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 >
                   <SelectTrigger
                     id="vehicleYearMax"
-                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   >
                     <SelectValue placeholder="Max year" />
                   </SelectTrigger>
@@ -192,7 +192,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
               >
                 <SelectTrigger
                   id="vehicleColor"
-                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                 >
                   <SelectValue placeholder="Select color" />
                 </SelectTrigger>
