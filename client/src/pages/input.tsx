@@ -156,7 +156,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
     return (
       <div className="px-4 py-3 h-full flex items-center justify-center">
         <div className="text-center">
-          <p className="text-[#8A8A8A]">Loading observation data...</p>
+          <p className="text-muted-foreground">Loading observation data...</p>
         </div>
       </div>
     );
@@ -173,7 +173,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
             className="p-0 mr-2" 
             onClick={handleCancel}
           >
-            <ChevronLeft className="h-5 w-5 text-[#8A8A8A]" />
+            <ChevronLeft className="h-5 w-5 text-muted-foreground" />
           </Button>
           <h2 className="text-lg font-medium">Edit Observation #{observationId}</h2>
         </div>
@@ -203,9 +203,9 @@ export default function InputPage({ id }: InputPageProps = {}) {
           >
             <h2 className="text-md font-medium">Notes</h2>
             {notesExpanded ? (
-              <ChevronUp className="h-5 w-5 text-[#0F52BA]" />
+              <ChevronUp className="h-5 w-5 text-primary" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-[#0F52BA]" />
+              <ChevronDown className="h-5 w-5 text-primary" />
             )}
           </button>
 
@@ -216,7 +216,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
           )}
@@ -257,7 +257,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           
           <Button
             type="submit"
-            className="bg-primary hover:bg-primary/80 text-primary-foreground font-medium px-6 py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:ring-opacity-50 transition-colors flex-1"
+            className="bg-primary hover:bg-primary/80 text-primary-foreground font-medium px-6 py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-colors flex-1"
             disabled={isMutating}
           >
             {isMutating ? "Saving..." : isEditMode ? "Update Observation" : "Save Observation"}
