@@ -4,7 +4,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { PersonInfo, heightOptions, buildOptions, hairColorOptions, eyeColorOptions, skinToneOptions } from "@/lib/types";
+import { 
+  PersonInfo, 
+  heightOptions, 
+  buildOptions, 
+  hairColorOptions, 
+  eyeColorOptions, 
+  skinToneOptions,
+  stateOptions 
+} from "@/lib/types";
 
 interface PersonInfoSectionProps {
   person: PersonInfo;
@@ -18,6 +26,40 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
     const newPerson = { ...person } as PersonInfo;
     newPerson[field] = value;
     onChange(newPerson);
+  };
+  
+  // Function to update the legacy address field from structured components
+  const updateFormattedAddress = (newPerson: PersonInfo) => {
+    const { streetNumber, streetName, city, state, zipCode } = newPerson;
+    let formattedAddress = '';
+    
+    if (streetNumber && streetName) {
+      formattedAddress += `${streetNumber} ${streetName}`;
+    }
+    
+    if (city) {
+      if (formattedAddress) formattedAddress += ', ';
+      formattedAddress += city;
+    }
+    
+    if (state) {
+      if (city) {
+        formattedAddress += ', ';
+      } else if (formattedAddress) {
+        formattedAddress += ', ';
+      }
+      formattedAddress += state;
+    }
+    
+    if (zipCode) {
+      if (formattedAddress) formattedAddress += ' ';
+      formattedAddress += zipCode;
+    }
+    
+    // Update the legacy address field for backward compatibility
+    if (formattedAddress) {
+      newPerson.address = formattedAddress;
+    }
   };
 
   return (
@@ -477,52 +519,182 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
           </div>
 
           {/* Contact Information */}
-          <div className="space-y-1">
-            <Label htmlFor="address" className="block text-xs font-medium mb-1">
-              Address
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                id="address"
-                placeholder="Enter address"
-                value={person.address || ""}
-                onChange={(e) => handleChange("address", e.target.value)}
-                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-              />
-              
-              {person.address && (
-                <button
-                  type="button"
-                  className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium flex items-center"
-                  onClick={(e) => {
-                    // Show loading state
-                    const button = e.currentTarget;
-                    const originalContent = button.innerHTML;
-                    button.innerHTML = `<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg> Opening...`;
-                    
-                    // Open Google Maps with the address
-                    if (person.address) {
-                      const encodedAddress = encodeURIComponent(person.address);
-                      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
-                      window.open(googleMapsUrl, "_blank");
+          <div className="space-y-4">
+            <div>
+              <Label className="block text-xs font-medium mb-1">Address (Legacy Format)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  id="address"
+                  placeholder="Enter address"
+                  value={person.address || ""}
+                  onChange={(e) => handleChange("address", e.target.value)}
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                />
+                
+                {person.address && (
+                  <button
+                    type="button"
+                    className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium flex items-center"
+                    onClick={(e) => {
+                      // Show loading state
+                      const button = e.currentTarget;
+                      const originalContent = button.innerHTML;
+                      button.innerHTML = `<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg> Opening...`;
                       
-                      // Restore original content after a short delay
-                      setTimeout(() => {
-                        button.innerHTML = originalContent;
-                      }, 1000);
-                    }
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-                  </svg>
-                  Map
-                </button>
-              )}
+                      // Open Google Maps with the address
+                      if (person.address) {
+                        const encodedAddress = encodeURIComponent(person.address);
+                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                        window.open(googleMapsUrl, "_blank");
+                        
+                        // Restore original content after a short delay
+                        setTimeout(() => {
+                          button.innerHTML = originalContent;
+                        }, 1000);
+                      }
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                      <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                    </svg>
+                    Map
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* Structured Address */}
+            <div>
+              <Label className="block text-xs font-medium mb-3">Structured Address</Label>
+              
+              {/* Street Number and Name */}
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <div>
+                  <Label htmlFor="streetNumber" className="block text-xs font-medium mb-1">
+                    Number
+                  </Label>
+                  <Input
+                    type="text"
+                    id="streetNumber"
+                    placeholder="123"
+                    value={person.streetNumber || ""}
+                    onChange={(e) => {
+                      const newPerson = { ...person } as PersonInfo;
+                      newPerson.streetNumber = e.target.value;
+                      
+                      // Also update the legacy address for compatibility
+                      updateFormattedAddress(newPerson);
+                      
+                      onChange(newPerson);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="streetName" className="block text-xs font-medium mb-1">
+                    Street
+                  </Label>
+                  <Input
+                    type="text"
+                    id="streetName"
+                    placeholder="Main St"
+                    value={person.streetName || ""}
+                    onChange={(e) => {
+                      const newPerson = { ...person } as PersonInfo;
+                      newPerson.streetName = e.target.value;
+                      
+                      // Also update the legacy address for compatibility
+                      updateFormattedAddress(newPerson);
+                      
+                      onChange(newPerson);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+              
+              {/* City, State, Zip */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="city" className="block text-xs font-medium mb-1">
+                    City
+                  </Label>
+                  <Input
+                    type="text"
+                    id="city"
+                    placeholder="City"
+                    value={person.city || ""}
+                    onChange={(e) => {
+                      const newPerson = { ...person } as PersonInfo;
+                      newPerson.city = e.target.value;
+                      
+                      // Also update the legacy address for compatibility
+                      updateFormattedAddress(newPerson);
+                      
+                      onChange(newPerson);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="state" className="block text-xs font-medium mb-1">
+                      State
+                    </Label>
+                    <Select
+                      value={person.state || ""}
+                      onValueChange={(value) => {
+                        const newPerson = { ...person } as PersonInfo;
+                        newPerson.state = value;
+                        
+                        // Also update the legacy address for compatibility
+                        updateFormattedAddress(newPerson);
+                        
+                        onChange(newPerson);
+                      }}
+                    >
+                      <SelectTrigger
+                        id="state"
+                        className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                      >
+                        <SelectValue placeholder="State" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border border-border">
+                        {stateOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="zipCode" className="block text-xs font-medium mb-1">
+                      Zip
+                    </Label>
+                    <Input
+                      type="text"
+                      id="zipCode"
+                      placeholder="12345"
+                      value={person.zipCode || ""}
+                      onChange={(e) => {
+                        const newPerson = { ...person } as PersonInfo;
+                        newPerson.zipCode = e.target.value;
+                        
+                        // Also update the legacy address for compatibility
+                        updateFormattedAddress(newPerson);
+                        
+                        onChange(newPerson);
+                      }}
+                      className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

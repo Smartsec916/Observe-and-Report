@@ -3,6 +3,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { PersonInfoSection } from "@/components/person-info-section";
 import { VehicleInfoSection } from "@/components/vehicle-info-section";
+import { LocationInfoSection } from "@/components/location-info-section";
 import { ImageGallery } from "@/components/image-gallery";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { PersonInfo, VehicleInfo, ImageInfo, Observation, AdditionalNote } from "@/lib/types";
+import { PersonInfo, VehicleInfo, ImageInfo, Observation, AdditionalNote, IncidentLocation } from "@/lib/types";
 import { useLocation, useParams } from "wouter";
 import { ChevronLeft, Search, ChevronDown, ChevronUp, Plus, Calendar, Clock, X } from "lucide-react";
 import { format } from "date-fns";
@@ -32,11 +33,13 @@ export default function InputPage({ id }: InputPageProps = {}) {
   const [time, setTime] = useState("");
   const [person, setPerson] = useState<PersonInfo>({});
   const [vehicle, setVehicle] = useState<VehicleInfo>({});
+  const [location, setLocation] = useState<IncidentLocation>({});
   const [notes, setNotes] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState<AdditionalNote[]>([]);
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [notesExpanded, setNotesExpanded] = useState(true);
   const [additionalNotesExpanded, setAdditionalNotesExpanded] = useState(true);
+  const [locationExpanded, setLocationExpanded] = useState(true);
 
   // Fetch observation data if in edit mode
   const { data: existingObservation, isLoading } = useQuery({
@@ -53,6 +56,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
       setTime(existingObservation.time);
       setPerson(existingObservation.person ?? {});
       setVehicle(existingObservation.vehicle ?? {});
+      setLocation(existingObservation.location ?? {});
       setNotes(existingObservation.notes ?? "");
       setAdditionalNotes(existingObservation.additionalNotes ?? []);
       setImages(existingObservation.images ?? []);
@@ -96,6 +100,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
+          location,
           notes,
           additionalNotes,
         }),
