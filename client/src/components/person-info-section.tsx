@@ -303,7 +303,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               value={person.tattoos || ""}
               onChange={(e) => handleChange("tattoos", e.target.value)}
               rows={2}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
             />
           </div>
 
@@ -318,7 +318,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter address"
               value={person.address || ""}
               onChange={(e) => handleChange("address", e.target.value)}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
             />
           </div>
 
@@ -333,7 +333,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 placeholder="Enter phone"
                 value={person.phoneNumber || ""}
                 onChange={(e) => handleChange("phoneNumber", e.target.value)}
-                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
             <div>
@@ -346,7 +346,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 placeholder="Enter email"
                 value={person.email || ""}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
           </div>
@@ -362,7 +362,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter work address"
               value={person.workAddress || ""}
               onChange={(e) => handleChange("workAddress", e.target.value)}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
             />
           </div>
 
@@ -376,7 +376,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter work phone"
               value={person.workPhone || ""}
               onChange={(e) => handleChange("workPhone", e.target.value)}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
             />
           </div>
         </div>
