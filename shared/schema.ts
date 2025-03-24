@@ -38,7 +38,7 @@ export const personSchema = z.object({
   
   // Structured address fields
   streetNumber: z.string().optional(),
-  street: z.string().optional(),
+  streetName: z.string().optional(), // Updated from 'street' to 'streetName' for consistency
   city: z.string().optional(),
   state: z.string().optional(),
   zipCode: z.string().optional(),
@@ -78,12 +78,17 @@ export const imageMetadataSchema = z.object({
 // Incident location schema
 export const incidentLocationSchema = z.object({
   streetNumber: z.string().optional(),
-  street: z.string().optional(),
+  streetName: z.string().optional(), // Updated from 'street' to 'streetName' for clarity
   city: z.string().optional(),
   state: z.string().optional(),
   zipCode: z.string().optional(),
-  // Legacy field for backward compatibility
-  fullAddress: z.string().optional(),
+  // GPS coordinates
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  // Additional info
+  notes: z.string().optional(),
+  // Generated/combined fields
+  formattedAddress: z.string().optional(), // Updated from 'fullAddress' to 'formattedAddress'
 });
 
 // Image attachment schema
