@@ -329,10 +329,10 @@ export class MemStorage implements IStorage {
       });
     }
 
-    // Filter by person attributes with special handling for height ranges
+    // Filter by person attributes with special handling for height and age ranges
     if (searchParams.person) {
-      // First, extract height min/max from search params to handle them separately
-      const { heightMin, heightMax, ...otherPersonParams } = searchParams.person;
+      // First, extract height min/max and age min/max from search params to handle them separately
+      const { heightMin, heightMax, ageRangeMin, ageRangeMax, ...otherPersonParams } = searchParams.person;
       
       // Handle height range filtering if either min or max is specified
       if (heightMin || heightMax) {
@@ -400,6 +400,38 @@ export class MemStorage implements IStorage {
           }
           
           return personHeightMatch;
+        });
+      }
+      
+      // Handle age range filtering if either min or max is specified
+      if (ageRangeMin !== undefined || ageRangeMax !== undefined) {
+        const searchMinAge = ageRangeMin !== undefined ? ageRangeMin : 0;
+        const searchMaxAge = ageRangeMax !== undefined ? ageRangeMax : 120; // Large value if not specified
+        
+        console.log(`Searching for age range: ${searchMinAge} to ${searchMaxAge}`);
+        
+        results = results.filter(obs => {
+          if (!obs.person) return false;
+          
+          // Get person's age range - if ageRangeMax isn't set, use min value as both min and max
+          const personMinAge = obs.person.ageRangeMin !== undefined ? obs.person.ageRangeMin : -1;
+          const personMaxAge = obs.person.ageRangeMax !== undefined ? obs.person.ageRangeMax : 
+                              (obs.person.ageRangeMin !== undefined ? obs.person.ageRangeMin : -1);
+          
+          // If we don't have age information for this person, no match
+          if (personMinAge === -1 || personMaxAge === -1) return false;
+          
+          console.log(`Comparing person age range: ${personMinAge}-${personMaxAge}`);
+          
+          // Check if there's any overlap between the age ranges
+          // For a range to overlap, it's NOT the case that one ends before other starts
+          const ageRangeMatch = !(
+            (personMaxAge < searchMinAge) || 
+            (personMinAge > searchMaxAge)
+          );
+          
+          console.log(`  Age range match: ${ageRangeMatch}`);
+          return ageRangeMatch;
         });
       }
       
