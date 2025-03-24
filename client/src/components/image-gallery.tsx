@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { Camera, X, Upload, Trash2, Info, MapPin } from "lucide-react";
+import { Camera, X, Upload, Trash2, Info, MapPin, ExternalLink } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { LocationMap } from "./ui/map";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -241,9 +241,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                               variant="secondary"
                               className="bg-black/70 hover:bg-black/90 text-white text-xs px-2 py-1 h-auto"
                               onClick={() => {
-                                const { latitude, longitude } = image.metadata;
-                                if (latitude && longitude) {
-                                  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+                                if (image.metadata?.latitude && image.metadata?.longitude) {
+                                  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${image.metadata.latitude},${image.metadata.longitude}`;
                                   window.open(googleMapsUrl, "_blank");
                                 }
                               }}
