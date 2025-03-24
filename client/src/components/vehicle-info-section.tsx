@@ -106,7 +106,18 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border max-h-[200px] overflow-y-auto">
                     {/* Show placeholder and unknown options */}
-                    {vehicleYearOptions.slice(0, 2).map((option) => (
+                    <SelectItem key={vehicleYearOptions[0].value} value={vehicleYearOptions[0].value}>
+                      {vehicleYearOptions[0].label}
+                    </SelectItem>
+                    <SelectItem key={vehicleYearOptions[1].value} value={vehicleYearOptions[1].value}>
+                      {vehicleYearOptions[1].label}
+                    </SelectItem>
+                    
+                    {/* Show separator */}
+                    <Separator className="my-1" />
+                    
+                    {/* Show all year options in descending order (newest first) */}
+                    {vehicleYearOptions.slice(2, -2).map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -116,16 +127,6 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                     <SelectItem key="pre1950" value="pre1950">
                       Pre 1950
                     </SelectItem>
-                    
-                    {/* Show separator */}
-                    <Separator className="my-1" />
-                    
-                    {/* Show all year options */}
-                    {vehicleYearOptions.slice(3, -1).map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -160,21 +161,27 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border max-h-[200px] overflow-y-auto">
                     {/* Show placeholder and unknown options */}
-                    {vehicleYearOptions.slice(0, 2).map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem key={vehicleYearOptions[0].value} value={vehicleYearOptions[0].value}>
+                      {vehicleYearOptions[0].label}
+                    </SelectItem>
+                    <SelectItem key={vehicleYearOptions[1].value} value={vehicleYearOptions[1].value}>
+                      {vehicleYearOptions[1].label}
+                    </SelectItem>
                     
                     {/* Show separator */}
                     <Separator className="my-1" />
                     
-                    {/* Show all year options */}
-                    {vehicleYearOptions.slice(3, -1).map((option) => (
+                    {/* Show all year options in descending order (newest first) */}
+                    {vehicleYearOptions.slice(2, -2).map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
+                    
+                    {/* Show pre-1950 option */}
+                    <SelectItem key="pre1950" value="pre1950">
+                      Pre 1950
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
