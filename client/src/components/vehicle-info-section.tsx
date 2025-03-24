@@ -18,11 +18,8 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
   const [isExpanded, setIsExpanded] = useState(true);
 
   const handleChange = (field: keyof VehicleInfo, value: any) => {
-    // Don't save placeholder values to the actual data
-    const newValue = value === "placeholder" ? "" : value;
-    // Create a completely new object to avoid React not detecting the change
     const newVehicle = { ...vehicle } as VehicleInfo;
-    newVehicle[field] = newValue;
+    newVehicle[field] = value;
     onChange(newVehicle);
   };
 
@@ -47,7 +44,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="vehicleMake" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="vehicleMake" className="block text-xs font-medium mb-1">
                 Make
               </Label>
               <Input
@@ -60,7 +57,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
               />
             </div>
             <div>
-              <Label htmlFor="vehicleModel" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="vehicleModel" className="block text-xs font-medium mb-1">
                 Model
               </Label>
               <Input
@@ -75,12 +72,12 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
           </div>
 
           <div>
-            <Label className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label className="block text-xs font-medium mb-1">
               Year Range
             </Label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="vehicleYearMin" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                <Label htmlFor="vehicleYearMin" className="block text-xs font-medium mb-1">
                   Minimum Year
                 </Label>
                 <Select
@@ -107,25 +104,25 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                   >
                     <SelectValue placeholder="Min year" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px] overflow-y-auto">
+                  <SelectContent className="bg-popover border border-border max-h-[200px] overflow-y-auto">
                     {/* Show placeholder and unknown options */}
                     {vehicleYearOptions.slice(0, 2).map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
                     
                     {/* Show pre-1950 option */}
-                    <SelectItem key="pre1950" value="pre1950" className="text-white">
+                    <SelectItem key="pre1950" value="pre1950">
                       Pre 1950
                     </SelectItem>
                     
                     {/* Show separator */}
-                    <Separator className="my-1 bg-[#3A3A3A]" />
+                    <Separator className="my-1" />
                     
                     {/* Show all year options */}
                     {vehicleYearOptions.slice(3, -1).map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -134,7 +131,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
               </div>
               
               <div>
-                <Label htmlFor="vehicleYearMax" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                <Label htmlFor="vehicleYearMax" className="block text-xs font-medium mb-1">
                   Maximum Year
                 </Label>
                 <Select
@@ -161,20 +158,20 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                   >
                     <SelectValue placeholder="Max year" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px] overflow-y-auto">
+                  <SelectContent className="bg-popover border border-border max-h-[200px] overflow-y-auto">
                     {/* Show placeholder and unknown options */}
                     {vehicleYearOptions.slice(0, 2).map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
                     
                     {/* Show separator */}
-                    <Separator className="my-1 bg-[#3A3A3A]" />
+                    <Separator className="my-1" />
                     
                     {/* Show all year options */}
                     {vehicleYearOptions.slice(3, -1).map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -186,7 +183,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
             
           <div>
             <div>
-              <Label htmlFor="vehicleColor" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="vehicleColor" className="block text-xs font-medium mb-1">
                 Color
               </Label>
               <Select
@@ -199,9 +196,9 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
                 >
                   <SelectValue placeholder="Select color" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                <SelectContent className="bg-popover border border-border">
                   {vehicleColorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}

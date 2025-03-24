@@ -24,7 +24,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
   };
 
   return (
-    <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-md border border-[#3A3A3A]">
+    <div className="bg-card rounded-lg p-4 shadow-md border border-border">
       <button
         type="button"
         className="w-full flex justify-between items-center mb-2"
