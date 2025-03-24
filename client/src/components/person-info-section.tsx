@@ -119,7 +119,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personHeightMax"
-                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   >
                     <SelectValue placeholder="Max height" />
                   </SelectTrigger>
@@ -167,7 +167,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personBuildPrimary"
-                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   >
                     <SelectValue placeholder="Primary build" />
                   </SelectTrigger>
@@ -204,7 +204,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personBuildSecondary"
-                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   >
                     <SelectValue placeholder="Secondary build" />
                   </SelectTrigger>
@@ -231,7 +231,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               >
                 <SelectTrigger
                   id="hairColor"
-                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                 >
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
@@ -254,7 +254,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               >
                 <SelectTrigger
                   id="eyeColor"
-                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                 >
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
@@ -277,7 +277,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               >
                 <SelectTrigger
                   id="skinTone"
-                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                 >
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
