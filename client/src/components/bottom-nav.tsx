@@ -17,7 +17,7 @@ export function BottomNav() {
       
       <button 
         onClick={() => navigate("/search")}
-        className={`flex flex-col items-center justify-center w-24 h-full ${location === "/search" ? "text-[#0F52BA]" : "text-[#8A8A8A]"}`}
+        className={`flex flex-col items-center justify-center w-24 h-full ${location === "/search" ? "text-primary" : "text-muted-foreground"}`}
       >
         <Search className="h-6 w-6" />
         <span className="text-xs mt-1">Search</span>

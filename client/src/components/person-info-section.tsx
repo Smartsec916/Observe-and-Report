@@ -29,9 +29,9 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
       >
         <h2 className="text-md font-medium">Person Information</h2>
         {isExpanded ? (
-          <ChevronUp className="h-5 w-5 text-[#0F52BA]" />
+          <ChevronUp className="h-5 w-5 text-primary" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-[#0F52BA]" />
+          <ChevronDown className="h-5 w-5 text-primary" />
         )}
       </button>
 
