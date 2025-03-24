@@ -308,18 +308,40 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
           </div>
 
           {/* Contact Information */}
-          <div>
+          <div className="space-y-1">
             <Label htmlFor="address" className="block text-xs font-medium mb-1">
               Address
             </Label>
-            <Input
-              type="text"
-              id="address"
-              placeholder="Enter address"
-              value={person.address || ""}
-              onChange={(e) => handleChange("address", e.target.value)}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-            />
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                id="address"
+                placeholder="Enter address"
+                value={person.address || ""}
+                onChange={(e) => handleChange("address", e.target.value)}
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+              
+              {person.address && (
+                <button
+                  type="button"
+                  className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium flex items-center"
+                  onClick={() => {
+                    // Open Google Maps with the address
+                    if (person.address) {
+                      const encodedAddress = encodeURIComponent(person.address);
+                      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                      window.open(googleMapsUrl, "_blank");
+                    }
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                  </svg>
+                  Map
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -352,18 +374,40 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
           </div>
 
           {/* Work Information */}
-          <div>
+          <div className="space-y-1">
             <Label htmlFor="workAddress" className="block text-xs font-medium mb-1">
               Work Address
             </Label>
-            <Input
-              type="text"
-              id="workAddress"
-              placeholder="Enter work address"
-              value={person.workAddress || ""}
-              onChange={(e) => handleChange("workAddress", e.target.value)}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-            />
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                id="workAddress"
+                placeholder="Enter work address"
+                value={person.workAddress || ""}
+                onChange={(e) => handleChange("workAddress", e.target.value)}
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+              
+              {person.workAddress && (
+                <button
+                  type="button"
+                  className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium flex items-center"
+                  onClick={() => {
+                    // Open Google Maps with the work address
+                    if (person.workAddress) {
+                      const encodedAddress = encodeURIComponent(person.workAddress);
+                      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                      window.open(googleMapsUrl, "_blank");
+                    }
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                  </svg>
+                  Map
+                </button>
+              )}
+            </div>
           </div>
 
           <div>

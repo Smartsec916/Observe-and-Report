@@ -5,8 +5,10 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { Camera, X, Upload, Trash2, Info } from "lucide-react";
+import { Camera, X, Upload, Trash2, Info, MapPin } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
+import { LocationMap } from "./ui/map";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface ImageGalleryProps {
   images: ImageInfo[];
@@ -154,52 +156,113 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
               <Dialog>
                 <DialogTrigger asChild>
                   <div className="aspect-square rounded-md overflow-hidden border border-gray-700 cursor-pointer">
-                    <img
-                      src={image.url}
-                      alt={image.description || `Image ${index + 1}`}
-                      className="h-full w-full object-cover"
-                    />
+                    <div className="relative h-full w-full">
+                      <img
+                        src={image.url}
+                        alt={image.description || `Image ${index + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                      {/* Show location indicator on thumbnail if GPS data exists */}
+                      {image.metadata?.latitude && image.metadata?.longitude && (
+                        <div className="absolute bottom-1 right-1 bg-black/70 rounded-full p-1">
+                          <MapPin className="h-3 w-3 text-green-400" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </DialogTrigger>
                 
                 <DialogContent className="sm:max-w-xl p-1 bg-black">
-                  {/* Full image view */}
-                  <div className="relative">
-                    <img 
-                      src={image.url} 
-                      alt={image.description || "Observation image"} 
-                      className="w-full h-auto object-contain max-h-[70vh]" 
-                    />
-                    
-                    {/* Action buttons */}
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="rounded-full h-8 w-8 p-0 bg-black/50"
+                  {/* Tabs for Image and Map */}
+                  <Tabs defaultValue="image" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-1">
+                      <TabsTrigger value="image">Image</TabsTrigger>
+                      <TabsTrigger 
+                        value="map" 
+                        disabled={!(image.metadata?.latitude && image.metadata?.longitude)}
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
-                      
-                      {!readOnly && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="rounded-full h-8 w-8 p-0 bg-black/50 text-red-500 border-red-500"
-                          onClick={() => handleDeleteImage(image.url)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                        <MapPin className="h-3 w-3 mr-1" />
+                        Location
+                      </TabsTrigger>
+                    </TabsList>
                     
-                    {/* Image description */}
-                    {image.description && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-white text-sm">
-                        {image.description}
+                    <TabsContent value="image" className="mt-0 p-0">
+                      {/* Full image view */}
+                      <div className="relative">
+                        <img 
+                          src={image.url} 
+                          alt={image.description || "Observation image"} 
+                          className="w-full h-auto object-contain max-h-[70vh]" 
+                        />
+                        
+                        {/* Action buttons */}
+                        <div className="absolute top-2 right-2 flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="rounded-full h-8 w-8 p-0 bg-black/50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                          
+                          {!readOnly && (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="rounded-full h-8 w-8 p-0 bg-black/50 text-red-500 border-red-500"
+                              onClick={() => handleDeleteImage(image.url)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* Image description */}
+                        {image.description && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-white text-sm">
+                            {image.description}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="map" className="mt-0 p-0">
+                      {/* Map view */}
+                      {image.metadata?.latitude && image.metadata?.longitude ? (
+                        <div className="relative">
+                          <LocationMap 
+                            latitude={image.metadata.latitude} 
+                            longitude={image.metadata.longitude}
+                            height="300px"
+                          />
+                          <div className="absolute top-2 right-2 z-50">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="bg-black/70 hover:bg-black/90 text-white text-xs px-2 py-1 h-auto"
+                              onClick={() => {
+                                const { latitude, longitude } = image.metadata;
+                                if (latitude && longitude) {
+                                  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+                                  window.open(googleMapsUrl, "_blank");
+                                }
+                              }}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Open in Google Maps
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-[300px] flex items-center justify-center bg-gray-900 rounded-md">
+                          <div className="text-center p-4">
+                            <MapPin className="h-10 w-10 text-gray-500 mx-auto mb-2" />
+                            <p className="text-gray-400">No location data available</p>
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                   
                   {/* Metadata section */}
                   <div className="mt-4 p-3 border border-gray-700 rounded-md bg-gray-900/50">
@@ -225,7 +288,12 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                 </div>
                               )}
                               
-
+                              {(image.metadata.latitude && image.metadata.longitude) && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">GPS:</span>
+                                  <span className="text-right">{image.metadata.latitude}, {image.metadata.longitude}</span>
+                                </div>
+                              )}
                               
                               {image.metadata.gpsCoordinates && (
                                 <div className="flex justify-between">
@@ -274,8 +342,6 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                               <span className="text-gray-400">No metadata found in image</span>
                             </div>
                           )}
-                          
-                          {/* Removed location information notice as requested */}
                         </div>
                       </ScrollArea>
                     )}
@@ -285,23 +351,57 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
               
               {/* View MetaData button below image */}
               {image.metadata && Object.keys(image.metadata).length > 0 && (
-                <div className="text-xs flex items-center justify-center gap-1 py-1 h-6 text-blue-400 w-full cursor-pointer"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowMetadata(true);
-                    
-                    // Find the right dialog trigger - get all image containers first
-                    const imageContainers = document.querySelectorAll('.aspect-square.rounded-md');
-                    // Then click on the one at this index
-                    if (imageContainers[index]) {
-                      imageContainers[index].dispatchEvent(
-                        new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
-                      );
-                    }
-                  }}
-                >
-                  <Info className="h-3 w-3" />
-                  <span>View MetaData</span>
+                <div className="flex text-xs">
+                  <div 
+                    className="flex-1 flex items-center justify-center gap-1 py-1 h-6 text-blue-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowMetadata(true);
+                      
+                      // Find the right dialog trigger - get all image containers first
+                      const imageContainers = document.querySelectorAll('.aspect-square.rounded-md');
+                      // Then click on the one at this index
+                      if (imageContainers[index]) {
+                        imageContainers[index].dispatchEvent(
+                          new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
+                        );
+                      }
+                    }}
+                  >
+                    <Info className="h-3 w-3" />
+                    <span>View MetaData</span>
+                  </div>
+                  
+                  {/* Show map icon if location data is available */}
+                  {image.metadata.latitude && image.metadata.longitude && (
+                    <div 
+                      className="flex-1 flex items-center justify-center gap-1 py-1 h-6 text-green-400 cursor-pointer border-l border-border/30"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        // Open the image dialog and switch to map tab
+                        const imageContainers = document.querySelectorAll('.aspect-square.rounded-md');
+                        if (imageContainers[index]) {
+                          imageContainers[index].dispatchEvent(
+                            new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
+                          );
+                          
+                          // Small delay to ensure dialog opens before clicking tab
+                          setTimeout(() => {
+                            // Find and click the map tab
+                            const mapTab = document.querySelector('[value="map"]');
+                            if (mapTab) {
+                              mapTab.dispatchEvent(
+                                new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
+                              );
+                            }
+                          }, 50);
+                        }
+                      }}
+                    >
+                      <MapPin className="h-3 w-3" />
+                      <span>View Location</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
