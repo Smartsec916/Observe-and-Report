@@ -1,10 +1,11 @@
 import { z } from "zod";
-import { personSchema, vehicleSchema, imageSchema, imageMetadataSchema } from "@shared/schema";
+import { personSchema, vehicleSchema, imageSchema, imageMetadataSchema, additionalNoteSchema } from "@shared/schema";
 
 export type PersonInfo = z.infer<typeof personSchema>;
 export type VehicleInfo = z.infer<typeof vehicleSchema>;
 export type ImageMetadata = z.infer<typeof imageMetadataSchema>;
 export type ImageInfo = z.infer<typeof imageSchema>;
+export type AdditionalNote = z.infer<typeof additionalNoteSchema>;
 
 export interface Observation {
   id: number;
@@ -13,6 +14,7 @@ export interface Observation {
   person: PersonInfo;
   vehicle: VehicleInfo;
   notes?: string;
+  additionalNotes?: AdditionalNote[];
   createdAt: Date;
   images?: ImageInfo[];
 }

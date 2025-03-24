@@ -59,6 +59,14 @@ export const imageSchema = z.object({
   metadata: imageMetadataSchema.optional()
 });
 
+// Additional notes schema
+export const additionalNoteSchema = z.object({
+  date: z.string(),
+  time: z.string().optional(),
+  content: z.string(),
+  createdAt: z.string().optional()
+});
+
 // Observation schema for database
 export const observations = pgTable("observations", {
   id: serial("id").primaryKey(),
@@ -67,6 +75,7 @@ export const observations = pgTable("observations", {
   person: json("person").$type<z.infer<typeof personSchema>>(),
   vehicle: json("vehicle").$type<z.infer<typeof vehicleSchema>>(),
   notes: text("notes"),
+  additionalNotes: json("additional_notes").$type<z.infer<typeof additionalNoteSchema>[]>(),
   images: json("images").$type<z.infer<typeof imageSchema>[]>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -78,6 +87,7 @@ export const insertObservationSchema = createInsertSchema(observations).pick({
   person: true,
   vehicle: true,
   notes: true,
+  additionalNotes: true,
   images: true,
 });
 
@@ -88,6 +98,7 @@ export const observationInputSchema = z.object({
   person: personSchema,
   vehicle: vehicleSchema,
   notes: z.string().optional(),
+  additionalNotes: z.array(additionalNoteSchema).optional().default([]),
   images: z.array(imageSchema).optional().default([]),
 });
 
@@ -97,3 +108,4 @@ export type PersonInfo = z.infer<typeof personSchema>;
 export type VehicleInfo = z.infer<typeof vehicleSchema>;
 export type ImageInfo = z.infer<typeof imageSchema>;
 export type ImageMetadata = z.infer<typeof imageMetadataSchema>;
+export type AdditionalNote = z.infer<typeof additionalNoteSchema>;

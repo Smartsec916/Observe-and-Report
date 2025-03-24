@@ -31,8 +31,10 @@ export default function InputPage({ id }: InputPageProps = {}) {
   const [person, setPerson] = useState<PersonInfo>({});
   const [vehicle, setVehicle] = useState<VehicleInfo>({});
   const [notes, setNotes] = useState("");
+  const [additionalNotes, setAdditionalNotes] = useState<AdditionalNote[]>([]);
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [notesExpanded, setNotesExpanded] = useState(true);
+  const [additionalNotesExpanded, setAdditionalNotesExpanded] = useState(true);
 
   // Fetch observation data if in edit mode
   const { data: existingObservation, isLoading } = useQuery({
@@ -50,6 +52,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
       setPerson(existingObservation.person ?? {});
       setVehicle(existingObservation.vehicle ?? {});
       setNotes(existingObservation.notes ?? "");
+      setAdditionalNotes(existingObservation.additionalNotes ?? []);
       setImages(existingObservation.images ?? []);
     }
   }, [existingObservation]);
