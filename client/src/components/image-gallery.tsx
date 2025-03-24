@@ -4,14 +4,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogTrigger, 
-  DialogClose,
-  DialogTitle,
-  DialogDescription 
-} from "./ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "./ui/sheet";
 import { Camera, X, Upload, Trash2, Info, MapPin, ExternalLink } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { LocationMap } from "./ui/map";
@@ -160,8 +161,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
           {images.map((image, index) => (
             <div key={image.url} className="flex flex-col space-y-2">
               {/* Image thumbnail with dialog */}
-              <Dialog>
-                <DialogTrigger asChild>
+              <Sheet>
+                <SheetTrigger asChild>
                   <div className="aspect-square rounded-md overflow-hidden border border-gray-700 cursor-pointer">
                     <div className="relative h-full w-full">
                       <img
@@ -181,25 +182,25 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                       )}
                     </div>
                   </div>
-                </DialogTrigger>
+                </SheetTrigger>
                 
-                <DialogContent 
-                  className="sm:max-w-xl p-0 pt-8 bg-black relative overflow-hidden flex flex-col"
-                  aria-describedby="dialog-description"
+                <SheetContent 
+                  side="bottom" 
+                  className="h-[90vh] p-0 pt-2 bg-black border-t border-gray-700 rounded-t-xl"
                 >
-                  <DialogTitle className="sr-only">Image Viewer</DialogTitle>
-                  <div id="dialog-description" className="sr-only">
-                    View image and metadata details
-                  </div>
-                  {/* The Close button reuses the DialogClose component for better accessibility */}
-                  <DialogClose className="absolute top-1 right-1 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center z-50 border-0 hover:bg-black/70" asChild>
-                    <button aria-label="Close image view">
-                      <X className="h-4 w-4" />
-                    </button>
-                  </DialogClose>
+                  <SheetHeader className="px-4 pt-0 pb-2">
+                    <SheetTitle className="text-sm text-center text-white">
+                      Image Viewer
+                    </SheetTitle>
+                  </SheetHeader>
+                  
+                  <SheetClose className="absolute top-1 right-1 rounded-full h-8 w-8 p-0 bg-black/50 flex items-center justify-center z-50 border-0 hover:bg-black/70">
+                    <X className="h-4 w-4" />
+                  </SheetClose>
+                  
                   {/* Tabs for Image and Map */}
                   <Tabs defaultValue="image" className="w-full flex-1 flex flex-col">
-                    <TabsList className="grid w-full grid-cols-2 mb-1 mx-1">
+                    <TabsList className="grid w-full grid-cols-2 mb-2 mx-auto max-w-[95%]">
                       <TabsTrigger value="image">Image</TabsTrigger>
                       <TabsTrigger 
                         value="map" 
@@ -216,14 +217,11 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                         <img 
                           src={image.url} 
                           alt={image.description || "Observation image"} 
-                          className="w-full h-auto object-contain max-h-[70vh]" 
+                          className="w-full h-auto object-contain max-h-[50vh]" 
                         />
                         
                         {/* Action buttons */}
                         <div className="absolute top-2 right-2 flex gap-2">
-                          {/* Remove the X button since the dialog has built-in close functionality
-                              via the ESC key and clicking outside */}
-                          
                           {!readOnly && (
                             <Button 
                               size="sm" 
@@ -310,7 +308,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                   </Tabs>
                   
                   {/* Metadata section */}
-                  <div className="mt-1 mx-1 p-3 border border-gray-700 rounded-md bg-gray-900/50">
+                  <div className="mt-1 mx-4 p-3 border border-gray-700 rounded-md bg-gray-900/50">
                     <Button 
                       variant="outline"
                       size="sm"
@@ -391,8 +389,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                       </ScrollArea>
                     )}
                   </div>
-                </DialogContent>
-              </Dialog>
+                </SheetContent>
+              </Sheet>
               
               {/* View MetaData button below image */}
               {image.metadata && Object.keys(image.metadata).length > 0 && (
