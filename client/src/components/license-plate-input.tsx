@@ -32,7 +32,7 @@ export function LicensePlateInput({
 
   return (
     <div className={className}>
-      <Label className={`block ${compact ? 'text-xs' : 'text-sm'} font-medium text-[#8A8A8A] mb-1`}>
+      <Label className={`block ${compact ? 'text-xs' : 'text-sm'} font-medium mb-1`}>
         License Plate
       </Label>
       <div className="flex space-x-1 items-center justify-center">
@@ -43,13 +43,13 @@ export function LicensePlateInput({
             onValueChange={(value) => handleChange(index, value)}
           >
             <SelectTrigger
-              className={`${selectWidth} rounded bg-[#3A3A3A] border-0 ${paddingY} text-center text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none ${textSize}`}
+              className={`${selectWidth} rounded bg-card border-0 ${paddingY} text-center text-card-foreground focus:ring-1 focus:ring-primary focus:outline-none ${textSize}`}
             >
               <SelectValue placeholder="?" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px]">
+            <SelectContent className="bg-popover border border-border max-h-[200px]">
               {licensePlateOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value} className="text-white">
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
               ))}
