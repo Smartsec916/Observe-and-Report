@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { ImageInfo, Observation } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -230,20 +230,46 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                       {/* Map view */}
                       {image.metadata?.latitude && image.metadata?.longitude ? (
                         <div className="relative">
-                          <LocationMap 
-                            latitude={image.metadata.latitude} 
-                            longitude={image.metadata.longitude}
-                            height="300px"
-                          />
+                          {/* Only load the map when this tab is active to save resources */}
+                          <Suspense fallback={
+                            <div className="h-[300px] flex items-center justify-center bg-gray-800">
+                              <div className="text-center">
+                                <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p className="text-gray-400">Loading map...</p>
+                              </div>
+                            </div>
+                          }>
+                            <LocationMap 
+                              latitude={image.metadata.latitude} 
+                              longitude={image.metadata.longitude}
+                              height="300px"
+                            />
+                          </Suspense>
                           <div className="absolute top-2 right-2 z-50">
                             <Button
                               size="sm"
                               variant="secondary"
                               className="bg-black/70 hover:bg-black/90 text-white text-xs px-2 py-1 h-auto"
-                              onClick={() => {
+                              onClick={(e) => {
                                 if (image.metadata?.latitude && image.metadata?.longitude) {
+                                  // Show loading state
+                                  const button = e.currentTarget;
+                                  const originalContent = button.innerHTML;
+                                  button.innerHTML = `<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg> Opening...`;
+
                                   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${image.metadata.latitude},${image.metadata.longitude}`;
                                   window.open(googleMapsUrl, "_blank");
+                                  
+                                  // Restore original content after a short delay
+                                  setTimeout(() => {
+                                    button.innerHTML = originalContent;
+                                  }, 1000);
                                 }
                               }}
                             >
@@ -372,7 +398,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                   </div>
                   
                   {/* Show map icon if location data is available */}
-                  {image.metadata.latitude && image.metadata.longitude && (
+                  {image.metadata?.latitude && image.metadata?.longitude && (
                     <div 
                       className="flex-1 flex items-center justify-center gap-1 py-1 h-6 text-green-400 cursor-pointer border-l border-border/30"
                       onClick={(e) => {
