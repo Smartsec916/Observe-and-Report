@@ -27,13 +27,13 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
     onSearchParamsChange({ ...searchParams, query: e.target.value });
   };
 
-  const handlePersonChange = (field: keyof PersonInfo, value: string) => {
+  const handlePersonChange = (field: keyof PersonInfo, value: string | number | undefined) => {
     // Don't save placeholder values to the search params
     // Create a completely new object to avoid React not detecting the change
     const newPerson = { ...(searchParams.person || {}) } as Partial<PersonInfo>;
     
-    if (value === "placeholder") {
-      // If placeholder is selected, delete the property from the object
+    if (value === "placeholder" || value === undefined) {
+      // If placeholder is selected or value is undefined, delete the property from the object
       delete newPerson[field];
     } else {
       // Otherwise set the value
@@ -274,10 +274,10 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                           placeholder="Min age"
                           min="0"
                           max="120"
-                          value={searchParams.person?.ageRangeMin || ""}
+                          value={searchParams.person?.ageRangeMin !== undefined ? searchParams.person.ageRangeMin : ""}
                           onChange={(e) => {
                             const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
-                            handlePersonChange("ageRangeMin", value as any);
+                            handlePersonChange("ageRangeMin", value);
                           }}
                           className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                         />
@@ -288,10 +288,10 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                           placeholder="Max age"
                           min="0"
                           max="120"
-                          value={searchParams.person?.ageRangeMax || ""}
+                          value={searchParams.person?.ageRangeMax !== undefined ? searchParams.person.ageRangeMax : ""}
                           onChange={(e) => {
                             const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
-                            handlePersonChange("ageRangeMax", value as any);
+                            handlePersonChange("ageRangeMax", value);
                           }}
                           className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                         />
