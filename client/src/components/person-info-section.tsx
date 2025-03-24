@@ -31,6 +31,19 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
       updateFormattedAddress(newPerson);
     }
     
+    // Special handling for age range to ensure min is not greater than max
+    if (field === 'ageRangeMin' && value !== undefined) {
+      // If min age is greater than max age, set max age to min age 
+      if (newPerson.ageRangeMax !== undefined && value > newPerson.ageRangeMax) {
+        newPerson.ageRangeMax = value;
+      }
+    } else if (field === 'ageRangeMax' && value !== undefined) {
+      // If max age is less than min age, set min age to max age
+      if (newPerson.ageRangeMin !== undefined && value < newPerson.ageRangeMin) {
+        newPerson.ageRangeMin = value;
+      }
+    }
+    
     onChange(newPerson);
   };
   

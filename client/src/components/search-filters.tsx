@@ -32,12 +32,12 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
     // Create a completely new object to avoid React not detecting the change
     const newPerson = { ...(searchParams.person || {}) } as Partial<PersonInfo>;
     
-    if (value === "placeholder" || value === undefined) {
-      // If placeholder is selected or value is undefined, delete the property from the object
+    if (value === "placeholder" || value === undefined || value === "") {
+      // If placeholder is selected or value is undefined/empty, delete the property from the object
       delete newPerson[field];
     } else {
-      // Otherwise set the value
-      newPerson[field] = value;
+      // Otherwise set the value - using type assertion to fix TypeScript error
+      newPerson[field] = value as any;
     }
     
     onSearchParamsChange({ 
