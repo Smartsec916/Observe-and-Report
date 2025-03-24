@@ -29,10 +29,17 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
 
   const handlePersonChange = (field: keyof PersonInfo, value: string) => {
     // Don't save placeholder values to the search params
-    const newValue = value === "placeholder" ? undefined : value;
     // Create a completely new object to avoid React not detecting the change
     const newPerson = { ...(searchParams.person || {}) } as Partial<PersonInfo>;
-    newPerson[field] = newValue;
+    
+    if (value === "placeholder") {
+      // If placeholder is selected, delete the property from the object
+      delete newPerson[field];
+    } else {
+      // Otherwise set the value
+      newPerson[field] = value;
+    }
+    
     onSearchParamsChange({ 
       ...searchParams, 
       person: newPerson 
@@ -41,10 +48,17 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
 
   const handleVehicleChange = (field: keyof VehicleInfo, value: any) => {
     // Don't save placeholder values to the search params
-    const newValue = value === "placeholder" ? undefined : value;
     // Create a completely new object to avoid React not detecting the change
     const newVehicle = { ...(searchParams.vehicle || {}) } as Partial<VehicleInfo>;
-    newVehicle[field] = newValue;
+    
+    if (value === "placeholder") {
+      // If placeholder is selected, delete the property from the object
+      delete newVehicle[field];
+    } else {
+      // Otherwise set the value
+      newVehicle[field] = value;
+    }
+    
     onSearchParamsChange({ 
       ...searchParams, 
       vehicle: newVehicle 
