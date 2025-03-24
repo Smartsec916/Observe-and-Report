@@ -126,7 +126,10 @@ export function LocationInfoSection({
                 <Label htmlFor="state">State</Label>
                 <Select
                   value={location.state || ''}
-                  onValueChange={(value) => handleAddressChange('state', value)}
+                  onValueChange={(value) => {
+                    const newValue = value === "placeholder" ? "" : value;
+                    handleAddressChange('state', newValue);
+                  }}
                 >
                   <SelectTrigger id="state">
                     <SelectValue placeholder="State" />

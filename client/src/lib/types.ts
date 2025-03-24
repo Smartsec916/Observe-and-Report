@@ -202,7 +202,7 @@ export const licensePlateOptions = [
 ];
 
 export const stateOptions = [
-  { value: "", label: "Select State" },
+  { value: "placeholder", label: "Select State" },
   { value: "AL", label: "Alabama" },
   { value: "AK", label: "Alaska" },
   { value: "AZ", label: "Arizona" },

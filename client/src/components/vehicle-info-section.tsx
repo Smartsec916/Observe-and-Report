@@ -188,7 +188,7 @@ export function VehicleInfoSection({ vehicle, onChange }: VehicleInfoSectionProp
               </Label>
               <Select
                 value={vehicle.color || ""}
-                onValueChange={(value) => handleChange("color", value)}
+                onValueChange={(value) => handleChange("color", value === "placeholder" ? "" : value)}
               >
                 <SelectTrigger
                   id="vehicleColor"

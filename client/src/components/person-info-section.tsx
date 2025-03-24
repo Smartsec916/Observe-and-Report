@@ -655,7 +655,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                       value={person.state || ""}
                       onValueChange={(value) => {
                         const newPerson = { ...person } as PersonInfo;
-                        newPerson.state = value;
+                        newPerson.state = value === "placeholder" ? "" : value;
                         
                         // Also update the legacy address for compatibility
                         updateFormattedAddress(newPerson);
