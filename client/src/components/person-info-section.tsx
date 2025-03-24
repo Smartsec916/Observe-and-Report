@@ -25,6 +25,12 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
   const handleChange = (field: keyof PersonInfo, value: any) => {
     const newPerson = { ...person } as PersonInfo;
     newPerson[field] = value;
+    
+    // If we're changing an address-related field, update the formatted address
+    if (['streetNumber', 'streetName', 'city', 'state', 'zipCode'].includes(field)) {
+      updateFormattedAddress(newPerson);
+    }
+    
     onChange(newPerson);
   };
   

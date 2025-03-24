@@ -143,6 +143,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           time,
           person,
           vehicle,
+          location,
           notes,
           additionalNotes,
         }),
@@ -232,6 +233,30 @@ export default function InputPage({ id }: InputPageProps = {}) {
         
         {/* Vehicle Information Section */}
         <VehicleInfoSection vehicle={vehicle} onChange={setVehicle} />
+        
+        {/* Location Information Section */}
+        <div className="bg-card rounded-lg p-4 shadow-md border border-border">
+          <button
+            type="button"
+            className="w-full flex justify-between items-center mb-2"
+            onClick={() => setLocationExpanded(!locationExpanded)}
+          >
+            <h2 className="text-md font-medium">Location Information</h2>
+            {locationExpanded ? (
+              <ChevronUp className="h-5 w-5 text-primary" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-primary" />
+            )}
+          </button>
+
+          {locationExpanded && (
+            <LocationInfoSection 
+              location={location} 
+              onChange={setLocation}
+              title="Incident Location"
+            />
+          )}
+        </div>
         
         {/* Notes Section */}
         <div className="bg-card rounded-lg p-4 shadow-md border border-border">
@@ -338,8 +363,6 @@ export default function InputPage({ id }: InputPageProps = {}) {
             </div>
           )}
         </div>
-        
-        {/* Location Information Section removed as requested */}
         
         {/* Image Gallery - Only show if we have an observation ID */}
         {observationId ? (
