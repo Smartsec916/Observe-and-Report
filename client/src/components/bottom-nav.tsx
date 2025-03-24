@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { FilePlus, Search } from "lucide-react";
+import { FilePlus, Search, Database } from "lucide-react";
 
 export function BottomNav() {
   const [location, navigate] = useLocation();
@@ -21,6 +21,14 @@ export function BottomNav() {
       >
         <Search className="h-6 w-6" />
         <span className="text-xs mt-1">Search</span>
+      </button>
+
+      <button 
+        onClick={() => navigate("/data-management")}
+        className={`flex flex-col items-center justify-center w-24 h-full ${location === "/data-management" ? "text-primary" : "text-muted-foreground"}`}
+      >
+        <Database className="h-6 w-6" />
+        <span className="text-xs mt-1">Data</span>
       </button>
     </div>
   );

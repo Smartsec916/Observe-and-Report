@@ -31,7 +31,7 @@ export default function DataManagementPage() {
   });
   
   // Export mutation
-  const exportMutation = useMutation({
+  const exportMutation = useMutation<boolean, Error, number[] | undefined>({
     mutationFn: async (ids?: number[]) => {
       const response = await fetch("/api/observations/export", {
         method: "POST",
@@ -87,7 +87,7 @@ export default function DataManagementPage() {
   });
   
   // Import mutation
-  const importMutation = useMutation({
+  const importMutation = useMutation<{success: boolean; count: number; errors?: string[]}, Error, string>({
     mutationFn: async (data: string) => {
       const response = await fetch("/api/observations/import", {
         method: "POST",
