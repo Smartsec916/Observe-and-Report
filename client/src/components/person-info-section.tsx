@@ -14,12 +14,9 @@ interface PersonInfoSectionProps {
 export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const handleChange = (field: keyof PersonInfo, value: string) => {
-    // Don't save placeholder values to the actual data
-    const newValue = value === "placeholder" ? "" : value;
-    // Create a completely new object to avoid React not detecting the change
+  const handleChange = (field: keyof PersonInfo, value: any) => {
     const newPerson = { ...person } as PersonInfo;
-    newPerson[field] = newValue;
+    newPerson[field] = value;
     onChange(newPerson);
   };
 
@@ -42,7 +39,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
         <div className="space-y-4">
           {/* Name */}
           <div>
-            <Label htmlFor="personName" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label htmlFor="personName" className="block text-xs font-medium mb-1">
               Name
             </Label>
             <Input
@@ -51,18 +48,18 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter name"
               value={person.name || ""}
               onChange={(e) => handleChange("name", e.target.value)}
-              className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
             />
           </div>
 
           {/* Height Range */}
           <div>
-            <Label className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label className="block text-xs font-medium mb-1">
               Height Range
             </Label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="personHeightMin" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                <Label htmlFor="personHeightMin" className="block text-xs font-medium mb-1">
                   Minimum
                 </Label>
                 <Select
@@ -85,13 +82,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personHeightMin"
-                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                   >
                     <SelectValue placeholder="Min height" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                  <SelectContent className="bg-popover border border-border">
                     {heightOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -99,7 +96,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 </Select>
               </div>
               <div>
-                <Label htmlFor="personHeightMax" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                <Label htmlFor="personHeightMax" className="block text-xs font-medium mb-1">
                   Maximum
                 </Label>
                 <Select
@@ -122,13 +119,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personHeightMax"
-                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                   >
                     <SelectValue placeholder="Max height" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                  <SelectContent className="bg-popover border border-border">
                     {heightOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -140,12 +137,12 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
 
           {/* Build Options */}
           <div>
-            <Label className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label className="block text-xs font-medium mb-1">
               Build
             </Label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="personBuildPrimary" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                <Label htmlFor="personBuildPrimary" className="block text-xs font-medium mb-1">
                   Primary
                 </Label>
                 <Select
@@ -170,13 +167,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personBuildPrimary"
-                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                   >
                     <SelectValue placeholder="Primary build" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                  <SelectContent className="bg-popover border border-border">
                     {buildOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -184,7 +181,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 </Select>
               </div>
               <div>
-                <Label htmlFor="personBuildSecondary" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+                <Label htmlFor="personBuildSecondary" className="block text-xs font-medium mb-1">
                   Secondary (optional)
                 </Label>
                 <Select
@@ -207,13 +204,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 >
                   <SelectTrigger
                     id="personBuildSecondary"
-                    className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                   >
                     <SelectValue placeholder="Secondary build" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                  <SelectContent className="bg-popover border border-border">
                     {buildOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-white">
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -225,7 +222,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <Label htmlFor="hairColor" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="hairColor" className="block text-xs font-medium mb-1">
                 Hair Color
               </Label>
               <Select
@@ -234,13 +231,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               >
                 <SelectTrigger
                   id="hairColor"
-                  className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                 >
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                <SelectContent className="bg-popover border border-border">
                   {hairColorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
@@ -248,7 +245,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               </Select>
             </div>
             <div>
-              <Label htmlFor="eyeColor" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="eyeColor" className="block text-xs font-medium mb-1">
                 Eye Color
               </Label>
               <Select
@@ -257,13 +254,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               >
                 <SelectTrigger
                   id="eyeColor"
-                  className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                 >
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                <SelectContent className="bg-popover border border-border">
                   {eyeColorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
@@ -271,7 +268,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               </Select>
             </div>
             <div>
-              <Label htmlFor="skinTone" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="skinTone" className="block text-xs font-medium mb-1">
                 Skin Tone
               </Label>
               <Select
@@ -280,13 +277,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               >
                 <SelectTrigger
                   id="skinTone"
-                  className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
                 >
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A]">
+                <SelectContent className="bg-popover border border-border">
                   {skinToneOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="text-white">
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
@@ -297,7 +294,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
 
           {/* Tattoos */}
           <div>
-            <Label htmlFor="tattoos" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label htmlFor="tattoos" className="block text-xs font-medium mb-1">
               Tattoos
             </Label>
             <Textarea
@@ -306,13 +303,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               value={person.tattoos || ""}
               onChange={(e) => handleChange("tattoos", e.target.value)}
               rows={2}
-              className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
             />
           </div>
 
           {/* Contact Information */}
           <div>
-            <Label htmlFor="address" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label htmlFor="address" className="block text-xs font-medium mb-1">
               Address
             </Label>
             <Input
@@ -321,13 +318,13 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter address"
               value={person.address || ""}
               onChange={(e) => handleChange("address", e.target.value)}
-              className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="phoneNumber" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="phoneNumber" className="block text-xs font-medium mb-1">
                 Phone Number
               </Label>
               <Input
@@ -336,11 +333,11 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 placeholder="Enter phone"
                 value={person.phoneNumber || ""}
                 onChange={(e) => handleChange("phoneNumber", e.target.value)}
-                className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
               />
             </div>
             <div>
-              <Label htmlFor="email" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+              <Label htmlFor="email" className="block text-xs font-medium mb-1">
                 Email
               </Label>
               <Input
@@ -349,14 +346,14 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                 placeholder="Enter email"
                 value={person.email || ""}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
               />
             </div>
           </div>
 
           {/* Work Information */}
           <div>
-            <Label htmlFor="workAddress" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label htmlFor="workAddress" className="block text-xs font-medium mb-1">
               Work Address
             </Label>
             <Input
@@ -365,12 +362,12 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter work address"
               value={person.workAddress || ""}
               onChange={(e) => handleChange("workAddress", e.target.value)}
-              className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
             />
           </div>
 
           <div>
-            <Label htmlFor="workPhone" className="block text-xs font-medium text-[#8A8A8A] mb-1">
+            <Label htmlFor="workPhone" className="block text-xs font-medium mb-1">
               Work Phone
             </Label>
             <Input
@@ -379,7 +376,7 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
               placeholder="Enter work phone"
               value={person.workPhone || ""}
               onChange={(e) => handleChange("workPhone", e.target.value)}
-              className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-3 text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
             />
           </div>
         </div>

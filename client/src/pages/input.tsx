@@ -247,7 +247,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           {isEditMode && (
             <Button
               type="button"
-              className="bg-[#3A3A3A] hover:bg-[#5A5A5A] text-white font-medium px-6 py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-[#5A5A5A] focus:ring-opacity-50 transition-colors flex-1"
+              className="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium px-6 py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50 transition-colors flex-1"
               onClick={handleCancel}
               disabled={isMutating}
             >
@@ -257,7 +257,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           
           <Button
             type="submit"
-            className="bg-[#0F52BA] hover:bg-[#0A3A8C] text-white font-medium px-6 py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:ring-opacity-50 transition-colors flex-1"
+            className="bg-primary hover:bg-primary/80 text-primary-foreground font-medium px-6 py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-[#2979FF] focus:ring-opacity-50 transition-colors flex-1"
             disabled={isMutating}
           >
             {isMutating ? "Saving..." : isEditMode ? "Update Observation" : "Save Observation"}

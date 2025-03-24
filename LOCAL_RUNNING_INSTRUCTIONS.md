@@ -1,45 +1,96 @@
-# Instructions for Running Locally After Export
+# Running the Observation App Locally
 
-After you've exported the application from Replit and extracted it to your local machine, follow these steps to run it:
+This guide provides instructions for running the Observation App locally after downloading it from Replit.
 
-## 1. Edit the package.json file
+## Prerequisites
 
-Open the `package.json` file and locate the "scripts" section. Replace the "start" script with:
+- Node.js (v16 or higher)
+- npm (v7 or higher)
 
-```json
-"scripts": {
-  "start": "cross-env NODE_ENV=production node dist/index.js"
-}
-```
+## Setup Instructions
 
-## 2. Install dependencies
+1. **Clone or download the repository**
 
-Install the dependencies including cross-env:
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Install cross-env package**
+   ```bash
+   npm install cross-env --save-dev
+   ```
+
+4. **Modify package.json**
+   
+   Update the `start` script in your package.json to use cross-env:
+   
+   From:
+   ```json
+   "start": "NODE_ENV=production node dist/index.js"
+   ```
+   
+   To:
+   ```json
+   "start": "cross-env NODE_ENV=production node dist/index.js"
+   ```
+   
+   This ensures compatibility across different operating systems, especially Windows.
+
+5. **Build the application**
+   ```bash
+   npm run build
+   ```
+
+6. **Start the application**
+   ```bash
+   npm start
+   ```
+
+## Development Mode
+
+To run the application in development mode:
 
 ```bash
-npm install
-npm install cross-env --save-dev
+npm run dev
 ```
 
-## 3. Run the application
+## Troubleshooting
 
-```bash
-npm start
+### Common Issues
+
+#### "NODE_ENV not recognized" on Windows
+
+If you see an error related to NODE_ENV not being recognized on Windows, make sure you've installed cross-env and updated your start script as mentioned above.
+
+#### Port Already in Use
+
+If port 5000 is already in use, you can modify the port in server/index.ts:
+
+```typescript
+const PORT = process.env.PORT || 5001; // Change to an available port
 ```
 
-The application should now be running on http://localhost:5000 (or the port specified in your environment).
+#### Missing Permissions for Image Storage
 
-## Common Issues
+The application requires write permissions to store uploaded images. Ensure the uploads directory has the proper permissions.
 
-- If you see an error about `cross-env` not being found, make sure you've installed it using `npm install cross-env --save-dev`
-- Make sure you've also run `npm install` to install all the required dependencies
-- Ensure you have Node.js version 18 or newer installed on your system
+## Mobile Access
 
-## Optional: Build the application before running
+To access the app from a mobile device while running locally:
 
-If you want to rebuild the application:
+1. Ensure your computer and mobile device are on the same network
+2. Find your computer's local IP address (typically starts with 192.168...)
+3. Access the app from your mobile device using: http://[your-computer-ip]:5000
 
-```bash
-npm run build
-npm start
-```
+## Production Deployment
+
+For production deployment, consider:
+
+1. Setting up proper environment variables
+2. Configuring a reverse proxy (like Nginx)
+3. Implementing HTTPS for secure connections
+
+## Additional Resources
+
+For more information about the application architecture and features, please refer to the documentation in the `/docs` directory.
