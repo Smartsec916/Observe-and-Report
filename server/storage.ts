@@ -463,11 +463,14 @@ export class MemStorage implements IStorage {
           // Case 2: Vehicle has year range
           else if (obs.vehicle.yearMin || obs.vehicle.yearMax) {
             const vehicleMinYear = obs.vehicle.yearMin ? parseInt(obs.vehicle.yearMin, 10) : 0;
-            const vehicleMaxYear = obs.vehicle.yearMax ? parseInt(obs.vehicle.yearMax, 10) : vehicleMinYear || 3000;
+            // If yearMax isn't set, use the same year as yearMin for exact year search
+            const vehicleMaxYear = obs.vehicle.yearMax ? parseInt(obs.vehicle.yearMax, 10) : 
+                                  (obs.vehicle.yearMin ? parseInt(obs.vehicle.yearMin, 10) : 3000);
             
             console.log(`Comparing vehicle year range: ${obs.vehicle.yearMin || 'none'}-${obs.vehicle.yearMax || 'none'}`);
             
             // Check if there's any overlap between the ranges - same logic as height
+            // For a range to overlap, it's NOT the case that one ends before the other starts
             vehicleYearMatch = !(
               (vehicleMaxYear < searchMinYear) || 
               (vehicleMinYear > searchMaxYear)

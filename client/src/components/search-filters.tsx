@@ -264,6 +264,41 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                     </div>
                   </div>
                   
+                  {/* Age Range (Min/Max) */}
+                  <div className="mb-2">
+                    <Label className="block text-xs text-[#8A8A8A] mb-1">Age Range</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Input
+                          type="number"
+                          placeholder="Min age"
+                          min="0"
+                          max="120"
+                          value={searchParams.person?.ageRangeMin || ""}
+                          onChange={(e) => {
+                            const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                            handlePersonChange("ageRangeMin", value as any);
+                          }}
+                          className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          type="number"
+                          placeholder="Max age"
+                          min="0"
+                          max="120"
+                          value={searchParams.person?.ageRangeMax || ""}
+                          onChange={(e) => {
+                            const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                            handlePersonChange("ageRangeMax", value as any);
+                          }}
+                          className="w-full rounded bg-[#3A3A3A] border-0 py-2 px-2 text-xs text-white focus:ring-1 focus:ring-[#0F52BA] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <Label className="block text-xs text-[#8A8A8A] mb-1">Hair Color</Label>
