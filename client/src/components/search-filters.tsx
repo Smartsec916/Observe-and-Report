@@ -29,7 +29,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
 
   const handlePersonChange = (field: keyof PersonInfo, value: string) => {
     // Don't save placeholder values to the search params
-    const newValue = value === "placeholder" ? "" : value;
+    const newValue = value === "placeholder" ? undefined : value;
     // Create a completely new object to avoid React not detecting the change
     const newPerson = { ...(searchParams.person || {}) } as Partial<PersonInfo>;
     newPerson[field] = newValue;
@@ -41,7 +41,7 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
 
   const handleVehicleChange = (field: keyof VehicleInfo, value: any) => {
     // Don't save placeholder values to the search params
-    const newValue = value === "placeholder" ? "" : value;
+    const newValue = value === "placeholder" ? undefined : value;
     // Create a completely new object to avoid React not detecting the change
     const newVehicle = { ...(searchParams.vehicle || {}) } as Partial<VehicleInfo>;
     newVehicle[field] = newValue;
@@ -335,12 +335,28 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                             <SelectValue placeholder="Minimum year" />
                           </SelectTrigger>
                           <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px]">
-                            <SelectItem value="pre1950" className="text-white">Pre 1950</SelectItem>
-                            {vehicleYearOptions.slice(3, -1).map((option) => (
+                            {/* Show placeholder and unknown options */}
+                            <SelectItem key={vehicleYearOptions[0].value} value={vehicleYearOptions[0].value} className="text-white">
+                              {vehicleYearOptions[0].label}
+                            </SelectItem>
+                            <SelectItem key={vehicleYearOptions[1].value} value={vehicleYearOptions[1].value} className="text-white">
+                              {vehicleYearOptions[1].label}
+                            </SelectItem>
+                            
+                            {/* Show separator */}
+                            <div className="h-px my-1 bg-[#3A3A3A]"></div>
+                            
+                            {/* Show all year options in descending order (newest first) */}
+                            {vehicleYearOptions.slice(2, -2).map((option) => (
                               <SelectItem key={option.value} value={option.value} className="text-white">
                                 {option.label}
                               </SelectItem>
                             ))}
+                            
+                            {/* Show pre-1950 option */}
+                            <SelectItem key="pre1950" value="pre1950" className="text-white">
+                              Pre 1950
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -355,11 +371,28 @@ export function SearchFilters({ searchParams, onSearchParamsChange, onSubmit }: 
                             <SelectValue placeholder="Maximum year" />
                           </SelectTrigger>
                           <SelectContent className="bg-[#1E1E1E] border border-[#3A3A3A] max-h-[200px]">
-                            {vehicleYearOptions.slice(3, -1).map((option) => (
+                            {/* Show placeholder and unknown options */}
+                            <SelectItem key={vehicleYearOptions[0].value} value={vehicleYearOptions[0].value} className="text-white">
+                              {vehicleYearOptions[0].label}
+                            </SelectItem>
+                            <SelectItem key={vehicleYearOptions[1].value} value={vehicleYearOptions[1].value} className="text-white">
+                              {vehicleYearOptions[1].label}
+                            </SelectItem>
+                            
+                            {/* Show separator */}
+                            <div className="h-px my-1 bg-[#3A3A3A]"></div>
+                            
+                            {/* Show all year options in descending order (newest first) */}
+                            {vehicleYearOptions.slice(2, -2).map((option) => (
                               <SelectItem key={option.value} value={option.value} className="text-white">
                                 {option.label}
                               </SelectItem>
                             ))}
+                            
+                            {/* Show pre-1950 option */}
+                            <SelectItem key="pre1950" value="pre1950" className="text-white">
+                              Pre 1950
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
