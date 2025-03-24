@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Download, Upload, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Download, Upload, AlertTriangle, CheckCircle2, Mail, Share2 } from "lucide-react";
 import { Observation } from "@/lib/types";
 
 export default function DataManagementPage() {
@@ -136,9 +136,152 @@ export default function DataManagementPage() {
     },
   });
   
+  // Check if Web Share API is available
+  const isWebShareAvailable = typeof navigator !== 'undefined' && !!navigator.share;
+
+  // Email sharing mutation
+  const emailExportMutation = useMutation<boolean, Error, number[] | undefined>({
+    mutationFn: async (ids?: number[]) => {
+      const response = await fetch("/api/observations/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Export failed");
+      }
+      
+      // Get the blob and convert to base64
+      const blob = await response.blob();
+      
+      // Get the suggested filename from Content-Disposition
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = "observations.json";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      // Create email with attachment using mailto
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      
+      reader.onload = () => {
+        const base64data = reader.result?.toString().split(',')[1];
+        
+        // Create a mailto link with the attachment
+        // Not all email clients support attachments via mailto, 
+        // but this will work on many mobile devices
+        const subject = encodeURIComponent("Observation Data Export");
+        const body = encodeURIComponent(
+          "Please find attached the exported observation data.\n\n" +
+          "Note: This file contains sensitive information that is encrypted."
+        );
+        
+        // Create and click a temporary link to open the default email client
+        const mailtoUrl = `mailto:?subject=${subject}&body=${body}&attachment=${filename}`;
+        window.open(mailtoUrl);
+      };
+      
+      return true;
+    },
+    onError: (error) => {
+      toast({
+        title: "Email Export Failed",
+        description: error.message || "There was an error preparing the data for email.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email Prepared",
+        description: "Your email client should be opening with the data attached.",
+      });
+    },
+  });
+
   // Handle export button click
   const handleExportAll = () => {
     exportMutation.mutate(undefined);
+  };
+  
+  // Handle email export button click
+  const handleEmailExport = () => {
+    emailExportMutation.mutate(undefined);
+  };
+  
+  // Web Share API mutation
+  const shareExportMutation = useMutation<boolean, Error, number[] | undefined>({
+    mutationFn: async (ids?: number[]) => {
+      const response = await fetch("/api/observations/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Export failed");
+      }
+      
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Get the suggested filename from the Content-Disposition header
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = "observations.json";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      // Create a File object from the blob
+      const file = new File([blob], filename, { type: 'application/json' });
+      
+      // Share the file using Web Share API
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Observation Data Export',
+          text: 'Exported observation data',
+          files: [file]
+        }).catch(err => {
+          console.error('Share failed:', err);
+          throw new Error('Sharing failed. Try another sharing method.');
+        });
+      } else {
+        throw new Error('Web Share API is not supported on this device');
+      }
+      
+      return true;
+    },
+    onError: (error) => {
+      toast({
+        title: "Share Failed",
+        description: error.message || "There was an error sharing your data.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sharing Complete",
+        description: "Your data has been shared successfully."
+      });
+    },
+  });
+  
+  // Handle share button click
+  const handleShareExport = () => {
+    shareExportMutation.mutate(undefined);
   };
   
   // Handle file selection for import
@@ -202,15 +345,39 @@ export default function DataManagementPage() {
                 </AlertDescription>
               </Alert>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-2">
               <Button 
                 onClick={handleExportAll}
-                disabled={exportMutation.isPending || observations.length === 0}
+                disabled={exportMutation.isPending || emailExportMutation.isPending || shareExportMutation.isPending || observations.length === 0}
                 className="w-full"
               >
-                {exportMutation.isPending ? "Exporting..." : "Export All Observations"}
+                {exportMutation.isPending ? "Exporting..." : "Download File"}
                 <Download className="ml-2 h-4 w-4" />
               </Button>
+              
+              <div className="grid grid-cols-2 gap-2 w-full">
+                <Button 
+                  onClick={handleEmailExport}
+                  disabled={emailExportMutation.isPending || exportMutation.isPending || shareExportMutation.isPending || observations.length === 0}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {emailExportMutation.isPending ? "Preparing..." : "Email Export"}
+                  <Mail className="ml-2 h-4 w-4" />
+                </Button>
+                
+                {isWebShareAvailable && (
+                  <Button 
+                    onClick={handleShareExport}
+                    disabled={shareExportMutation.isPending || exportMutation.isPending || emailExportMutation.isPending || observations.length === 0}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {shareExportMutation.isPending ? "Sharing..." : "Share File"}
+                    <Share2 className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </CardFooter>
           </Card>
         </TabsContent>
