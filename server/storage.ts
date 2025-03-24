@@ -182,7 +182,10 @@ export class MemStorage implements IStorage {
   // Use the shared height conversion methods instead of private methods
 
   async searchObservations(searchParams: SearchParams): Promise<Observation[]> {
-    let results = Array.from(this.observations.values());
+    // Get all observations and decrypt sensitive fields for searching
+    let results = Array.from(this.observations.values()).map(obs => 
+      decryptSensitiveFields(obs, SENSITIVE_FIELDS)
+    );
 
     // Text search across all fields
     if (searchParams.query) {
@@ -190,6 +193,8 @@ export class MemStorage implements IStorage {
       results = results.filter(obs => {
         const person = obs.person || {};
         const vehicle = obs.vehicle || {};
+        const notes = obs.notes || '';
+        const additionalNotes = obs.additionalNotes || [];
         
         // Check person fields
         const personMatch = Object.values(person).some(value => 
@@ -210,9 +215,15 @@ export class MemStorage implements IStorage {
           }
         }
         
-        // Additional locations functionality removed
+        // Check notes
+        const notesMatch = notes.toLowerCase().includes(query);
         
-        return personMatch || vehicleMatch;
+        // Check additional notes
+        const additionalNotesMatch = additionalNotes.some(note => 
+          note.content && note.content.toLowerCase().includes(query)
+        );
+        
+        return personMatch || vehicleMatch || notesMatch || additionalNotesMatch;
       });
     }
 
