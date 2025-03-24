@@ -37,19 +37,188 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
 
       {isExpanded && (
         <div className="space-y-4">
-          {/* Name */}
-          <div>
-            <Label htmlFor="personName" className="block text-xs font-medium mb-1">
-              Name
-            </Label>
-            <Input
-              type="text"
-              id="personName"
-              placeholder="Enter name"
-              value={person.name || ""}
-              onChange={(e) => handleChange("name", e.target.value)}
-              className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-            />
+          {/* Name Fields */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="personFirstName" className="block text-xs font-medium mb-1">
+                First Name
+              </Label>
+              <Input
+                type="text"
+                id="personFirstName"
+                placeholder="First name"
+                value={person.firstName || ""}
+                onChange={(e) => {
+                  const newPerson = { ...person } as PersonInfo;
+                  newPerson.firstName = e.target.value;
+                  
+                  // Update legacy name field for backward compatibility
+                  const lastName = person.lastName || "";
+                  const middleName = person.middleName ? ` ${person.middleName} ` : " ";
+                  newPerson.name = e.target.value + (e.target.value && lastName ? middleName : "") + lastName;
+                  
+                  onChange(newPerson);
+                }}
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <Label htmlFor="personMiddleName" className="block text-xs font-medium mb-1">
+                Middle Name
+              </Label>
+              <Input
+                type="text"
+                id="personMiddleName"
+                placeholder="Middle name"
+                value={person.middleName || ""}
+                onChange={(e) => {
+                  const newPerson = { ...person } as PersonInfo;
+                  newPerson.middleName = e.target.value;
+                  
+                  // Update legacy name field for backward compatibility
+                  const firstName = person.firstName || "";
+                  const lastName = person.lastName || "";
+                  if (firstName || lastName) {
+                    newPerson.name = firstName + (e.target.value ? ` ${e.target.value} ` : " ") + lastName;
+                  }
+                  
+                  onChange(newPerson);
+                }}
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <Label htmlFor="personLastName" className="block text-xs font-medium mb-1">
+                Last Name
+              </Label>
+              <Input
+                type="text"
+                id="personLastName"
+                placeholder="Last name"
+                value={person.lastName || ""}
+                onChange={(e) => {
+                  const newPerson = { ...person } as PersonInfo;
+                  newPerson.lastName = e.target.value;
+                  
+                  // Update legacy name field for backward compatibility
+                  const firstName = person.firstName || "";
+                  const middleName = person.middleName ? ` ${person.middleName} ` : " ";
+                  newPerson.name = firstName + (firstName && e.target.value ? middleName : "") + e.target.value;
+                  
+                  onChange(newPerson);
+                }}
+                className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+          </div>
+          
+          {/* Age Range and Date of Birth */}
+          <div className="space-y-3">
+            <div>
+              <Label className="block text-xs font-medium mb-1">
+                Age Range
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="ageRangeMin" className="block text-xs font-medium mb-1">
+                    Minimum Age
+                  </Label>
+                  <Input
+                    type="number"
+                    id="ageRangeMin"
+                    placeholder="Min age"
+                    min={0}
+                    max={120}
+                    value={person.ageRangeMin === undefined ? "" : person.ageRangeMin}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined;
+                      handleChange("ageRangeMin", value);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ageRangeMax" className="block text-xs font-medium mb-1">
+                    Maximum Age
+                  </Label>
+                  <Input
+                    type="number"
+                    id="ageRangeMax"
+                    placeholder="Max age"
+                    min={0}
+                    max={120}
+                    value={person.ageRangeMax === undefined ? "" : person.ageRangeMax}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined;
+                      handleChange("ageRangeMax", value);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <Label className="block text-xs font-medium mb-1">
+                Date of Birth (if known)
+              </Label>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label htmlFor="dobMonth" className="block text-xs font-medium mb-1">
+                    Month
+                  </Label>
+                  <Input
+                    type="number"
+                    id="dobMonth"
+                    placeholder="MM"
+                    min={1}
+                    max={12}
+                    value={person.dobMonth === undefined ? "" : person.dobMonth}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined;
+                      handleChange("dobMonth", value);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dobDay" className="block text-xs font-medium mb-1">
+                    Day
+                  </Label>
+                  <Input
+                    type="number"
+                    id="dobDay"
+                    placeholder="DD"
+                    min={1}
+                    max={31}
+                    value={person.dobDay === undefined ? "" : person.dobDay}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined;
+                      handleChange("dobDay", value);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dobYear" className="block text-xs font-medium mb-1">
+                    Year
+                  </Label>
+                  <Input
+                    type="number"
+                    id="dobYear"
+                    placeholder="YYYY"
+                    min={1900}
+                    max={new Date().getFullYear()}
+                    value={person.dobYear === undefined ? "" : person.dobYear}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined;
+                      handleChange("dobYear", value);
+                    }}
+                    className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Height Range */}
@@ -387,52 +556,70 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
           </div>
 
           {/* Work Information */}
-          <div className="space-y-1">
-            <Label htmlFor="workAddress" className="block text-xs font-medium mb-1">
-              Work Address
-            </Label>
-            <div className="flex gap-2">
+          <div className="space-y-4">
+            {/* Occupation */}
+            <div>
+              <Label htmlFor="occupation" className="block text-xs font-medium mb-1">
+                Occupation
+              </Label>
               <Input
                 type="text"
-                id="workAddress"
-                placeholder="Enter work address"
-                value={person.workAddress || ""}
-                onChange={(e) => handleChange("workAddress", e.target.value)}
+                id="occupation"
+                placeholder="Enter occupation"
+                value={person.occupation || ""}
+                onChange={(e) => handleChange("occupation", e.target.value)}
                 className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
               />
-              
-              {person.workAddress && (
-                <button
-                  type="button"
-                  className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium flex items-center"
-                  onClick={(e) => {
-                    // Show loading state
-                    const button = e.currentTarget;
-                    const originalContent = button.innerHTML;
-                    button.innerHTML = `<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg> Opening...`;
-                    
-                    // Open Google Maps with the work address
-                    if (person.workAddress) {
-                      const encodedAddress = encodeURIComponent(person.workAddress);
-                      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
-                      window.open(googleMapsUrl, "_blank");
+            </div>
+            
+            {/* Work Address */}
+            <div>
+              <Label htmlFor="workAddress" className="block text-xs font-medium mb-1">
+                Work Address
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  id="workAddress"
+                  placeholder="Enter work address"
+                  value={person.workAddress || ""}
+                  onChange={(e) => handleChange("workAddress", e.target.value)}
+                  className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                />
+                
+                {person.workAddress && (
+                  <button
+                    type="button"
+                    className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 font-medium flex items-center"
+                    onClick={(e) => {
+                      // Show loading state
+                      const button = e.currentTarget;
+                      const originalContent = button.innerHTML;
+                      button.innerHTML = `<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg> Opening...`;
                       
-                      // Restore original content after a short delay
-                      setTimeout(() => {
-                        button.innerHTML = originalContent;
-                      }, 1000);
-                    }
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-                  </svg>
-                  Map
-                </button>
-              )}
+                      // Open Google Maps with the work address
+                      if (person.workAddress) {
+                        const encodedAddress = encodeURIComponent(person.workAddress);
+                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                        window.open(googleMapsUrl, "_blank");
+                        
+                        // Restore original content after a short delay
+                        setTimeout(() => {
+                          button.innerHTML = originalContent;
+                        }, 1000);
+                      }
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                      <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                    </svg>
+                    Map
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

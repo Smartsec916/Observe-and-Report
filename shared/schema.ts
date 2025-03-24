@@ -4,7 +4,19 @@ import { z } from "zod";
 
 // Person information schema
 export const personSchema = z.object({
-  name: z.string().optional(),
+  // Name fields
+  firstName: z.string().optional(),
+  middleName: z.string().optional(),
+  lastName: z.string().optional(),
+  
+  // Age and DOB
+  ageRangeMin: z.number().min(0).max(120).optional(),
+  ageRangeMax: z.number().min(0).max(120).optional(),
+  dobMonth: z.number().min(1).max(12).optional(),
+  dobDay: z.number().min(1).max(31).optional(),
+  dobYear: z.number().min(1900).max(new Date().getFullYear()).optional(),
+  
+  // Physical characteristics
   heightMin: z.string().optional(),
   heightMax: z.string().optional(),
   buildPrimary: z.string().optional(),
@@ -13,13 +25,17 @@ export const personSchema = z.object({
   eyeColor: z.string().optional(),
   skinTone: z.string().optional(),
   tattoos: z.string().optional(),
+  
+  // Contact information
   address: z.string().optional(),
   phoneNumber: z.string().optional(),
   email: z.string().optional(),
+  occupation: z.string().optional(),
   workAddress: z.string().optional(),
   workPhone: z.string().optional(),
   
   // Keep the original fields for backward compatibility
+  name: z.string().optional(),
   height: z.string().optional(),
   build: z.string().optional(),
 });

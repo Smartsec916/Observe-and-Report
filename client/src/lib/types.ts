@@ -125,10 +125,22 @@ export const vehicleColorOptions = [
   { value: "gray", label: "Gray" },
   { value: "red", label: "Red" },
   { value: "blue", label: "Blue" },
+  { value: "darkBlue", label: "Dark Blue" },
+  { value: "lightBlue", label: "Light Blue" },
   { value: "green", label: "Green" },
+  { value: "darkGreen", label: "Dark Green" },
   { value: "yellow", label: "Yellow" },
+  { value: "orange", label: "Orange" },
+  { value: "purple", label: "Purple" },
+  { value: "pink", label: "Pink" },
   { value: "brown", label: "Brown" },
+  { value: "tan", label: "Tan" },
+  { value: "beige", label: "Beige" },
   { value: "gold", label: "Gold" },
+  { value: "bronze", label: "Bronze" },
+  { value: "maroon", label: "Maroon" },
+  { value: "teal", label: "Teal" },
+  { value: "burgundy", label: "Burgundy" },
   { value: "other", label: "Other" }
 ];
 
