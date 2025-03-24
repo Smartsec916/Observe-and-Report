@@ -7,11 +7,13 @@ import { ImageGallery } from "@/components/image-gallery";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { PersonInfo, VehicleInfo, ImageInfo, Observation } from "@/lib/types";
+import { PersonInfo, VehicleInfo, ImageInfo, Observation, AdditionalNote } from "@/lib/types";
 import { useLocation, useParams } from "wouter";
-import { ChevronLeft, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, Search, ChevronDown, ChevronUp, Plus, Calendar, Clock, X } from "lucide-react";
+import { format } from "date-fns";
 
 interface InputPageProps {
   id?: string;
@@ -56,6 +58,35 @@ export default function InputPage({ id }: InputPageProps = {}) {
       setImages(existingObservation.images ?? []);
     }
   }, [existingObservation]);
+  
+  // Function to add a new additional note
+  const addAdditionalNote = () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const currentTime = format(new Date(), 'HH:mm');
+    const newNote: AdditionalNote = {
+      date: today,
+      time: currentTime,
+      content: '',
+      createdAt: new Date().toISOString()
+    };
+    setAdditionalNotes([...additionalNotes, newNote]);
+  };
+  
+  // Function to update an additional note
+  const updateAdditionalNote = (index: number, field: keyof AdditionalNote, value: string) => {
+    const updatedNotes = [...additionalNotes];
+    updatedNotes[index] = {
+      ...updatedNotes[index],
+      [field]: value
+    };
+    setAdditionalNotes(updatedNotes);
+  };
+  
+  // Function to remove an additional note
+  const removeAdditionalNote = (index: number) => {
+    const updatedNotes = additionalNotes.filter((_, i) => i !== index);
+    setAdditionalNotes(updatedNotes);
+  };
 
   // Create mutation for saving new observations
   const createObservation = useMutation({
@@ -68,6 +99,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           person,
           vehicle,
           notes,
+          additionalNotes,
         }),
       });
     },
@@ -109,6 +141,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           person,
           vehicle,
           notes,
+          additionalNotes,
         }),
       });
     },
@@ -221,6 +254,84 @@ export default function InputPage({ id }: InputPageProps = {}) {
                 rows={4}
                 className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
               />
+            </div>
+          )}
+        </div>
+        
+        {/* Additional Notes Section */}
+        <div className="bg-card rounded-lg p-4 shadow-md border border-border">
+          <button
+            type="button"
+            className="w-full flex justify-between items-center mb-2"
+            onClick={() => setAdditionalNotesExpanded(!additionalNotesExpanded)}
+          >
+            <h2 className="text-md font-medium">Additional Dated Notes</h2>
+            {additionalNotesExpanded ? (
+              <ChevronUp className="h-5 w-5 text-primary" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-primary" />
+            )}
+          </button>
+
+          {additionalNotesExpanded && (
+            <div className="space-y-6">
+              {additionalNotes.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No additional notes added yet. Click the button below to add dated notes.</p>
+              ) : (
+                additionalNotes.map((note, index) => (
+                  <div key={index} className="border border-border rounded-md p-3 space-y-3 bg-background/50">
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col space-y-3 w-full">
+                        <div className="flex flex-row gap-2 items-center">
+                          <div className="flex items-center space-x-2 flex-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <Input
+                              type="date" 
+                              value={note.date}
+                              onChange={(e) => updateAdditionalNote(index, 'date', e.target.value)}
+                              className="px-2 py-1 h-8 text-sm border-input bg-background"
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2 flex-1">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              type="time"
+                              value={note.time}
+                              onChange={(e) => updateAdditionalNote(index, 'time', e.target.value)}
+                              className="px-2 py-1 h-8 text-sm border-input bg-background"
+                            />
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => removeAdditionalNote(index)}
+                            className="p-0 h-8 w-8 rounded-full hover:bg-destructive/10"
+                          >
+                            <X className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <Textarea
+                          placeholder="Enter details for this date..."
+                          value={note.content}
+                          onChange={(e) => updateAdditionalNote(index, 'content', e.target.value)}
+                          rows={3}
+                          className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+              
+              <Button
+                type="button"
+                onClick={addAdditionalNote}
+                className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary font-medium py-2 px-4 rounded-md border border-primary/20"
+              >
+                <Plus className="h-4 w-4" />
+                Add Note for Another Date
+              </Button>
             </div>
           )}
         </div>
