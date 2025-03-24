@@ -61,15 +61,15 @@ export function Header() {
               </DropdownMenuItem>
               {isMobile && (
                 <>
-                  <Link href="/">
-                    <DropdownMenuItem>Home</DropdownMenuItem>
-                  </Link>
-                  <Link href="/input">
-                    <DropdownMenuItem>New Observation</DropdownMenuItem>
-                  </Link>
-                  <Link href="/search">
-                    <DropdownMenuItem>Search</DropdownMenuItem>
-                  </Link>
+                  <DropdownMenuItem asChild>
+                    <Link href="/">Home</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/input">New Observation</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/search">Search</Link>
+                  </DropdownMenuItem>
                 </>
               )}
               <DropdownMenuItem onClick={logout}>
