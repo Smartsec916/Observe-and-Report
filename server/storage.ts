@@ -1,4 +1,13 @@
 import { observations, type Observation, type InsertObservation, PersonInfo, VehicleInfo } from "@shared/schema";
+import { encryptSensitiveFields, decryptSensitiveFields } from "./encryption";
+
+// Define the sensitive fields that should be encrypted
+const SENSITIVE_FIELDS = [
+  'person.name', 
+  'person.description',
+  'notes',
+  'additionalNotes'
+];
 
 // Helper functions moved outside for reuse
 function getHeightInInches(heightStr: string): number {
@@ -111,24 +120,38 @@ export class MemStorage implements IStorage {
   }
 
   async getObservation(id: number): Promise<Observation | undefined> {
-    return this.observations.get(id);
+    const observation = this.observations.get(id);
+    if (!observation) return undefined;
+    
+    // Decrypt sensitive fields before returning to the client
+    return decryptSensitiveFields(observation, SENSITIVE_FIELDS);
   }
 
   async getAllObservations(): Promise<Observation[]> {
-    return Array.from(this.observations.values());
+    const observations = Array.from(this.observations.values());
+    
+    // Decrypt sensitive fields in all observations before returning them
+    return observations.map(obs => decryptSensitiveFields(obs, SENSITIVE_FIELDS));
   }
 
   async createObservation(insertObservation: InsertObservation): Promise<Observation> {
     const id = this.currentId++;
     const createdAt = new Date();
+    
+    // Encrypt sensitive fields before storage
+    const encryptedData = encryptSensitiveFields(insertObservation, SENSITIVE_FIELDS);
+    
     // Ensure proper type casting for TypeScript
     const observation = { 
-      ...insertObservation, 
+      ...encryptedData, 
       id, 
       createdAt 
     } as Observation;
+    
     this.observations.set(id, observation);
-    return observation;
+    
+    // Return the decrypted version to the client
+    return decryptSensitiveFields(observation, SENSITIVE_FIELDS);
   }
 
   async updateObservation(id: number, updates: Partial<InsertObservation>): Promise<Observation | undefined> {
@@ -136,15 +159,20 @@ export class MemStorage implements IStorage {
     if (!observation) {
       return undefined;
     }
+    
+    // Encrypt sensitive fields in the updates
+    const encryptedUpdates = encryptSensitiveFields(updates, SENSITIVE_FIELDS);
 
     // Use type assertion for safer updates
     const updatedObservation = {
       ...observation,
-      ...updates,
+      ...encryptedUpdates,
     } as Observation;
 
     this.observations.set(id, updatedObservation);
-    return updatedObservation;
+    
+    // Return the decrypted version to the client
+    return decryptSensitiveFields(updatedObservation, SENSITIVE_FIELDS);
   }
 
   async deleteObservation(id: number): Promise<boolean> {

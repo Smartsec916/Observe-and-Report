@@ -59,8 +59,8 @@ export default function InputPage({ id }: InputPageProps = {}) {
     }
   }, [existingObservation]);
   
-  // Function to add a new additional note
-  const addAdditionalNote = () => {
+  // Function to add a new additional note - Optimized with useCallback
+  const addAdditionalNote = React.useCallback(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const currentTime = format(new Date(), 'HH:mm');
     const newNote: AdditionalNote = {
@@ -69,24 +69,22 @@ export default function InputPage({ id }: InputPageProps = {}) {
       content: '',
       createdAt: new Date().toISOString()
     };
-    setAdditionalNotes([...additionalNotes, newNote]);
-  };
+    setAdditionalNotes(prevNotes => [...prevNotes, newNote]);
+  }, []);
   
-  // Function to update an additional note
-  const updateAdditionalNote = (index: number, field: keyof AdditionalNote, value: string) => {
-    const updatedNotes = [...additionalNotes];
-    updatedNotes[index] = {
-      ...updatedNotes[index],
-      [field]: value
-    };
-    setAdditionalNotes(updatedNotes);
-  };
+  // Function to update an additional note - Optimized with useCallback
+  const updateAdditionalNote = React.useCallback((index: number, field: keyof AdditionalNote, value: string) => {
+    setAdditionalNotes(prevNotes => 
+      prevNotes.map((note, i) => 
+        i === index ? { ...note, [field]: value } : note
+      )
+    );
+  }, []);
   
-  // Function to remove an additional note
-  const removeAdditionalNote = (index: number) => {
-    const updatedNotes = additionalNotes.filter((_, i) => i !== index);
-    setAdditionalNotes(updatedNotes);
-  };
+  // Function to remove an additional note - Optimized with useCallback
+  const removeAdditionalNote = React.useCallback((index: number) => {
+    setAdditionalNotes(prevNotes => prevNotes.filter((_, i) => i !== index));
+  }, []);
 
   // Create mutation for saving new observations
   const createObservation = useMutation({
