@@ -8,6 +8,7 @@ import SearchPage from "@/pages/search";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 import CreateAccountPage from "@/pages/create-account";
+import SamsungPreview from "@/pages/samsung-preview";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { ProtectedRoute } from "@/components/protected-route";
@@ -59,6 +60,7 @@ function Router() {
               </ProtectedRoute>
             )}
           </Route>
+          <Route path="/samsung-preview" component={SamsungPreview} />
           <Route component={NotFound} />
         </Switch>
       </div>
