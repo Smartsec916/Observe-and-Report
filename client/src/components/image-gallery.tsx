@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from "./ui/dialog";
 import { Camera, X, Upload, Trash2, Info, MapPin, ExternalLink } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { LocationMap } from "./ui/map";
@@ -172,7 +172,28 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                   </div>
                 </DialogTrigger>
                 
-                <DialogContent className="sm:max-w-xl p-1 bg-black">
+                <DialogContent 
+                  className="sm:max-w-xl p-1 bg-black relative"
+                  aria-labelledby="dialog-title"
+                  aria-describedby="dialog-description"
+                >
+                  <div className="sr-only">
+                    <h2 id="dialog-title">Image Viewer</h2>
+                    <p id="dialog-description">View image and metadata details</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      // Find the close button that's automatically added by the dialog
+                      const closeButton = document.querySelector('[data-radix-collection-item]');
+                      if (closeButton && closeButton instanceof HTMLElement) {
+                        closeButton.click();
+                      }
+                    }}
+                    className="absolute top-1 right-1 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center z-50"
+                    aria-label="Close dialog"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                   {/* Tabs for Image and Map */}
                   <Tabs defaultValue="image" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-1">
@@ -197,13 +218,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                         
                         {/* Action buttons */}
                         <div className="absolute top-2 right-2 flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="rounded-full h-8 w-8 p-0 bg-black/50"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                          {/* Remove the X button since the dialog has built-in close functionality
+                              via the ESC key and clicking outside */}
                           
                           {!readOnly && (
                             <Button 
@@ -211,6 +227,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                               variant="outline" 
                               className="rounded-full h-8 w-8 p-0 bg-black/50 text-red-500 border-red-500"
                               onClick={() => handleDeleteImage(image.url)}
+                              aria-label="Delete image"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
