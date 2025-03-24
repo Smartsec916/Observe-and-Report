@@ -1,11 +1,19 @@
 import { z } from "zod";
-import { personSchema, vehicleSchema, imageSchema, imageMetadataSchema, additionalNoteSchema } from "@shared/schema";
+import { 
+  personSchema, 
+  vehicleSchema, 
+  imageSchema, 
+  imageMetadataSchema, 
+  additionalNoteSchema,
+  incidentLocationSchema
+} from "@shared/schema";
 
 export type PersonInfo = z.infer<typeof personSchema>;
 export type VehicleInfo = z.infer<typeof vehicleSchema>;
 export type ImageMetadata = z.infer<typeof imageMetadataSchema>;
 export type ImageInfo = z.infer<typeof imageSchema>;
 export type AdditionalNote = z.infer<typeof additionalNoteSchema>;
+export type IncidentLocation = z.infer<typeof incidentLocationSchema>;
 
 export interface Observation {
   id: number;
@@ -13,6 +21,7 @@ export interface Observation {
   time: string;
   person: PersonInfo;
   vehicle: VehicleInfo;
+  location?: IncidentLocation;
   notes?: string;
   additionalNotes?: AdditionalNote[];
   createdAt: Date;
@@ -23,6 +32,7 @@ export interface SearchParams {
   query?: string;
   person?: Partial<PersonInfo>;
   vehicle?: Partial<VehicleInfo>;
+  location?: Partial<IncidentLocation>;
   licensePlate?: (string | null)[];
   dateFrom?: string;
   dateTo?: string;
@@ -189,4 +199,59 @@ export const licensePlateOptions = [
   { value: "^", label: "^" },
   { value: "|", label: "|" },
   { value: "unknown", label: "Unknown" }
+];
+
+export const stateOptions = [
+  { value: "", label: "Select State" },
+  { value: "AL", label: "Alabama" },
+  { value: "AK", label: "Alaska" },
+  { value: "AZ", label: "Arizona" },
+  { value: "AR", label: "Arkansas" },
+  { value: "CA", label: "California" },
+  { value: "CO", label: "Colorado" },
+  { value: "CT", label: "Connecticut" },
+  { value: "DE", label: "Delaware" },
+  { value: "DC", label: "District Of Columbia" },
+  { value: "FL", label: "Florida" },
+  { value: "GA", label: "Georgia" },
+  { value: "HI", label: "Hawaii" },
+  { value: "ID", label: "Idaho" },
+  { value: "IL", label: "Illinois" },
+  { value: "IN", label: "Indiana" },
+  { value: "IA", label: "Iowa" },
+  { value: "KS", label: "Kansas" },
+  { value: "KY", label: "Kentucky" },
+  { value: "LA", label: "Louisiana" },
+  { value: "ME", label: "Maine" },
+  { value: "MD", label: "Maryland" },
+  { value: "MA", label: "Massachusetts" },
+  { value: "MI", label: "Michigan" },
+  { value: "MN", label: "Minnesota" },
+  { value: "MS", label: "Mississippi" },
+  { value: "MO", label: "Missouri" },
+  { value: "MT", label: "Montana" },
+  { value: "NE", label: "Nebraska" },
+  { value: "NV", label: "Nevada" },
+  { value: "NH", label: "New Hampshire" },
+  { value: "NJ", label: "New Jersey" },
+  { value: "NM", label: "New Mexico" },
+  { value: "NY", label: "New York" },
+  { value: "NC", label: "North Carolina" },
+  { value: "ND", label: "North Dakota" },
+  { value: "OH", label: "Ohio" },
+  { value: "OK", label: "Oklahoma" },
+  { value: "OR", label: "Oregon" },
+  { value: "PA", label: "Pennsylvania" },
+  { value: "RI", label: "Rhode Island" },
+  { value: "SC", label: "South Carolina" },
+  { value: "SD", label: "South Dakota" },
+  { value: "TN", label: "Tennessee" },
+  { value: "TX", label: "Texas" },
+  { value: "UT", label: "Utah" },
+  { value: "VT", label: "Vermont" },
+  { value: "VA", label: "Virginia" },
+  { value: "WA", label: "Washington" },
+  { value: "WV", label: "West Virginia" },
+  { value: "WI", label: "Wisconsin" },
+  { value: "WY", label: "Wyoming" }
 ];

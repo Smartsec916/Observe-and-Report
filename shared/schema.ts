@@ -27,12 +27,21 @@ export const personSchema = z.object({
   tattoos: z.string().optional(),
   
   // Contact information
-  address: z.string().optional(),
   phoneNumber: z.string().optional(),
   email: z.string().optional(),
   occupation: z.string().optional(),
-  workAddress: z.string().optional(),
   workPhone: z.string().optional(),
+  
+  // Legacy address field (for backward compatibility)
+  address: z.string().optional(),
+  workAddress: z.string().optional(),
+  
+  // Structured address fields
+  streetNumber: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
   
   // Keep the original fields for backward compatibility
   name: z.string().optional(),
@@ -66,6 +75,17 @@ export const imageMetadataSchema = z.object({
   deviceInfo: z.string().optional()
 });
 
+// Incident location schema
+export const incidentLocationSchema = z.object({
+  streetNumber: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  // Legacy field for backward compatibility
+  fullAddress: z.string().optional(),
+});
+
 // Image attachment schema
 export const imageSchema = z.object({
   url: z.string(), // URL or base64 data
@@ -90,6 +110,7 @@ export const observations = pgTable("observations", {
   time: text("time").notNull(),
   person: json("person").$type<z.infer<typeof personSchema>>(),
   vehicle: json("vehicle").$type<z.infer<typeof vehicleSchema>>(),
+  location: json("location").$type<z.infer<typeof incidentLocationSchema>>(),
   notes: text("notes"),
   additionalNotes: json("additional_notes").$type<z.infer<typeof additionalNoteSchema>[]>(),
   images: json("images").$type<z.infer<typeof imageSchema>[]>(),
@@ -102,6 +123,7 @@ export const insertObservationSchema = createInsertSchema(observations).pick({
   time: true,
   person: true,
   vehicle: true,
+  location: true,
   notes: true,
   additionalNotes: true,
   images: true,
@@ -113,6 +135,7 @@ export const observationInputSchema = z.object({
   time: z.string(),
   person: personSchema,
   vehicle: vehicleSchema,
+  location: incidentLocationSchema.optional().default({}),
   notes: z.string().optional(),
   additionalNotes: z.array(additionalNoteSchema).optional().default([]),
   images: z.array(imageSchema).optional().default([]),
@@ -122,6 +145,7 @@ export type InsertObservation = z.infer<typeof insertObservationSchema>;
 export type Observation = typeof observations.$inferSelect;
 export type PersonInfo = z.infer<typeof personSchema>;
 export type VehicleInfo = z.infer<typeof vehicleSchema>;
+export type IncidentLocation = z.infer<typeof incidentLocationSchema>;
 export type ImageInfo = z.infer<typeof imageSchema>;
 export type ImageMetadata = z.infer<typeof imageMetadataSchema>;
 export type AdditionalNote = z.infer<typeof additionalNoteSchema>;
