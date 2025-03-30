@@ -62,18 +62,6 @@ export const vehicleSchema = z.object({
   year: z.string().optional(),
 });
 
-// Location information schema (for image metadata)
-export const locationSchema = z.object({
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  formattedAddress: z.string().optional(),
-  streetNumber: z.string().optional(),
-  streetName: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional()
-}).optional();
-
 // Image metadata schema
 export const imageMetadataSchema = z.object({
   dateTaken: z.string().optional(),
@@ -84,9 +72,7 @@ export const imageMetadataSchema = z.object({
   direction: z.string().optional(),  // compass direction
   speed: z.string().optional(),
   editHistory: z.string().optional(), // any modification info
-  deviceInfo: z.string().optional(),
-  // Location information extracted from GPS coordinates
-  location: locationSchema
+  deviceInfo: z.string().optional()
 });
 
 // Incident location schema

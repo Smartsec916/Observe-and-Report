@@ -12,7 +12,6 @@ import { v4 as uuidv4 } from "uuid";
 import { fileURLToPath } from "url";
 import exif from "exif";
 import type { ExifData } from "exif";
-import fetch from "node-fetch";
 
 // Get the directory name equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -146,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 );
                 
                 if (response.ok) {
-                  const addressData = await response.json() as any;
+                  const addressData = await response.json();
                   console.log('Reverse geocode data:', addressData);
                   
                   if (addressData.address) {

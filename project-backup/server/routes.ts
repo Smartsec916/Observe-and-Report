@@ -1,4 +1,4 @@
-import express, { type Express, type Request, type Response, type NextFunction } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import { createServer, type Server } from "http";
 import { storage as dataStorage } from "./storage";
 import { z } from "zod";
@@ -12,7 +12,6 @@ import { v4 as uuidv4 } from "uuid";
 import { fileURLToPath } from "url";
 import exif from "exif";
 import type { ExifData } from "exif";
-import fetch from "node-fetch";
 
 // Get the directory name equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -65,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const extractImageMetadata = (filePath: string): Promise<Record<string, any>> => {
     return new Promise((resolve) => {
       try {
-        new exif.ExifImage({ image: filePath }, async (error: Error | null, exifData: ExifData) => {
+        new exif.ExifImage({ image: filePath }, (error: Error | null, exifData: ExifData) => {
           if (error) {
             console.log('EXIF extraction error:', error.message);
             resolve({}); // Return empty object if EXIF data can't be read
@@ -128,53 +127,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             if (validLatitude && validLongitude && metadata.latitude && metadata.longitude) {
               metadata.gpsCoordinates = `${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`;
-              
-              // Create a location object with GPS coordinates for easier reference
-              metadata.location = {
-                latitude: metadata.latitude,
-                longitude: metadata.longitude
-              };
-              
-              // Try to get reverse geocoding using OpenStreetMap Nominatim API (no API key required)
-              try {
-                // Note: This uses a Promise here but we're treating it as async
-                const response = await fetch(
-                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${metadata.latitude}&lon=${metadata.longitude}&zoom=18&addressdetails=1`,
-                  { 
-                    headers: { 'User-Agent': 'ObserveAndReport/1.0' }
-                  }
-                );
-                
-                if (response.ok) {
-                  const addressData = await response.json() as any;
-                  console.log('Reverse geocode data:', addressData);
-                  
-                  if (addressData.address) {
-                    // Extract address components
-                    const address = addressData.address;
-                    
-                    // Create formatted address components based on available data
-                    metadata.location.formattedAddress = addressData.display_name || '';
-                    
-                    // Street number and name
-                    if (address.house_number) metadata.location.streetNumber = address.house_number;
-                    if (address.road || address.street) metadata.location.streetName = address.road || address.street;
-                    
-                    // City (with fallbacks)
-                    if (address.city) metadata.location.city = address.city;
-                    else if (address.town) metadata.location.city = address.town;
-                    else if (address.village) metadata.location.city = address.village;
-                    else if (address.suburb) metadata.location.city = address.suburb;
-                    
-                    // State and zip
-                    if (address.state) metadata.location.state = address.state;
-                    if (address.postcode) metadata.location.zipCode = address.postcode;
-                  }
-                }
-              } catch (e) {
-                console.log('Error getting address from coordinates:', e);
-                // Geocoding failed, but we still have the GPS coordinates
-              }
             }
             
             // Altitude
@@ -485,46 +437,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedImages.splice(imageIndex, 1);
       
       // Update the observation
-      const updates: Partial<InsertObservation> = {
+      const updatedObservation = await dataStorage.updateObservation(id, {
         images: updatedImages
-      };
+      });
       
-      const updatedObservation = await dataStorage.updateObservation(id, updates);
-      
-      // Delete the file from the filesystem
-      try {
-        const filePath = path.join(__dirname, '..', 'public', imageUrl);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.log(`Deleted file: ${filePath}`);
-        }
-      } catch (e) {
-        console.error('Failed to delete file:', e);
-        // We still want to continue even if the file deletion fails
+      // Try to delete the file from disk if it exists
+      const filePath = path.join(__dirname, '..', imageUrl);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
       }
       
-      res.status(200).json({ 
-        message: "Image deleted successfully", 
+      res.json({ 
+        message: "Image deleted successfully",
         observation: updatedObservation
       });
     } catch (error) {
       console.error("Image deletion error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unexpected error";
-      res.status(500).json({ message: `Failed to delete image: ${errorMessage}` });
+      res.status(500).json({ message: "Failed to delete image" });
     }
   });
-
-  // Observation CRUD routes
+  // Get all observations
   app.get("/api/observations", isAuthenticated, async (req, res) => {
     try {
       const observations = await dataStorage.getAllObservations();
       res.json(observations);
     } catch (error) {
-      console.error("Failed to get observations:", error);
       res.status(500).json({ message: "Failed to retrieve observations" });
     }
   });
-  
+
+  // Get a single observation
   app.get("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -536,158 +478,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(observation);
     } catch (error) {
-      console.error("Failed to get observation:", error);
       res.status(500).json({ message: "Failed to retrieve observation" });
     }
   });
-  
+
+  // Create a new observation
   app.post("/api/observations", isAuthenticated, async (req, res) => {
     try {
-      console.log('Creating observation with data:', JSON.stringify(req.body, null, 2));
       const validatedData = observationInputSchema.parse(req.body);
-      const observation = await dataStorage.createObservation(validatedData);
-      res.status(201).json(observation);
+      const newObservation = await dataStorage.createObservation(validatedData);
+      res.status(201).json(newObservation);
     } catch (error) {
-      console.error("Failed to create observation:", error);
-      
       if (error instanceof ZodError) {
         return res.status(400).json({ 
           message: "Invalid observation data", 
           errors: error.errors 
         });
       }
-      
       res.status(500).json({ message: "Failed to create observation" });
     }
   });
-  
-  app.put("/api/observations/:id", isAuthenticated, async (req, res) => {
+
+  // Update an observation
+  app.patch("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const updates = req.body;
       
-      const observation = await dataStorage.getObservation(id);
-      if (!observation) {
-        return res.status(404).json({ message: "Observation not found" });
-      }
+      // Validate updates
+      const partialSchema = observationInputSchema.partial();
+      partialSchema.parse(updates);
       
-      // Validate the input data
-      const validatedData = observationInputSchema.parse(req.body);
-      
-      // Update the observation
-      const updatedObservation = await dataStorage.updateObservation(id, validatedData);
+      const updatedObservation = await dataStorage.updateObservation(id, updates);
       
       if (!updatedObservation) {
-        return res.status(404).json({ message: "Failed to update observation" });
+        return res.status(404).json({ message: "Observation not found" });
       }
       
       res.json(updatedObservation);
     } catch (error) {
-      console.error("Failed to update observation:", error);
-      
       if (error instanceof ZodError) {
         return res.status(400).json({ 
-          message: "Invalid observation data", 
+          message: "Invalid update data", 
           errors: error.errors 
         });
       }
-      
       res.status(500).json({ message: "Failed to update observation" });
     }
   });
-  
+
+  // Delete an observation
   app.delete("/api/observations/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const success = await dataStorage.deleteObservation(id);
       
-      const observation = await dataStorage.getObservation(id);
-      if (!observation) {
+      if (!success) {
         return res.status(404).json({ message: "Observation not found" });
       }
       
-      // Delete any attached images
-      if (observation.images && observation.images.length > 0) {
-        for (const image of observation.images) {
-          try {
-            const filePath = path.join(__dirname, '..', 'public', image.url);
-            if (fs.existsSync(filePath)) {
-              fs.unlinkSync(filePath);
-              console.log(`Deleted file: ${filePath}`);
-            }
-          } catch (e) {
-            console.error('Failed to delete file:', e);
-            // Continue even if some files can't be deleted
-          }
-        }
-      }
-      
-      const success = await dataStorage.deleteObservation(id);
-      if (!success) {
-        return res.status(500).json({ message: "Failed to delete observation" });
-      }
-      
-      res.json({ message: "Observation deleted successfully" });
+      res.status(204).end();
     } catch (error) {
-      console.error("Failed to delete observation:", error);
       res.status(500).json({ message: "Failed to delete observation" });
     }
   });
-  
-  // Search endpoint
+
+  // Search observations
   app.post("/api/observations/search", isAuthenticated, async (req, res) => {
     try {
-      console.log('Search request:', JSON.stringify(req.body, null, 2));
       const searchParams = req.body;
+      console.log("Search request with params:", JSON.stringify(searchParams, null, 2));
+      
+      if (searchParams.person?.heightMin || searchParams.person?.heightMax) {
+        console.log(`Height search request - Min: ${searchParams.person.heightMin || 'none'}, Max: ${searchParams.person.heightMax || 'none'}`);
+      }
+      
       const results = await dataStorage.searchObservations(searchParams);
+      console.log(`Search returned ${results.length} results`);
       res.json(results);
     } catch (error) {
       console.error("Search error:", error);
       res.status(500).json({ message: "Failed to search observations" });
     }
   });
-  
-  // Import/Export endpoints
-  app.get("/api/observations/export", isAuthenticated, async (req, res) => {
+
+  // Export observations
+  app.post("/api/observations/export", isAuthenticated, async (req, res) => {
     try {
-      // Allow optional filtering by IDs
-      const ids = req.query.ids ? (req.query.ids as string).split(',').map(id => parseInt(id)) : undefined;
+      const { ids } = req.body;
       
-      const exportData = await dataStorage.exportObservations(ids);
+      // Check if we're exporting specific observations or all
+      let exportData;
+      if (ids && Array.isArray(ids) && ids.length > 0) {
+        console.log(`Exporting ${ids.length} observations`);
+        exportData = await dataStorage.exportObservations(ids);
+      } else {
+        console.log("Exporting all observations");
+        exportData = await dataStorage.exportObservations();
+      }
       
+      // Set headers for file download
       res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', 'attachment; filename=observations-export.json');
+      res.setHeader('Content-Disposition', `attachment; filename=observations-${new Date().toISOString().slice(0, 10)}.json`);
+      
       res.send(exportData);
     } catch (error) {
       console.error("Export error:", error);
       res.status(500).json({ message: "Failed to export observations" });
     }
   });
-  
+
+  // Import observations
   app.post("/api/observations/import", isAuthenticated, async (req, res) => {
     try {
-      let importData = '';
+      const importData = req.body.data;
       
-      if (typeof req.body === 'string') {
-        importData = req.body;
-      } else if (req.body.data && typeof req.body.data === 'string') {
-        importData = req.body.data;
-      } else {
-        importData = JSON.stringify(req.body);
+      if (!importData) {
+        return res.status(400).json({ message: "No import data provided" });
       }
       
+      console.log("Importing observations...");
       const result = await dataStorage.importObservations(importData);
-      res.json(result);
+      
+      if (result.success) {
+        console.log(`Successfully imported ${result.count} observations`);
+        res.status(200).json({ 
+          message: `Successfully imported ${result.count} observations`,
+          count: result.count,
+          errors: result.errors
+        });
+      } else {
+        console.error("Import failed:", result.errors);
+        res.status(400).json({ 
+          message: "Failed to import observations",
+          errors: result.errors
+        });
+      }
     } catch (error) {
       console.error("Import error:", error);
-      res.status(500).json({ 
-        message: "Failed to import observations",
-        error: error instanceof Error ? error.message : "Unknown error" 
-      });
+      res.status(500).json({ message: "Failed to import observations" });
     }
   });
 
-  // Create an HTTP server from the Express app
   const httpServer = createServer(app);
-  
-  // Return the server
   return httpServer;
 }
