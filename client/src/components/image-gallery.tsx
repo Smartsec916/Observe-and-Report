@@ -1,9 +1,10 @@
 import React, { useState, Suspense } from "react";
-import { ImageInfo, Observation } from "@/lib/types";
+import { ImageInfo } from "@shared/schema";
+import { Observation } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -12,11 +13,11 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetClose,
-} from "./ui/sheet";
+} from "@/components/ui/sheet";
 import { Camera, X, Upload, Trash2, Info, MapPin, ExternalLink, Navigation, Home } from "lucide-react";
-import { ScrollArea } from "./ui/scroll-area";
-import { LocationMap } from "./ui/map";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { LocationMap } from "@/components/ui/map";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ImageGalleryProps {
   images: ImageInfo[];
@@ -203,8 +204,18 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                   
                   {/* Tabs for Image and Map */}
                   <Tabs defaultValue="image" className="w-full flex-1 flex flex-col">
-                    <TabsList className="grid w-full grid-cols-1 mb-2 mx-auto max-w-[95%]">
+                    <TabsList className="grid w-full grid-cols-2 mb-2 mx-auto max-w-[95%]">
                       <TabsTrigger value="image">Image</TabsTrigger>
+                      <TabsTrigger 
+                        value="map" 
+                        disabled={!(
+                          (image.metadata?.latitude && image.metadata?.longitude) || 
+                          (image.metadata?.location?.latitude && image.metadata?.location?.longitude)
+                        )}
+                      >
+                        <MapPin className="h-3 w-3 mr-1" />
+                        Location
+                      </TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="image" className="mt-0 p-0">
@@ -240,7 +251,85 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                       </div>
                     </TabsContent>
                     
+                    <TabsContent value="map" className="mt-0 p-0">
+                      {/* Map view */}
+                      {((image.metadata?.latitude && image.metadata?.longitude) || 
+                         (image.metadata?.location?.latitude && image.metadata?.location?.longitude)) ? (
+                        <div className="relative">
+                          {/* Only load the map when this tab is active to save resources */}
+                          <Suspense fallback={
+                            <div className="h-[300px] flex items-center justify-center bg-gray-800">
+                              <div className="text-center">
+                                <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p className="text-gray-400">Loading map...</p>
+                              </div>
+                            </div>
+                          }>
+                            <LocationMap 
+                              latitude={image.metadata?.location?.latitude || image.metadata?.latitude} 
+                              longitude={image.metadata?.location?.longitude || image.metadata?.longitude}
+                              height="300px"
+                            />
+                          </Suspense>
+                          
+                          {/* Address information if available */}
+                          {image.metadata?.location?.formattedAddress && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/80 p-2 text-white text-xs">
+                              <div className="flex items-start gap-2">
+                                <Home className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="font-medium text-blue-300">Address</p>
+                                  <p className="text-gray-200">{image.metadata.location.formattedAddress}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="absolute top-2 right-2 z-50">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="bg-black/70 hover:bg-black/90 text-white text-xs px-2 py-1 h-auto"
+                              onClick={(e) => {
+                                const lat = image.metadata?.location?.latitude || image.metadata?.latitude;
+                                const lng = image.metadata?.location?.longitude || image.metadata?.longitude;
+                                
+                                if (lat && lng) {
+                                  // Show loading state
+                                  const button = e.currentTarget;
+                                  const originalContent = button.innerHTML;
+                                  button.innerHTML = `<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg> Opening...`;
 
+                                  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                                  window.open(googleMapsUrl, "_blank");
+                                  
+                                  // Restore original content after a short delay
+                                  setTimeout(() => {
+                                    button.innerHTML = originalContent;
+                                  }, 1000);
+                                }
+                              }}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Open in Google Maps
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-[300px] flex items-center justify-center bg-gray-900 rounded-md">
+                          <div className="text-center p-4">
+                            <MapPin className="h-10 w-10 text-gray-500 mx-auto mb-2" />
+                            <p className="text-gray-400">No location data available</p>
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
                   </Tabs>
                   
                   {/* Metadata section */}
@@ -256,68 +345,8 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                     </Button>
                     
                     {showMetadata && (
-                      <div className="w-full mt-2">
-                        {/* Location Map (if coordinates are available) */}
-                        {((image.metadata?.latitude && image.metadata?.longitude) || 
-                          (image.metadata?.location?.latitude && image.metadata?.location?.longitude)) && (
-                          <div className="relative mb-2 border border-gray-700 rounded-md overflow-hidden">
-                            {/* Map component */}
-                            <Suspense fallback={
-                              <div className="h-[150px] flex items-center justify-center bg-gray-800">
-                                <div className="text-center">
-                                  <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                  </svg>
-                                  <p className="text-gray-400">Loading map...</p>
-                                </div>
-                              </div>
-                            }>
-                              <LocationMap 
-                                latitude={image.metadata?.location?.latitude || image.metadata?.latitude} 
-                                longitude={image.metadata?.location?.longitude || image.metadata?.longitude}
-                                height="150px"
-                              />
-                            </Suspense>
-                            
-                            {/* Open in Google Maps button */}
-                            <div className="absolute top-2 right-2 z-50">
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                className="bg-black/70 hover:bg-black/90 text-white text-xs px-2 py-1 h-auto"
-                                onClick={(e) => {
-                                  const lat = image.metadata?.location?.latitude || image.metadata?.latitude;
-                                  const lng = image.metadata?.location?.longitude || image.metadata?.longitude;
-                                  
-                                  if (lat && lng) {
-                                    // Show loading state
-                                    const button = e.currentTarget;
-                                    const originalContent = button.innerHTML;
-                                    button.innerHTML = `<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg> Opening...`;
-
-                                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-                                    window.open(googleMapsUrl, "_blank");
-                                    
-                                    // Restore original content after a short delay
-                                    setTimeout(() => {
-                                      button.innerHTML = originalContent;
-                                    }, 1000);
-                                  }
-                                }}
-                              >
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Open in Maps
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
-                        <ScrollArea className="h-[120px] w-full rounded-md border border-gray-700 bg-gray-900 p-2">
-                          <div className="space-y-1 text-xs">
+                      <ScrollArea className="h-[120px] w-full mt-2 rounded-md border border-gray-700 bg-gray-900 p-2">
+                        <div className="space-y-1 text-xs">
                           {image.metadata && Object.keys(image.metadata).length > 0 ? (
                             <>
                               {image.metadata.dateTaken && (
@@ -443,13 +472,23 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                       className="flex-1 flex items-center justify-center gap-1 py-1 h-6 text-green-400 cursor-pointer border-l border-border/30"
                       onClick={(e) => {
                         e.preventDefault();
-                        // Open the image dialog and show metadata with map
-                        setShowMetadata(true);
+                        // Open the image dialog and switch to map tab
                         const imageContainers = document.querySelectorAll('.aspect-square.rounded-md');
                         if (imageContainers[index]) {
                           imageContainers[index].dispatchEvent(
                             new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
                           );
+                          
+                          // Small delay to ensure dialog opens before clicking tab
+                          setTimeout(() => {
+                            // Find and click the map tab
+                            const mapTab = document.querySelector('[value="map"]');
+                            if (mapTab) {
+                              mapTab.dispatchEvent(
+                                new MouseEvent('click', { bubbles: true, cancelable: true, view: window })
+                              );
+                            }
+                          }, 50);
                         }
                       }}
                     >
