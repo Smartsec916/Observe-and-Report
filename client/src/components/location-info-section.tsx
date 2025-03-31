@@ -22,6 +22,15 @@ export function LocationInfoSection({
   const [gpsCoordinatesManual, setGpsCoordinatesManual] = useState(false);
   
   const handleChange = (field: keyof IncidentLocation, value: string | number | null) => {
+    console.log(`LocationInfoSection handleChange: ${field} = ${value}`);
+    
+    // Ensure that string fields get empty strings instead of null
+    if (value === null && (field === 'streetNumber' || field === 'streetName' || field === 'city' || 
+                           field === 'state' || field === 'zipCode' || field === 'notes' || 
+                           field === 'formattedAddress')) {
+      value = '';
+    }
+    
     onChange({
       ...location,
       [field]: value
@@ -73,7 +82,9 @@ export function LocationInfoSection({
 
   // Update formatted address when address components change
   const handleAddressChange = (field: keyof IncidentLocation, value: string) => {
-    handleChange(field, value);
+    console.log(`LocationInfoSection handleAddressChange: ${field} = ${value}`);
+    // Convert empty strings to empty strings (not null)
+    handleChange(field, value === "" ? "" : value);
     setTimeout(updateFormattedAddress, 0);
   };
 
@@ -184,7 +195,10 @@ export function LocationInfoSection({
                   step="0.0000001"
                   placeholder="37.7749"
                   value={location.latitude || ''}
-                  onChange={(e) => handleChange('latitude', e.target.value ? parseFloat(e.target.value) : null)}
+                  onChange={(e) => {
+                    console.log(`Latitude input changed to: ${e.target.value}`);
+                    handleChange('latitude', e.target.value ? parseFloat(e.target.value) : null);
+                  }}
                 />
               </div>
               <div>
@@ -195,7 +209,10 @@ export function LocationInfoSection({
                   step="0.0000001"
                   placeholder="-122.4194"
                   value={location.longitude || ''}
-                  onChange={(e) => handleChange('longitude', e.target.value ? parseFloat(e.target.value) : null)}
+                  onChange={(e) => {
+                    console.log(`Longitude input changed to: ${e.target.value}`);
+                    handleChange('longitude', e.target.value ? parseFloat(e.target.value) : null);
+                  }}
                 />
               </div>
             </div>
