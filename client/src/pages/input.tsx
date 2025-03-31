@@ -137,7 +137,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
   const updateObservation = useMutation({
     mutationFn: async () => {
       return await apiRequest(`/api/observations/${observationId}`, {
-        method: "PATCH",
+        method: "PUT", // Changed from PATCH to PUT to match server endpoint
         body: JSON.stringify({
           date,
           time,

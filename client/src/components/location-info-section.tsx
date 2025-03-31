@@ -150,7 +150,17 @@ export function LocationInfoSection({
                 id="streetNumber"
                 placeholder="123"
                 value={location.streetNumber || ''}
-                onChange={(e) => handleAddressChange('streetNumber', e.target.value)}
+                onChange={(e) => {
+                  console.log(`Street number raw input: "${e.target.value}"`);
+                  
+                  // Use the current event target value directly
+                  const currentValue = e.target.value;
+                  
+                  // Schedule the update in the next tick to avoid React batching issues
+                  setTimeout(() => {
+                    handleAddressChange('streetNumber', currentValue);
+                  }, 0);
+                }}
                 className="w-full"
               />
             </div>
@@ -160,7 +170,18 @@ export function LocationInfoSection({
                 id="streetName"
                 placeholder="Main St"
                 value={location.streetName || ''}
-                onChange={(e) => handleAddressChange('streetName', e.target.value)}
+                onChange={(e) => {
+                  console.log(`Street name raw input: "${e.target.value}"`);
+                  
+                  // Use the current event target value directly
+                  // This prevents React's synthetic event reuse from causing issues
+                  const currentValue = e.target.value;
+                  
+                  // Schedule the update in the next tick to avoid React batching issues
+                  setTimeout(() => {
+                    handleAddressChange('streetName', currentValue);
+                  }, 0);
+                }}
                 className="w-full"
               />
             </div>
@@ -174,7 +195,17 @@ export function LocationInfoSection({
                 id="city"
                 placeholder="City"
                 value={location.city || ''}
-                onChange={(e) => handleAddressChange('city', e.target.value)}
+                onChange={(e) => {
+                  console.log(`City raw input: "${e.target.value}"`);
+                  
+                  // Use the current event target value directly
+                  const currentValue = e.target.value;
+                  
+                  // Schedule the update in the next tick to avoid React batching issues
+                  setTimeout(() => {
+                    handleAddressChange('city', currentValue);
+                  }, 0);
+                }}
                 className="w-full"
               />
             </div>
@@ -206,7 +237,17 @@ export function LocationInfoSection({
                   id="zipCode"
                   placeholder="12345"
                   value={location.zipCode || ''}
-                  onChange={(e) => handleAddressChange('zipCode', e.target.value)}
+                  onChange={(e) => {
+                    console.log(`Zip code raw input: "${e.target.value}"`);
+                    
+                    // Use the current event target value directly
+                    const currentValue = e.target.value;
+                    
+                    // Schedule the update in the next tick to avoid React batching issues
+                    setTimeout(() => {
+                      handleAddressChange('zipCode', currentValue);
+                    }, 0);
+                  }}
                 />
               </div>
             </div>
@@ -292,7 +333,17 @@ export function LocationInfoSection({
               id="locationNotes"
               placeholder="Additional location details"
               value={location.notes || ''}
-              onChange={(e) => handleChange('notes', e.target.value)}
+              onChange={(e) => {
+                console.log(`Notes raw input: "${e.target.value}"`);
+                
+                // Use the current event target value directly
+                const currentValue = e.target.value;
+                
+                // Schedule the update in the next tick to avoid React batching issues
+                setTimeout(() => {
+                  handleChange('notes', currentValue);
+                }, 0);
+              }}
             />
           </div>
         </div>
