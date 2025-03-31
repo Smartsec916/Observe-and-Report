@@ -1,0 +1,49 @@
+The issue you're describing, where the input in the address field disappears immediately after entering "3," could be due to several factors in your code. Here are some common causes:
+
+Input Validation or Filtering: You might have a validation or filtering mechanism that removes or clears the input if it doesn't match a certain pattern. For example, if you're expecting a string or a specific format, entering a number might trigger this behavior.
+
+Event Handling: There could be an event handler (like onChange, onInput, etc.) that is clearing the input unintentionally. Check if there are any event handlers attached to the input field.
+
+State Management: If you're using a state management system (e.g., React Hooks), ensure that the state is being updated correctly. Sometimes, a state update can cause the input to reset.
+
+Regex or Pattern Matching: If you're using regular expressions or pattern matching to validate the input, entering "3" might not match the expected pattern, causing the input to be cleared.
+
+Autocomplete or Suggestion Features: If your app has autocomplete or suggestion features, they might interfere with the input.
+
+To troubleshoot this issue, you should:
+
+Check Event Handlers: Look for any event handlers attached to the input field and ensure they are not clearing the input.
+
+Review Validation Logic: Check if there's any validation logic that might be clearing the input.
+
+Inspect State Updates: If using state management, verify that state updates are not causing the input to reset.
+
+Test with Different Inputs: Try entering different characters or numbers to see if the issue is specific to "3" or occurs with other inputs as well.
+
+Here's a simple example of how you might be handling input in a React application. This example does not clear the input:
+
+jsx
+import React, { useState } from 'react';
+
+function App() {
+  const [address, setAddress] = useState('');
+
+  const handleAddressChange = (e) => {
+    setAddress(e.target.value);
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={address}
+        onChange={handleAddressChange}
+        placeholder="Enter Address"
+      />
+    </div>
+  );
+}
+
+export default App;
+If you're still having trouble, providing more details about your code or the framework you're using could help pinpoint the exact issue.
+

@@ -21,20 +21,35 @@ export function LocationInfoSection({
 }: LocationInfoSectionProps) {
   const [gpsCoordinatesManual, setGpsCoordinatesManual] = useState(false);
   
+  // This function is used for any field updates that aren't address components
   const handleChange = (field: keyof IncidentLocation, value: string | number | null) => {
-    console.log(`LocationInfoSection handleChange: ${field} = ${value}`);
+    console.log(`LocationInfoSection handleChange: field=${field}, value=${value}, type=${typeof value}`);
     
-    // Ensure that string fields get empty strings instead of null
-    if (value === null && (field === 'streetNumber' || field === 'streetName' || field === 'city' || 
-                           field === 'state' || field === 'zipCode' || field === 'notes' || 
-                           field === 'formattedAddress')) {
-      value = '';
+    // Handle string fields - never set null values for strings
+    if (typeof value !== 'number' && 
+        (field === 'streetNumber' || field === 'streetName' || field === 'city' || 
+         field === 'state' || field === 'zipCode' || field === 'notes' || 
+         field === 'formattedAddress')) {
+      // Set to empty string if null/undefined
+      const safeValue = (value === null || value === undefined) ? '' : String(value);
+      console.log(`Converting to safe string value: ${safeValue}`);
+      
+      // Create a new object to avoid mutation issues
+      const updatedLocation = {
+        ...location,
+        [field]: safeValue
+      };
+      onChange(updatedLocation);
+      return;
     }
     
-    onChange({
+    // Handle number fields normally
+    console.log(`Updating ${field} with value: ${value}`);
+    const updatedLocation = {
       ...location,
       [field]: value
-    });
+    };
+    onChange(updatedLocation);
   };
 
   const openInGoogleMaps = () => {
@@ -50,20 +65,28 @@ export function LocationInfoSection({
 
   // Build formatted address from components
   const updateFormattedAddress = () => {
-    const { streetNumber, streetName, city, state, zipCode } = location;
+    // Log what we're working with
+    console.log("Current location data:", JSON.stringify(location));
+    
+    const streetNumber = location.streetNumber || '';
+    const streetName = location.streetName || '';
+    const city = location.city || '';
+    const state = location.state || '';
+    const zipCode = location.zipCode || '';
+    
     let formattedAddress = '';
     
-    if (streetNumber && streetName) {
+    if (streetNumber.trim() && streetName.trim()) {
       formattedAddress += `${streetNumber} ${streetName}`;
     }
     
-    if (city) {
+    if (city.trim()) {
       if (formattedAddress) formattedAddress += ', ';
       formattedAddress += city;
     }
     
-    if (state) {
-      if (city) {
+    if (state.trim()) {
+      if (city.trim()) {
         formattedAddress += ', ';
       } else if (formattedAddress) {
         formattedAddress += ', ';
@@ -71,21 +94,43 @@ export function LocationInfoSection({
       formattedAddress += state;
     }
     
-    if (zipCode) {
+    if (zipCode.trim()) {
       if (formattedAddress) formattedAddress += ' ';
       formattedAddress += zipCode;
     }
     
-    // Always use an empty string instead of null to avoid validation errors
-    handleChange('formattedAddress', formattedAddress || '');
+    console.log(`Generated formattedAddress: ${formattedAddress}`);
+    
+    // Only update if the formatted address has changed
+    if (formattedAddress !== location.formattedAddress) {
+      const updatedLocation = {
+        ...location,
+        formattedAddress: formattedAddress
+      };
+      onChange(updatedLocation);
+    }
   };
 
-  // Update formatted address when address components change
+  // Special handler for address fields to update the formatted address
   const handleAddressChange = (field: keyof IncidentLocation, value: string) => {
-    console.log(`LocationInfoSection handleAddressChange: ${field} = ${value}`);
-    // Convert empty strings to empty strings (not null)
-    handleChange(field, value === "" ? "" : value);
-    setTimeout(updateFormattedAddress, 0);
+    console.log(`LocationInfoSection handleAddressChange: field=${field}, value="${value}", type=${typeof value}`);
+    
+    // Using a more direct approach to avoid complexity
+    const safeValue = value === null ? '' : value;
+    
+    // Create updated location with the new field value
+    const updatedLocation = {
+      ...location,
+      [field]: safeValue
+    };
+    
+    // Apply the update first
+    onChange(updatedLocation);
+    
+    // Then update the formatted address in the next tick
+    setTimeout(() => {
+      updateFormattedAddress();
+    }, 0);
   };
 
   return (
@@ -196,8 +241,19 @@ export function LocationInfoSection({
                   placeholder="37.7749"
                   value={location.latitude || ''}
                   onChange={(e) => {
-                    console.log(`Latitude input changed to: ${e.target.value}`);
-                    handleChange('latitude', e.target.value ? parseFloat(e.target.value) : null);
+                    const inputValue = e.target.value;
+                    console.log(`Latitude input changed to: "${inputValue}"`);
+                    
+                    // Only convert to number if there's actually a value
+                    if (inputValue && inputValue.trim() !== '') {
+                      const numValue = parseFloat(inputValue);
+                      if (!isNaN(numValue)) {
+                        handleChange('latitude', numValue);
+                      }
+                    } else {
+                      // Set to null/undefined if empty
+                      handleChange('latitude', null);
+                    }
                   }}
                 />
               </div>
@@ -210,8 +266,19 @@ export function LocationInfoSection({
                   placeholder="-122.4194"
                   value={location.longitude || ''}
                   onChange={(e) => {
-                    console.log(`Longitude input changed to: ${e.target.value}`);
-                    handleChange('longitude', e.target.value ? parseFloat(e.target.value) : null);
+                    const inputValue = e.target.value;
+                    console.log(`Longitude input changed to: "${inputValue}"`);
+                    
+                    // Only convert to number if there's actually a value
+                    if (inputValue && inputValue.trim() !== '') {
+                      const numValue = parseFloat(inputValue);
+                      if (!isNaN(numValue)) {
+                        handleChange('longitude', numValue);
+                      }
+                    } else {
+                      // Set to null/undefined if empty
+                      handleChange('longitude', null);
+                    }
                   }}
                 />
               </div>
