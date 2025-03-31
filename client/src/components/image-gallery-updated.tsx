@@ -373,22 +373,36 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                 </div>
                               ) : null}
                               
-                              {/* Location address display */}
-                              {image.metadata.location?.formattedAddress && (
+                              {/* Street Number and Name display */}
+                              {(image.metadata.location?.streetNumber || image.metadata.location?.streetName) && (
                                 <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Address:</span>
-                                  <span className="text-right">{image.metadata.location.formattedAddress}</span>
+                                  <span className="font-medium text-gray-400">Street:</span>
+                                  <span className="text-right">
+                                    {[
+                                      image.metadata.location.streetNumber,
+                                      image.metadata.location.streetName
+                                    ].filter(Boolean).join(' ')}
+                                  </span>
                                 </div>
                               )}
                               
-                              {/* City/State display */}
-                              {(image.metadata.location?.city || image.metadata.location?.state) && (
+                              {/* Location address display */}
+                              {image.metadata.location?.formattedAddress && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Full Address:</span>
+                                  <span className="text-right max-w-[180px] truncate">{image.metadata.location.formattedAddress}</span>
+                                </div>
+                              )}
+                              
+                              {/* City/State/Zip display */}
+                              {(image.metadata.location?.city || image.metadata.location?.state || image.metadata.location?.zipCode) && (
                                 <div className="flex justify-between">
                                   <span className="font-medium text-gray-400">Location:</span>
                                   <span className="text-right">
                                     {[
                                       image.metadata.location.city,
-                                      image.metadata.location.state
+                                      image.metadata.location.state,
+                                      image.metadata.location.zipCode
                                     ].filter(Boolean).join(', ')}
                                   </span>
                                 </div>

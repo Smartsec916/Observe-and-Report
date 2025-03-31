@@ -137,39 +137,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Try to get reverse geocoding using OpenStreetMap Nominatim API (no API key required)
               try {
-                // Note: This uses a Promise here but we're treating it as async
+                console.log(`Fetching address for coordinates: ${metadata.latitude}, ${metadata.longitude}`);
+                
+                // Use OpenStreetMap Nominatim API for reverse geocoding
                 const response = await fetch(
                   `https://nominatim.openstreetmap.org/reverse?format=json&lat=${metadata.latitude}&lon=${metadata.longitude}&zoom=18&addressdetails=1`,
                   { 
-                    headers: { 'User-Agent': 'ObserveAndReport/1.0' }
+                    headers: { 
+                      'User-Agent': 'ObserveAndReport/1.0',
+                      'Accept-Language': 'en-US,en'
+                    }
                   }
                 );
                 
                 if (response.ok) {
                   const addressData = await response.json() as any;
-                  console.log('Reverse geocode data:', addressData);
+                  console.log('Reverse geocode data received:', JSON.stringify(addressData, null, 2));
                   
                   if (addressData.address) {
                     // Extract address components
                     const address = addressData.address;
+                    
+                    // Initialize location if not already present
+                    if (!metadata.location) {
+                      metadata.location = {
+                        latitude: metadata.latitude,
+                        longitude: metadata.longitude
+                      };
+                    }
                     
                     // Create formatted address components based on available data
                     metadata.location.formattedAddress = addressData.display_name || '';
                     
                     // Street number and name
                     if (address.house_number) metadata.location.streetNumber = address.house_number;
-                    if (address.road || address.street) metadata.location.streetName = address.road || address.street;
+                    if (address.road || address.street) metadata.location.streetName = address.road || address.street || address.pedestrian || '';
                     
                     // City (with fallbacks)
                     if (address.city) metadata.location.city = address.city;
                     else if (address.town) metadata.location.city = address.town;
                     else if (address.village) metadata.location.city = address.village;
                     else if (address.suburb) metadata.location.city = address.suburb;
+                    else if (address.county) metadata.location.city = address.county;
                     
                     // State and zip
                     if (address.state) metadata.location.state = address.state;
+                    else if (address.state_district) metadata.location.state = address.state_district;
+                    
                     if (address.postcode) metadata.location.zipCode = address.postcode;
+                    
+                    console.log('Extracted address info:', JSON.stringify(metadata.location, null, 2));
+                  } else {
+                    console.log('Address data not found in response');
                   }
+                } else {
+                  console.log(`Geocoding API error: ${response.status} ${response.statusText}`);
                 }
               } catch (e) {
                 console.log('Error getting address from coordinates:', e);
