@@ -1,15 +1,8 @@
 import React, { useState } from "react";
 import { ImageInfo } from "@shared/schema";
 import { Button } from "./ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from "./ui/sheet";
-import { Camera, X, Upload } from "lucide-react";
+import { Camera, Upload } from "lucide-react";
+import { ImageViewer } from "./image-viewer";
 
 interface SimpleImageGalleryProps {
   images: ImageInfo[];
@@ -113,49 +106,8 @@ export function SimpleImageGallery({ images = [], observationId, readOnly = fals
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {images.map((image, index) => (
             <div key={image.url} className="flex flex-col space-y-2">
-              {/* Image thumbnail with lightbox */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <div className="aspect-square rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer">
-                    <img
-                      src={image.url}
-                      alt={image.description || `Image ${index + 1}`}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                </SheetTrigger>
-                
-                <SheetContent 
-                  side="bottom" 
-                  className="h-[90vh] p-0 pt-2 bg-black border-t border-gray-700 rounded-t-xl"
-                >
-                  <SheetHeader className="px-4 pt-0 pb-2">
-                    <SheetTitle className="text-sm text-center text-white">
-                      Image Viewer
-                    </SheetTitle>
-                  </SheetHeader>
-                  
-                  <SheetClose className="absolute top-1 right-1 rounded-full h-8 w-8 p-0 bg-black/50 flex items-center justify-center z-50 border-0 hover:bg-black/70">
-                    <X className="h-4 w-4" />
-                  </SheetClose>
-                  
-                  {/* Full image view */}
-                  <div className="relative">
-                    <img 
-                      src={image.url} 
-                      alt={image.description || "Observation image"} 
-                      className="w-full h-auto object-contain max-h-[80vh]" 
-                    />
-                    
-                    {/* Image description */}
-                    {image.description && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-white text-sm">
-                        {image.description}
-                      </div>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
+              {/* Use the standalone ImageViewer component */}
+              <ImageViewer image={image} index={index} />
             </div>
           ))}
         </div>
