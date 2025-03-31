@@ -92,12 +92,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // GPS data
+          console.log('Checking GPS data in EXIF:', exifData.gps ? 'GPS data present' : 'No GPS data found');
           if (exifData.gps) {
+            // Log the GPS data to see what's available
+            console.log('GPS data available:', JSON.stringify(exifData.gps, null, 2));
+            
             let validLatitude = false;
             let validLongitude = false;
             
             if (exifData.gps.GPSLatitude && exifData.gps.GPSLatitudeRef) {
               try {
+                console.log('Found Latitude:', exifData.gps.GPSLatitude, exifData.gps.GPSLatitudeRef);
                 const latDegrees = exifData.gps.GPSLatitude[0] + 
                   exifData.gps.GPSLatitude[1]/60 + 
                   exifData.gps.GPSLatitude[2]/3600;
@@ -105,14 +110,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (!isNaN(latDegrees)) {
                   metadata.latitude = exifData.gps.GPSLatitudeRef === 'N' ? latDegrees : -latDegrees;
                   validLatitude = true;
+                  console.log('Parsed latitude:', metadata.latitude);
                 }
               } catch (e) {
                 console.log('Error parsing latitude:', e);
               }
+            } else {
+              console.log('No latitude data found in EXIF');
             }
             
             if (exifData.gps.GPSLongitude && exifData.gps.GPSLongitudeRef) {
               try {
+                console.log('Found Longitude:', exifData.gps.GPSLongitude, exifData.gps.GPSLongitudeRef);
                 const longDegrees = exifData.gps.GPSLongitude[0] + 
                   exifData.gps.GPSLongitude[1]/60 + 
                   exifData.gps.GPSLongitude[2]/3600;
@@ -120,10 +129,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (!isNaN(longDegrees)) {
                   metadata.longitude = exifData.gps.GPSLongitudeRef === 'E' ? longDegrees : -longDegrees;
                   validLongitude = true;
+                  console.log('Parsed longitude:', metadata.longitude);
                 }
               } catch (e) {
                 console.log('Error parsing longitude:', e);
               }
+            } else {
+              console.log('No longitude data found in EXIF');
             }
             
             if (validLatitude && validLongitude && metadata.latitude && metadata.longitude) {

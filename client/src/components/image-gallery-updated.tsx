@@ -371,7 +371,20 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                   <span className="font-medium text-gray-400">GPS:</span>
                                   <span className="text-right">{image.metadata.gpsCoordinates}</span>
                                 </div>
-                              ) : null}
+                              ) : (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">GPS:</span>
+                                  <span className="text-right text-gray-500">No GPS data in image</span>
+                                </div>
+                              )}
+                              
+                              {/* Location Info Header */}
+                              {!image.metadata.location && (
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-gray-400">Location:</span>
+                                  <span className="text-right text-gray-500">No location data available</span>
+                                </div>
+                              )}
                               
                               {/* Street Number and Name display */}
                               {(image.metadata.location?.streetNumber || image.metadata.location?.streetName) && (
