@@ -111,26 +111,62 @@ export function LocationInfoSection({
     }
   };
 
-  // Special handler for address fields to update the formatted address
+  // Special handler for address fields to update the formatted address directly
   const handleAddressChange = (field: keyof IncidentLocation, value: string) => {
     console.log(`LocationInfoSection handleAddressChange: field=${field}, value="${value}", type=${typeof value}`);
     
     // Using a more direct approach to avoid complexity
     const safeValue = value === null ? '' : value;
     
-    // Create updated location with the new field value
+    // Immediately create a new object with all updated values
+    const streetNumber = field === 'streetNumber' ? safeValue : location.streetNumber || '';
+    const streetName = field === 'streetName' ? safeValue : location.streetName || '';
+    const city = field === 'city' ? safeValue : location.city || '';
+    const state = field === 'state' ? safeValue : location.state || '';
+    const zipCode = field === 'zipCode' ? safeValue : location.zipCode || '';
+    
+    // Generate the formatted address directly
+    let formattedAddress = '';
+    
+    if (streetNumber.trim() && streetName.trim()) {
+      formattedAddress += `${streetNumber} ${streetName}`;
+    }
+    
+    if (city.trim()) {
+      if (formattedAddress) formattedAddress += ', ';
+      formattedAddress += city;
+    }
+    
+    if (state.trim()) {
+      if (city.trim()) {
+        formattedAddress += ', ';
+      } else if (formattedAddress) {
+        formattedAddress += ', ';
+      }
+      formattedAddress += state;
+    }
+    
+    if (zipCode.trim()) {
+      if (formattedAddress) formattedAddress += ' ';
+      formattedAddress += zipCode;
+    }
+    
+    console.log(`Generated new formattedAddress: ${formattedAddress}`);
+    
+    // Create complete updated location with all fields including the new formatted address
     const updatedLocation = {
       ...location,
-      [field]: safeValue
+      streetNumber,
+      streetName,
+      city,
+      state,
+      zipCode,
+      formattedAddress,
+      [field]: safeValue  // Ensure the specific field is updated
     };
     
-    // Apply the update first
+    // Apply the update with the complete object
     onChange(updatedLocation);
-    
-    // Then update the formatted address in the next tick
-    setTimeout(() => {
-      updateFormattedAddress();
-    }, 0);
   };
 
   return (
@@ -152,14 +188,8 @@ export function LocationInfoSection({
                 value={location.streetNumber || ''}
                 onChange={(e) => {
                   console.log(`Street number raw input: "${e.target.value}"`);
-                  
-                  // Use the current event target value directly
-                  const currentValue = e.target.value;
-                  
-                  // Schedule the update in the next tick to avoid React batching issues
-                  setTimeout(() => {
-                    handleAddressChange('streetNumber', currentValue);
-                  }, 0);
+                  // Direct update without timeout
+                  handleAddressChange('streetNumber', e.target.value);
                 }}
                 className="w-full"
               />
@@ -172,15 +202,8 @@ export function LocationInfoSection({
                 value={location.streetName || ''}
                 onChange={(e) => {
                   console.log(`Street name raw input: "${e.target.value}"`);
-                  
-                  // Use the current event target value directly
-                  // This prevents React's synthetic event reuse from causing issues
-                  const currentValue = e.target.value;
-                  
-                  // Schedule the update in the next tick to avoid React batching issues
-                  setTimeout(() => {
-                    handleAddressChange('streetName', currentValue);
-                  }, 0);
+                  // Direct update without timeout
+                  handleAddressChange('streetName', e.target.value);
                 }}
                 className="w-full"
               />
@@ -197,14 +220,8 @@ export function LocationInfoSection({
                 value={location.city || ''}
                 onChange={(e) => {
                   console.log(`City raw input: "${e.target.value}"`);
-                  
-                  // Use the current event target value directly
-                  const currentValue = e.target.value;
-                  
-                  // Schedule the update in the next tick to avoid React batching issues
-                  setTimeout(() => {
-                    handleAddressChange('city', currentValue);
-                  }, 0);
+                  // Direct update without timeout
+                  handleAddressChange('city', e.target.value);
                 }}
                 className="w-full"
               />
@@ -239,14 +256,8 @@ export function LocationInfoSection({
                   value={location.zipCode || ''}
                   onChange={(e) => {
                     console.log(`Zip code raw input: "${e.target.value}"`);
-                    
-                    // Use the current event target value directly
-                    const currentValue = e.target.value;
-                    
-                    // Schedule the update in the next tick to avoid React batching issues
-                    setTimeout(() => {
-                      handleAddressChange('zipCode', currentValue);
-                    }, 0);
+                    // Direct update without timeout
+                    handleAddressChange('zipCode', e.target.value);
                   }}
                 />
               </div>
@@ -335,14 +346,8 @@ export function LocationInfoSection({
               value={location.notes || ''}
               onChange={(e) => {
                 console.log(`Notes raw input: "${e.target.value}"`);
-                
-                // Use the current event target value directly
-                const currentValue = e.target.value;
-                
-                // Schedule the update in the next tick to avoid React batching issues
-                setTimeout(() => {
-                  handleChange('notes', currentValue);
-                }, 0);
+                // Direct update without timeout
+                handleChange('notes', e.target.value);
               }}
             />
           </div>

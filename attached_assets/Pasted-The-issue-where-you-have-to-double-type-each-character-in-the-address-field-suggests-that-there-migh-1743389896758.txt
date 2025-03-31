@@ -1,0 +1,71 @@
+The issue where you have to double-type each character in the address field suggests that there might be a problem with how the input state is being updated or how the input is being rendered. Here are a few potential causes and solutions:
+
+State Update Issues: Ensure that the state is being updated correctly. If you're using a state management system like React Hooks, verify that the useState hook is correctly updating the state.
+
+Event Handling: Check if there are any event handlers attached to the input field that might be interfering with the input. For example, if you have an onChange handler, make sure it's updating the state correctly.
+
+Input Value Binding: If you're using a controlled input (where the value is bound to state), ensure that the state is being updated in the onChange handler.
+
+Typing Delay or Debouncing: If you have implemented debouncing or throttling on the input to prevent excessive updates, it might cause a delay in updating the input.
+
+Here's an example of how you might handle input changes in a React application:
+
+jsx
+import React, { useState } from 'react';
+
+function App() {
+  const [address, setAddress] = useState('');
+
+  const handleAddressChange = (e) => {
+    setAddress(e.target.value);
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={address}
+        onChange={handleAddressChange}
+        placeholder="Enter Address"
+      />
+    </div>
+  );
+}
+
+export default App;
+If you're still experiencing issues, consider the following adjustments:
+
+Use useCallback for Event Handlers: If your event handlers depend on state or props, ensure they are memoized to prevent unnecessary re-renders.
+
+Check for Conflicting Event Handlers: Ensure there are no other event handlers (like onKeyDown, onKeyPress, etc.) that might interfere with the input.
+
+Inspect the Input Field: Use the browser's developer tools to inspect the input field and see if there are any unexpected styles or attributes applied that might affect its behavior.
+
+If you're using a framework or library that manages state differently, ensure you're following its best practices for handling input state updates.
+
+Example with useCallback
+jsx
+import React, { useState, useCallback } from 'react';
+
+function App() {
+  const [address, setAddress] = useState('');
+
+  const handleAddressChange = useCallback((e) => {
+    setAddress(e.target.value);
+  }, [setAddress]);
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={address}
+        onChange={handleAddressChange}
+        placeholder="Enter Address"
+      />
+    </div>
+  );
+}
+
+export default App;
+This ensures that the handleAddressChange function is recreated only when setAddress changes, which is typically not necessary unless you're using a complex dependency array. However, it can help prevent unnecessary re-renders if your component is complex.
+
