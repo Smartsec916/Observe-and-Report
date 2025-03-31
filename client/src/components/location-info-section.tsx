@@ -32,7 +32,7 @@ export function LocationInfoSection({
     if (location.latitude && location.longitude) {
       const url = `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`;
       window.open(url, '_blank');
-    } else if (location.formattedAddress) {
+    } else if (location.formattedAddress && location.formattedAddress.trim() !== '') {
       const encodedAddress = encodeURIComponent(location.formattedAddress);
       const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
       window.open(url, '_blank');
@@ -67,7 +67,8 @@ export function LocationInfoSection({
       formattedAddress += zipCode;
     }
     
-    handleChange('formattedAddress', formattedAddress || null);
+    // Always use an empty string instead of null to avoid validation errors
+    handleChange('formattedAddress', formattedAddress || '');
   };
 
   // Update formatted address when address components change
@@ -218,12 +219,13 @@ export function LocationInfoSection({
             <LocationMap
               latitude={location.latitude || undefined}
               longitude={location.longitude || undefined}
-              address={location.formattedAddress || undefined}
+              address={(location.formattedAddress && location.formattedAddress.trim() !== '') ? location.formattedAddress : undefined}
               height="200px"
             />
           </div>
           
-          {(location.latitude && location.longitude) || location.formattedAddress ? (
+          {((location.latitude && location.longitude) || 
+             (location.formattedAddress && location.formattedAddress.trim() !== '')) ? (
             <Button 
               variant="outline" 
               size="sm" 
