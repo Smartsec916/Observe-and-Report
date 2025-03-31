@@ -61,10 +61,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up static serving for uploads folder
   app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
+  // Helper function to process GPS data from EXIF
+  const processGpsData = (exifData: ExifData, metadata: Record<string, any>) => {
+    if (!exifData.gps) return;
+    
+    let validLatitude = false;
+    let validLongitude = false;
+    
+    if (exifData.gps.GPSLatitude && exifData.gps.GPSLatitudeRef) {
+      try {
+        const latDegrees = exifData.gps.GPSLatitude[0] + 
+          exifData.gps.GPSLatitude[1]/60 + 
+          exifData.gps.GPSLatitude[2]/3600;
+          
+        if (!isNaN(latDegrees)) {
+          metadata.latitude = exifData.gps.GPSLatitudeRef === 'N' ? latDegrees : -latDegrees;
+          validLatitude = true;
+        }
+      } catch (e) {
+        console.log('Error parsing latitude:', e);
+      }
+    }
+    
+    if (exifData.gps.GPSLongitude && exifData.gps.GPSLongitudeRef) {
+      try {
+        const longDegrees = exifData.gps.GPSLongitude[0] + 
+          exifData.gps.GPSLongitude[1]/60 + 
+          exifData.gps.GPSLongitude[2]/3600;
+          
+        if (!isNaN(longDegrees)) {
+          metadata.longitude = exifData.gps.GPSLongitudeRef === 'E' ? longDegrees : -longDegrees;
+          validLongitude = true;
+        }
+      } catch (e) {
+        console.log('Error parsing longitude:', e);
+      }
+    }
+    
+    if (validLatitude && validLongitude) {
+      metadata.gpsCoordinates = `${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`;
+      
+      // Add coordinates to location if available
+      if (metadata.location) {
+        metadata.location.latitude = metadata.latitude;
+        metadata.location.longitude = metadata.longitude;
+      }
+    }
+    
+    // Add additional GPS data if available
+    if (exifData.gps.GPSAltitude) {
+      try {
+        const altitude = exifData.gps.GPSAltitude;
+        if (!isNaN(altitude)) {
+          metadata.altitude = altitude;
+        }
+      } catch (e) {
+        console.log('Error parsing altitude:', e);
+      }
+    }
+    
+    // Direction/bearing
+    if (exifData.gps.GPSImgDirection) {
+      metadata.direction = `${exifData.gps.GPSImgDirection}° ${exifData.gps.GPSImgDirectionRef || ''}`;
+    }
+    
+    // Speed
+    if (exifData.gps.GPSSpeed) {
+      metadata.speed = `${exifData.gps.GPSSpeed} ${exifData.gps.GPSSpeedRef || 'km/h'}`;
+    }
+  };
+
   // Function to extract EXIF data from an image
   const extractImageMetadata = (filePath: string): Promise<Record<string, any>> => {
     return new Promise((resolve) => {
       try {
+        // Check for Samsung-specific location data in the binary data
+        try {
+          // Read file as binary to extract any embedded data
+          const buffer = fs.readFileSync(filePath);
+          const fileContent = buffer.toString('utf8', 0, Math.min(buffer.length, 50000)); // Check first 50k bytes
+          
+          // Look for Samsung location address format in file content
+          const locationRegex = /(\d+\s+[A-Za-z]+\s+[A-Za-z]+,\s+[A-Za-z]+,\s+[A-Z]{2}\s+\d+,\s+USA)/;
+          const locationMatch = fileContent.match(locationRegex);
+          
+          if (locationMatch && locationMatch[1]) {
+            const addressStr = locationMatch[1];
+            console.log('Found Samsung location data in image:', addressStr);
+            
+            // Initialize location object
+            const metadata: Record<string, any> = {
+              location: {
+                formattedAddress: addressStr
+              }
+            };
+            
+            // Try to extract address components
+            const streetMatch = addressStr.match(/^(\d+)\s+([^,]+)/);
+            if (streetMatch) {
+              metadata.location.streetNumber = streetMatch[1];
+              metadata.location.streetName = streetMatch[2];
+            }
+            
+            // Try to extract city, state, zip
+            const cityStateMatch = addressStr.match(/,\s+([^,]+),\s+([A-Z]{2})\s+(\d+)/);
+            if (cityStateMatch) {
+              metadata.location.city = cityStateMatch[1];
+              metadata.location.state = cityStateMatch[2];
+              metadata.location.zipCode = cityStateMatch[3];
+            }
+            
+            // Continue with standard EXIF extraction but with the location data already populated
+            new exif.ExifImage({ image: filePath }, async (error: Error | null, exifData: ExifData) => {
+              if (error) {
+                console.log('EXIF extraction error:', error.message);
+                resolve(metadata); // Return location data even if EXIF data can't be read
+                return;
+              }
+              
+              // Add date and time
+              if (exifData.exif?.DateTimeOriginal) {
+                metadata.dateTaken = exifData.exif.DateTimeOriginal;
+              }
+              
+              // Device info
+              if (exifData.image?.Make && exifData.image?.Model) {
+                metadata.deviceInfo = `${exifData.image.Make} ${exifData.image.Model}`;
+              }
+              
+              // Add GPS coordinates if available (to work with the Map feature)
+              processGpsData(exifData, metadata);
+              
+              console.log('Combined Samsung location + EXIF metadata:', JSON.stringify(metadata, null, 2));
+              resolve(metadata);
+            });
+            
+            return; // Skip the standard flow since we're handling it in the nested callback
+          }
+        } catch (e) {
+          console.log('Error extracting Samsung location data:', e);
+          // Continue with standard EXIF extraction
+        }
+        
+        // Standard EXIF extraction (if no Samsung location data was found)
         new exif.ExifImage({ image: filePath }, async (error: Error | null, exifData: ExifData) => {
           if (error) {
             console.log('EXIF extraction error:', error.message);
@@ -78,6 +217,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Date and time
           if (exifData.exif?.DateTimeOriginal) {
             metadata.dateTaken = exifData.exif.DateTimeOriginal;
+          }
+          
+          // Device info
+          if (exifData.image?.Make && exifData.image?.Model) {
+            metadata.deviceInfo = `${exifData.image.Make} ${exifData.image.Model}`;
           }
           
           // Extract maker note if available (contains technical camera data)
