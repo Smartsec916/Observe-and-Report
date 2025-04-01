@@ -31,9 +31,51 @@ export default function InputPage({ id }: InputPageProps = {}) {
   // State for form data
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [person, setPerson] = useState<PersonInfo>({});
-  const [vehicle, setVehicle] = useState<VehicleInfo>({});
-  const [location, setLocation] = useState<IncidentLocation>({});
+  const [person, setPerson] = useState<PersonInfo>({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    name: '',
+    height: '',
+    build: '',
+    address: '',
+    workAddress: '',
+    heightMin: '',
+    heightMax: '',
+    buildPrimary: '',
+    buildSecondary: '',
+    hairColor: '',
+    eyeColor: '',
+    skinTone: '',
+    tattoos: '',
+    phoneNumber: '',
+    email: '',
+    occupation: '',
+    workPhone: '',
+    streetNumber: '',
+    streetName: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  });
+  const [vehicle, setVehicle] = useState<VehicleInfo>({
+    make: '',
+    model: '',
+    year: '',
+    yearMin: '',
+    yearMax: '',
+    color: '',
+    licensePlate: Array(7).fill('')
+  });
+  const [location, setLocation] = useState<IncidentLocation>({
+    streetNumber: '',
+    streetName: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    notes: '',
+    formattedAddress: ''
+  });
   const [notes, setNotes] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState<AdditionalNote[]>([]);
   const [images, setImages] = useState<ImageInfo[]>([]);
@@ -54,14 +96,17 @@ export default function InputPage({ id }: InputPageProps = {}) {
     if (existingObservation) {
       setDate(existingObservation.date);
       setTime(existingObservation.time);
-      setPerson(existingObservation.person ?? {});
-      setVehicle(existingObservation.vehicle ?? {});
-      setLocation(existingObservation.location ?? {});
+      
+      // Use proper default values instead of empty objects
+      setPerson(existingObservation.person || person);
+      setVehicle(existingObservation.vehicle || vehicle);
+      setLocation(existingObservation.location || location);
+      
       setNotes(existingObservation.notes ?? "");
       setAdditionalNotes(existingObservation.additionalNotes ?? []);
       setImages(existingObservation.images ?? []);
     }
-  }, [existingObservation]);
+  }, [existingObservation, person, vehicle, location]);
   
   // Function to add a new additional note - Optimized with useCallback
   const addAdditionalNote = React.useCallback(() => {
@@ -103,6 +148,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           location,
           notes,
           additionalNotes,
+          images, // Include images array for consistency
         }),
       });
     },
@@ -146,6 +192,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
           location,
           notes,
           additionalNotes,
+          images, // Include images to preserve them during updates
         }),
       });
     },
