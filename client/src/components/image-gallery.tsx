@@ -76,9 +76,28 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
         method: "DELETE",
         credentials: 'include'
       })
-      .then(response => {
-        if (!response.ok) throw new Error('Deletion failed');
-        return response.json();
+      .then(async response => {
+        // Check the content type to determine how to handle the response
+        const contentType = response.headers.get("content-type");
+        
+        if (!response.ok) {
+          // If not JSON response, just use the status text
+          if (!contentType || !contentType.includes("application/json")) {
+            throw new Error(`Deletion failed: ${response.status} ${response.statusText}`);
+          }
+          
+          // Try to parse as JSON if possible
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Deletion failed');
+        }
+        
+        // Check if there's a response body
+        if (contentType && contentType.includes("application/json")) {
+          return response.json();
+        }
+        
+        // Empty response is fine too
+        return {};
       })
       .then(() => {
         queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
@@ -88,6 +107,7 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
         });
       })
       .catch(error => {
+        console.error("Image deletion error:", error);
         toast({
           title: "Deletion failed",
           description: error instanceof Error ? error.message : "Failed to delete image",

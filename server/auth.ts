@@ -54,6 +54,9 @@ const MemorySessionStore = MemoryStore(session);
 
 // Middleware to check if user is authenticated
 export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  // For API requests, always force JSON response
+  res.setHeader('Content-Type', 'application/json');
+  
   if (req.isAuthenticated()) {
     return next();
   }
