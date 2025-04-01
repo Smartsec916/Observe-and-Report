@@ -256,6 +256,43 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                 </div>
                               )}
                               
+                              {/* Address display (prominently shown) */}
+                              {image.metadata.location?.formattedAddress && (
+                                <div className="mb-2 pb-2 border-b border-gray-700">
+                                  <div className="flex justify-between">
+                                    <span className="font-medium text-gray-300">Address:</span>
+                                    <span className="text-right text-green-300">{image.metadata.location.formattedAddress}</span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Combined address if no formatted address */}
+                              {!image.metadata.location?.formattedAddress && image.metadata.location && (
+                                <>
+                                  {((image.metadata.location.streetNumber || image.metadata.location.streetName) || 
+                                    (image.metadata.location.city || image.metadata.location.state || image.metadata.location.zipCode)) && (
+                                    <div className="mb-2 pb-2 border-b border-gray-700">
+                                      <div className="flex justify-between">
+                                        <span className="font-medium text-gray-300">Address:</span>
+                                        <span className="text-right text-green-300">
+                                          {[
+                                            [
+                                              image.metadata.location.streetNumber,
+                                              image.metadata.location.streetName
+                                            ].filter(Boolean).join(' '),
+                                            [
+                                              image.metadata.location.city,
+                                              image.metadata.location.state,
+                                              image.metadata.location.zipCode
+                                            ].filter(Boolean).join(', ')
+                                          ].filter(Boolean).join(', ')}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              
                               {/* GPS coordinates display */}
                               {(image.metadata.latitude !== undefined && image.metadata.longitude !== undefined) ? (
                                 <div className="flex justify-between">
@@ -274,25 +311,36 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                                 </div>
                               ) : null}
                               
-                              {/* Location address display */}
-                              {image.metadata.location?.formattedAddress && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Address:</span>
-                                  <span className="text-right">{image.metadata.location.formattedAddress}</span>
-                                </div>
-                              )}
-                              
-                              {/* City/State display */}
-                              {(image.metadata.location?.city || image.metadata.location?.state) && (
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-gray-400">Location:</span>
-                                  <span className="text-right">
-                                    {[
-                                      image.metadata.location.city,
-                                      image.metadata.location.state
-                                    ].filter(Boolean).join(', ')}
-                                  </span>
-                                </div>
+                              {/* Individual components if not in formatted address */}
+                              {!image.metadata.location?.formattedAddress && image.metadata.location && (
+                                <>
+                                  {/* Street Number and Name display */}
+                                  {(image.metadata.location.streetNumber || image.metadata.location.streetName) && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Street:</span>
+                                      <span className="text-right">
+                                        {[
+                                          image.metadata.location.streetNumber,
+                                          image.metadata.location.streetName
+                                        ].filter(Boolean).join(' ')}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {/* City/State display */}
+                                  {(image.metadata.location.city || image.metadata.location.state || image.metadata.location.zipCode) && (
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-400">Location:</span>
+                                      <span className="text-right">
+                                        {[
+                                          image.metadata.location.city,
+                                          image.metadata.location.state,
+                                          image.metadata.location.zipCode
+                                        ].filter(Boolean).join(', ')}
+                                      </span>
+                                    </div>
+                                  )}
+                                </>
                               )}
                               
                               {image.metadata.altitude && (

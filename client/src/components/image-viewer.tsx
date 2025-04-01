@@ -105,6 +105,44 @@ export function ImageViewer({ image, index }: ImageViewerProps) {
                     </div>
                   )}
                   
+                  {/* Address display (if available) - Added prominently at the top */}
+                  {image.metadata.location?.formattedAddress && (
+                    <div className="mb-2 pb-2 border-b border-gray-700">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-300">Address:</span>
+                        <span className="text-right text-green-300">{image.metadata.location.formattedAddress}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Street address details */}
+                  {!image.metadata.location?.formattedAddress && image.metadata.location && (
+                    <>
+                      {/* Combine street, city, state, zip into a full address if no formatted address exists */}
+                      {((image.metadata.location.streetNumber || image.metadata.location.streetName) || 
+                        (image.metadata.location.city || image.metadata.location.state || image.metadata.location.zipCode)) && (
+                        <div className="mb-2 pb-2 border-b border-gray-700">
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-300">Address:</span>
+                            <span className="text-right text-green-300">
+                              {[
+                                [
+                                  image.metadata.location.streetNumber,
+                                  image.metadata.location.streetName
+                                ].filter(Boolean).join(' '),
+                                [
+                                  image.metadata.location.city,
+                                  image.metadata.location.state,
+                                  image.metadata.location.zipCode
+                                ].filter(Boolean).join(', ')
+                              ].filter(Boolean).join(', ')}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
                   {/* GPS coordinates display (if available) */}
                   {(image.metadata.latitude !== undefined && image.metadata.longitude !== undefined) ? (
                     <div className="flex justify-between">
@@ -128,8 +166,8 @@ export function ImageViewer({ image, index }: ImageViewerProps) {
                     </div>
                   )}
                   
-                  {/* Location fields if available */}
-                  {image.metadata.location && (
+                  {/* Show individual location components if they aren't already shown in the formatted address */}
+                  {!image.metadata.location?.formattedAddress && image.metadata.location && (
                     <>
                       {/* Street Number and Name display */}
                       {(image.metadata.location.streetNumber || image.metadata.location.streetName) && (
