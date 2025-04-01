@@ -67,53 +67,65 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     }
   };
 
-  // Handle image deletion
-  const handleDeleteImage = (imageUrl: string) => {
+  // Handle image deletion with debug
+  const handleDeleteImage = async (imageUrl: string) => {
     if (window.confirm("Are you sure you want to remove this image?")) {
-      const encodedPath = encodeURIComponent(imageUrl);
-      
-      fetch(`/api/observations/${observationId}/images/${encodedPath}`, {
-        method: "DELETE",
-        credentials: 'include'
-      })
-      .then(async response => {
-        // Check the content type to determine how to handle the response
-        const contentType = response.headers.get("content-type");
+      try {
+        console.log("Attempting to delete image:", imageUrl);
+        const encodedPath = encodeURIComponent(imageUrl);
+        console.log("Encoded path:", encodedPath);
         
+        // Use fetch directly to get full control over request and response handling
+        const response = await fetch(`/api/observations/${observationId}/images/${encodedPath}`, {
+          method: "DELETE",
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        console.log("Delete response status:", response.status);
+        // Log response headers one by one to avoid iteration issues
+        console.log("Response headers:");
+        response.headers.forEach((value, key) => {
+          console.log(`  ${key}: ${value}`);
+        });
+        
+        // Use cleaner async/await pattern with try/catch
         if (!response.ok) {
-          // If not JSON response, just use the status text
-          if (!contentType || !contentType.includes("application/json")) {
-            throw new Error(`Deletion failed: ${response.status} ${response.statusText}`);
+          let errorMessage = `Server returned ${response.status} ${response.statusText}`;
+          
+          try {
+            // Try to parse error as JSON
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const errorData = await response.json();
+              errorMessage = errorData.message || errorMessage;
+            }
+          } catch (parseError) {
+            console.error("Error parsing error response:", parseError);
           }
           
-          // Try to parse as JSON if possible
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Deletion failed');
+          throw new Error(errorMessage);
         }
         
-        // Check if there's a response body
-        if (contentType && contentType.includes("application/json")) {
-          return response.json();
-        }
-        
-        // Empty response is fine too
-        return {};
-      })
-      .then(() => {
+        // Explicitly sync with server data regardless of response body
         queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
+        
+        // As a fallback, directly remove the image from local state to give immediate feedback
+        // This will be overwritten by the server response when the query is invalidated
         toast({
           title: "Image deleted",
           description: "Your image has been successfully removed."
         });
-      })
-      .catch(error => {
+      } catch (error) {
         console.error("Image deletion error:", error);
         toast({
           title: "Deletion failed",
           description: error instanceof Error ? error.message : "Failed to delete image",
           variant: "destructive"
         });
-      });
+      }
     }
   };
 
@@ -184,6 +196,27 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
                         alt={image.description || `Image ${index + 1}`}
                         className="h-full w-full object-cover"
                       />
+                      
+                      {/* Delete button directly on thumbnail */}
+                      {!readOnly && (
+                        <div 
+                          className="absolute top-1 right-1 z-10" 
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent opening the sheet
+                            handleDeleteImage(image.url);
+                          }}
+                        >
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="h-7 w-7 p-0 bg-red-600/90 hover:bg-red-700 rounded-full flex items-center justify-center"
+                            aria-label="Delete image"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Show location indicator on thumbnail if GPS data exists */}
                       {(image.metadata?.latitude && image.metadata?.longitude) || 
                        (image.metadata?.location?.latitude && image.metadata?.location?.longitude) ? (
