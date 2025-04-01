@@ -654,9 +654,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Observation not found" });
       }
       
-      console.log(`Current observation images:`, JSON.stringify(observation.images));
-      
+      // Check if the observation has any images
       const currentImages: ImageInfo[] = observation.images || [];
+      console.log(`Current observation images count: ${currentImages.length}`);
+      
+      // Find the index of the image to delete
       const imageIndex = currentImages.findIndex((img) => img.url === imageUrl);
       
       if (imageIndex === -1) {
@@ -666,24 +668,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Image found at index ${imageIndex}`);
       
-      // Remove the image from the array
-      const updatedImages: ImageInfo[] = [...currentImages];
-      updatedImages.splice(imageIndex, 1);
+      // Create a new array without the image to delete
+      const updatedImages = currentImages.filter((_, index) => index !== imageIndex);
+      console.log(`Updated images array length: ${updatedImages.length}`);
       
-      console.log(`Updated images array:`, JSON.stringify(updatedImages));
-      
-      // Update the observation
-      const updates: Partial<InsertObservation> = {
+      // Using a separate "images" update to ensure it's applied correctly
+      const updatedObservation = await dataStorage.updateObservation(id, {
         images: updatedImages
-      };
+      });
       
-      console.log(`Updating observation with:`, JSON.stringify(updates));
+      if (!updatedObservation) {
+        console.log(`Failed to update observation ${id}`);
+        return res.status(500).json({ message: "Failed to update observation" });
+      }
       
-      const updatedObservation = await dataStorage.updateObservation(id, updates);
+      console.log(`After update, observation has ${updatedObservation.images?.length || 0} images`);
       
-      console.log(`After update, observation has images:`, JSON.stringify(updatedObservation?.images));
-      
-      // Delete the file from the filesystem
+      // Try to delete the physical file from the filesystem
       try {
         const filePath = path.join(__dirname, '..', 'public', imageUrl);
         console.log(`Attempting to delete file at: ${filePath}`);
@@ -693,12 +694,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           console.log(`File does not exist at path: ${filePath}`);
         }
-      } catch (e) {
-        console.error('Failed to delete file:', e);
-        // We still want to continue even if the file deletion fails
+      } catch (fileError) {
+        console.error('Failed to delete file:', fileError);
+        // Continue even if file deletion fails - the image reference is gone from the database
       }
       
+      // Return the updated observation so the client can update its state
       res.status(200).json({ 
+        success: true,
         message: "Image deleted successfully", 
         observation: updatedObservation
       });

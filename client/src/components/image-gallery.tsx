@@ -67,66 +67,60 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     }
   };
 
-  // Handle image deletion with fallback strategy
+  // Handle image deletion
   const handleDeleteImage = async (imageUrl: string) => {
     if (window.confirm("Are you sure you want to remove this image?")) {
       try {
         console.log("Attempting to delete image:", imageUrl);
         
-        // WORKAROUND: If server-side deletion is failing, implement client-side deletion first
-        // Get current images from state and filter out the one to delete
-        const updatedImages = images.filter(img => img.url !== imageUrl);
+        // Use DELETE endpoint directly - improved server code should handle this properly now
+        const encodedPath = encodeURIComponent(imageUrl);
+        console.log("Encoded path:", encodedPath);
         
-        // Update the observation directly via PUT API instead of using DELETE endpoint
-        const updateResponse = await fetch(`/api/observations/${observationId}`, {
-          method: "PUT",
+        const response = await fetch(`/api/observations/${observationId}/images/${encodedPath}`, {
+          method: "DELETE",
           credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
             'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            // Include at minimum the images field, server should preserve other fields
-            images: updatedImages
-          })
+          }
         });
         
-        console.log("Update response status:", updateResponse.status);
+        console.log("Delete response status:", response.status);
         
-        if (!updateResponse.ok) {
-          // Fall back to original DELETE approach if PUT fails
-          const encodedPath = encodeURIComponent(imageUrl);
-          console.log("Falling back to direct DELETE. Encoded path:", encodedPath);
+        if (!response.ok) {
+          let errorMessage = `Server returned ${response.status} ${response.statusText}`;
           
-          const response = await fetch(`/api/observations/${observationId}/images/${encodedPath}`, {
-            method: "DELETE",
-            credentials: 'include',
-            headers: {
-              'Accept': 'application/json'
+          try {
+            // Try to parse error as JSON
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const errorData = await response.json();
+              errorMessage = errorData.message || errorMessage;
             }
-          });
-          
-          console.log("Delete response status:", response.status);
-          
-          if (!response.ok) {
-            let errorMessage = `Server returned ${response.status} ${response.statusText}`;
-            
-            try {
-              // Try to parse error as JSON
-              const contentType = response.headers.get("content-type");
-              if (contentType && contentType.includes("application/json")) {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorMessage;
-              }
-            } catch (parseError) {
-              console.error("Error parsing error response:", parseError);
-            }
-            
-            throw new Error(errorMessage);
+          } catch (parseError) {
+            console.error("Error parsing error response:", parseError);
           }
+          
+          throw new Error(errorMessage);
         }
         
-        // Explicitly sync with server data regardless of response body
+        // Try to get the updated observation from the response
+        try {
+          const responseData = await response.json();
+          console.log("Delete response data:", responseData);
+          
+          if (responseData.observation) {
+            // Directly update the cache with the new state from the server
+            queryClient.setQueryData(
+              [`/api/observations/${observationId}`], 
+              responseData.observation
+            );
+          }
+        } catch (parseError) {
+          console.error("Error parsing response data:", parseError);
+        }
+        
+        // Always invalidate the query to ensure we get fresh data
         queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
         
         // Show success message
