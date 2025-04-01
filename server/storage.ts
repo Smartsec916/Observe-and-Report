@@ -294,9 +294,10 @@ export class MemStorage implements IStorage {
       const query = searchParams.query.toLowerCase();
       results = results.filter(obs => {
         const person = obs.person || {};
-        const vehicle = obs.vehicle || {};
+        const vehicle = obs.vehicle || {} as VehicleInfo;
         const notes = obs.notes || '';
         const additionalNotes = obs.additionalNotes || [];
+        const images = obs.images || [];
         
         // Check person fields
         const personMatch = Object.values(person).some(value => 
@@ -310,7 +311,7 @@ export class MemStorage implements IStorage {
         });
         
         // Check license plate
-        if (vehicle.licensePlate) {
+        if (vehicle.licensePlate && Array.isArray(vehicle.licensePlate)) {
           const plateString = vehicle.licensePlate.join('');
           if (plateString.toLowerCase().includes(query)) {
             vehicleMatch = true;
@@ -325,7 +326,33 @@ export class MemStorage implements IStorage {
           note.content && note.content.toLowerCase().includes(query)
         );
         
-        return personMatch || vehicleMatch || notesMatch || additionalNotesMatch;
+        // Check image descriptions and metadata
+        const imagesMatch = images.some(image => {
+          // Check image name or description
+          const basicMatch = (image.name && image.name.toLowerCase().includes(query)) || 
+                            (image.description && image.description.toLowerCase().includes(query));
+          
+          // Check metadata for matches
+          const metadataMatch = image.metadata && Object.entries(image.metadata).some(([key, value]) => {
+            // Check for location data in formatted address
+            if (key === 'location' && value) {
+              const location = value as any;
+              if (location.formattedAddress && location.formattedAddress.toLowerCase().includes(query)) {
+                return true;
+              }
+              // Check each location property
+              return Object.values(location).some(locValue => 
+                locValue && typeof locValue === 'string' && locValue.toLowerCase().includes(query)
+              );
+            }
+            
+            return value && typeof value === 'string' && value.toLowerCase().includes(query);
+          });
+          
+          return basicMatch || metadataMatch;
+        });
+        
+        return personMatch || vehicleMatch || notesMatch || additionalNotesMatch || imagesMatch;
       });
     }
 
