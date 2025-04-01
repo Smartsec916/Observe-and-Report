@@ -104,24 +104,11 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
           throw new Error(errorMessage);
         }
         
-        // Try to get the updated observation from the response
-        try {
-          const responseData = await response.json();
-          console.log("Delete response data:", responseData);
-          
-          if (responseData.observation) {
-            // Directly update the cache with the new state from the server
-            queryClient.setQueryData(
-              [`/api/observations/${observationId}`], 
-              responseData.observation
-            );
-          }
-        } catch (parseError) {
-          console.error("Error parsing response data:", parseError);
-        }
-        
         // Always invalidate the query to ensure we get fresh data
         queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
+        
+        // Remove the image from local state for immediate feedback
+        setImages(prevImages => prevImages.filter(img => img.url !== imageUrl));
         
         // Show success message
         toast({

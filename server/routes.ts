@@ -669,7 +669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Image found at index ${imageIndex}`);
       
       // Create a new array without the image to delete
-      const updatedImages = currentImages.filter((_, index) => index !== imageIndex);
+      const updatedImages = currentImages.filter((img) => img.url !== imageUrl);
       console.log(`Updated images array length: ${updatedImages.length}`);
       
       // Using a separate "images" update to ensure it's applied correctly
