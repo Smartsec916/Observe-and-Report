@@ -223,19 +223,26 @@ export const extractBasicMetadata = (filePath: string): Promise<Record<string, a
           }
         }
         
-        // For S24 Ultra testing - let's add sample coordinates if we don't have any
-        // This is helpful for testing the feature while we troubleshoot S24 Ultra metadata extraction
-        if (isSamsungS24Ultra && (!validLatitude || !validLongitude)) {
-          console.log('Adding sample coordinates for Samsung S24 Ultra testing');
-          
-          // Use a sample coordinate for testing - Central Park NYC
-          metadata.latitude = 40.7812;
-          metadata.longitude = -73.9665;
-          validLatitude = true;
-          validLongitude = true;
-          
-          // Mark as sample data
-          metadata.locationNote = "Sample location for testing - actual coordinates weren't found in the image";
+        // For phone camera images, if no coordinates were found, we'll provide a clear
+        // message but won't add fake coordinates. Let's help user understand why coordinates weren't found.
+        if (!validLatitude || !validLongitude) {
+          if (isSamsungS24Ultra) {
+            console.log('No usable GPS coordinates found in Samsung S24 Ultra image');
+            
+            // Helpful message that explains why coordinates might be missing
+            metadata.locationNote = "No location data found. Please make sure 'Location tags' is enabled in your Samsung camera settings.";
+          } else if (metadata.deviceInfo && metadata.deviceInfo.toLowerCase().includes('iphone')) {
+            console.log('No usable GPS coordinates found in iPhone image');
+            
+            // Helpful message for iPhone users
+            metadata.locationNote = "No location data found. Please make sure Location Services is enabled for the Camera app in your iPhone settings.";
+          } else if (metadata.deviceInfo) {
+            // Generic message for other device types
+            metadata.locationNote = `No location data found in image from ${metadata.deviceInfo}.`;
+          } else {
+            // Completely generic message
+            metadata.locationNote = "No location data found in this image.";
+          }
         }
         
         // Process extracted GPS coordinates and get location information

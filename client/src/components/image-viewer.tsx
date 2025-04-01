@@ -143,24 +143,69 @@ export function ImageViewer({ image, index }: ImageViewerProps) {
                     </>
                   )}
 
+                  {/* Display sample data warning if present */}
+                  {image.metadata.locationNote && (
+                    <div className="bg-yellow-900/30 rounded p-1 mb-2 border border-yellow-800">
+                      <span className="text-yellow-300 text-[10px]">
+                        {image.metadata.locationNote}
+                      </span>
+                    </div>
+                  )}
+                  
                   {/* GPS coordinates display (if available) */}
                   {(image.metadata.latitude !== undefined && image.metadata.longitude !== undefined) ? (
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-400">GPS:</span>
-                      <span className="text-right">{image.metadata.latitude.toFixed(6)}, {image.metadata.longitude.toFixed(6)}</span>
+                    <div className="flex flex-col mb-2">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-400">GPS:</span>
+                        <span className="text-right">{image.metadata.latitude.toFixed(6)}, {image.metadata.longitude.toFixed(6)}</span>
+                      </div>
+                      <div className="mt-1">
+                        <a 
+                          href={`https://www.google.com/maps?q=${image.metadata.latitude},${image.metadata.longitude}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-blue-400 text-[10px] hover:text-blue-300 hover:underline w-full text-center block bg-blue-900/30 rounded p-1 border border-blue-800"
+                        >
+                          Open in Google Maps
+                        </a>
+                      </div>
                     </div>
                   ) : (image.metadata.location?.latitude !== undefined && image.metadata.location?.longitude !== undefined) ? (
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-400">GPS:</span>
-                      <span className="text-right">{image.metadata.location.latitude.toFixed(6)}, {image.metadata.location.longitude.toFixed(6)}</span>
+                    <div className="flex flex-col mb-2">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-400">GPS:</span>
+                        <span className="text-right">{image.metadata.location.latitude.toFixed(6)}, {image.metadata.location.longitude.toFixed(6)}</span>
+                      </div>
+                      <div className="mt-1">
+                        <a 
+                          href={`https://www.google.com/maps?q=${image.metadata.location.latitude},${image.metadata.location.longitude}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-blue-400 text-[10px] hover:text-blue-300 hover:underline w-full text-center block bg-blue-900/30 rounded p-1 border border-blue-800"
+                        >
+                          Open in Google Maps
+                        </a>
+                      </div>
                     </div>
                   ) : image.metadata.gpsCoordinates ? (
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-400">GPS:</span>
-                      <span className="text-right">{image.metadata.gpsCoordinates}</span>
+                    <div className="flex flex-col mb-2">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-400">GPS:</span>
+                        <span className="text-right">{image.metadata.gpsCoordinates}</span>
+                      </div>
+                      <div className="mt-1">
+                        <a 
+                          href={`https://www.google.com/maps?q=${image.metadata.gpsCoordinates}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-blue-400 text-[10px] hover:text-blue-300 hover:underline w-full text-center block bg-blue-900/30 rounded p-1 border border-blue-800"
+                        >
+                          Open in Google Maps
+                        </a>
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between mb-2">
                       <span className="font-medium text-gray-400">GPS:</span>
                       <span className="text-right text-gray-500">No GPS data in image</span>
                     </div>

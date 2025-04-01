@@ -125,6 +125,24 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
               </span>
             </div>
             
+            {/* Image gallery preview if images exist */}
+            {observation.images && observation.images.length > 0 && (
+              <div className="mb-3 overflow-x-auto whitespace-nowrap flex gap-2 py-1">
+                {observation.images.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className="h-16 w-16 rounded-md bg-black inline-block overflow-hidden flex-shrink-0 border border-[#3A3A3A]"
+                  >
+                    <img 
+                      src={image.url} 
+                      alt={image.description || `Image ${index + 1}`} 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div>
                 <p className="text-xs text-[#8A8A8A]">Description</p>
@@ -136,11 +154,16 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
               </div>
             </div>
             
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-between items-center space-x-2">
+              {observation.images && observation.images.length > 0 && (
+                <span className="text-xs text-[#8A8A8A]">
+                  {observation.images.length} image{observation.images.length !== 1 ? 's' : ''}
+                </span>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-[#2979FF] hover:text-[#0F52BA] p-0 h-auto"
+                className="text-xs text-[#2979FF] hover:text-[#0F52BA] p-0 h-auto ml-auto"
                 onClick={() => onEdit(observation.id)}
               >
                 View Details / Edit

@@ -85,6 +85,8 @@ export const imageMetadataSchema = z.object({
   speed: z.string().optional().default(''),
   editHistory: z.string().optional().default(''), // any modification info
   deviceInfo: z.string().optional().default(''),
+  // Message for when GPS/location data is missing or sample data
+  locationNote: z.string().optional(),
   // Location information extracted from GPS coordinates
   location: locationSchema
 });
