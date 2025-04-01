@@ -646,35 +646,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const imageUrl = decodeURIComponent(req.params.imageUrl);
       
+      console.log(`Starting image deletion for observation ${id}, image ${imageUrl}`);
+      
       const observation = await dataStorage.getObservation(id);
       if (!observation) {
+        console.log(`Observation ${id} not found`);
         return res.status(404).json({ message: "Observation not found" });
       }
+      
+      console.log(`Current observation images:`, JSON.stringify(observation.images));
       
       const currentImages: ImageInfo[] = observation.images || [];
       const imageIndex = currentImages.findIndex((img) => img.url === imageUrl);
       
       if (imageIndex === -1) {
+        console.log(`Image not found in observation's images array`);
         return res.status(404).json({ message: "Image not found" });
       }
+      
+      console.log(`Image found at index ${imageIndex}`);
       
       // Remove the image from the array
       const updatedImages: ImageInfo[] = [...currentImages];
       updatedImages.splice(imageIndex, 1);
+      
+      console.log(`Updated images array:`, JSON.stringify(updatedImages));
       
       // Update the observation
       const updates: Partial<InsertObservation> = {
         images: updatedImages
       };
       
+      console.log(`Updating observation with:`, JSON.stringify(updates));
+      
       const updatedObservation = await dataStorage.updateObservation(id, updates);
+      
+      console.log(`After update, observation has images:`, JSON.stringify(updatedObservation?.images));
       
       // Delete the file from the filesystem
       try {
         const filePath = path.join(__dirname, '..', 'public', imageUrl);
+        console.log(`Attempting to delete file at: ${filePath}`);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
-          console.log(`Deleted file: ${filePath}`);
+          console.log(`Successfully deleted file: ${filePath}`);
+        } else {
+          console.log(`File does not exist at path: ${filePath}`);
         }
       } catch (e) {
         console.error('Failed to delete file:', e);

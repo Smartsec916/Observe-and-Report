@@ -257,21 +257,43 @@ export class MemStorage implements IStorage {
   }
 
   async updateObservation(id: number, updates: Partial<InsertObservation>): Promise<Observation | undefined> {
+    console.log(`Storage: Updating observation ${id} with:`, JSON.stringify(updates));
+    
     const observation = this.observations.get(id);
     if (!observation) {
+      console.log(`Storage: Observation ${id} not found`);
       return undefined;
     }
     
+    console.log(`Storage: Original observation:`, JSON.stringify(observation));
+    
     // Encrypt sensitive fields in the updates
     const encryptedUpdates = encryptSensitiveFields(updates, SENSITIVE_FIELDS);
+    console.log(`Storage: Encrypted updates:`, JSON.stringify(encryptedUpdates));
+    
+    // Handle images array specially to ensure it's properly replaced
+    const updatedObservation = { ...observation } as Observation;
+    
+    // Apply updates to the observation
+    Object.keys(encryptedUpdates).forEach(key => {
+      if (key === 'images') {
+        // For images, make sure we replace the entire array
+        (updatedObservation as any)[key] = (encryptedUpdates as any)[key];
+        console.log(`Storage: Replaced images array with ${(encryptedUpdates as any)[key]?.length} images`);
+      } else {
+        // For other fields, apply normally
+        (updatedObservation as any)[key] = (encryptedUpdates as any)[key];
+      }
+    });
 
-    // Use type assertion for safer updates
-    const updatedObservation = {
-      ...observation,
-      ...encryptedUpdates,
-    } as Observation;
-
+    console.log(`Storage: Updated observation before saving:`, JSON.stringify(updatedObservation));
+    
+    // Save back to storage
     this.observations.set(id, updatedObservation);
+    
+    // Verify the update was applied
+    const savedObservation = this.observations.get(id);
+    console.log(`Storage: Saved observation images length:`, savedObservation?.images?.length || 0);
     
     // Return the decrypted version to the client
     return decryptSensitiveFields(updatedObservation, SENSITIVE_FIELDS);
