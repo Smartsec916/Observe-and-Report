@@ -67,56 +67,72 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     }
   };
 
-  // Handle image deletion with debug
+  // Handle image deletion with fallback strategy
   const handleDeleteImage = async (imageUrl: string) => {
     if (window.confirm("Are you sure you want to remove this image?")) {
       try {
         console.log("Attempting to delete image:", imageUrl);
-        const encodedPath = encodeURIComponent(imageUrl);
-        console.log("Encoded path:", encodedPath);
         
-        // Use fetch directly to get full control over request and response handling
-        const response = await fetch(`/api/observations/${observationId}/images/${encodedPath}`, {
-          method: "DELETE",
+        // WORKAROUND: If server-side deletion is failing, implement client-side deletion first
+        // Get current images from state and filter out the one to delete
+        const updatedImages = images.filter(img => img.url !== imageUrl);
+        
+        // Update the observation directly via PUT API instead of using DELETE endpoint
+        const updateResponse = await fetch(`/api/observations/${observationId}`, {
+          method: "PUT",
           credentials: 'include',
           headers: {
+            'Content-Type': 'application/json',
             'Accept': 'application/json'
-          }
+          },
+          body: JSON.stringify({
+            // Include at minimum the images field, server should preserve other fields
+            images: updatedImages
+          })
         });
         
-        console.log("Delete response status:", response.status);
-        // Log response headers one by one to avoid iteration issues
-        console.log("Response headers:");
-        response.headers.forEach((value, key) => {
-          console.log(`  ${key}: ${value}`);
-        });
+        console.log("Update response status:", updateResponse.status);
         
-        // Use cleaner async/await pattern with try/catch
-        if (!response.ok) {
-          let errorMessage = `Server returned ${response.status} ${response.statusText}`;
+        if (!updateResponse.ok) {
+          // Fall back to original DELETE approach if PUT fails
+          const encodedPath = encodeURIComponent(imageUrl);
+          console.log("Falling back to direct DELETE. Encoded path:", encodedPath);
           
-          try {
-            // Try to parse error as JSON
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-              const errorData = await response.json();
-              errorMessage = errorData.message || errorMessage;
+          const response = await fetch(`/api/observations/${observationId}/images/${encodedPath}`, {
+            method: "DELETE",
+            credentials: 'include',
+            headers: {
+              'Accept': 'application/json'
             }
-          } catch (parseError) {
-            console.error("Error parsing error response:", parseError);
-          }
+          });
           
-          throw new Error(errorMessage);
+          console.log("Delete response status:", response.status);
+          
+          if (!response.ok) {
+            let errorMessage = `Server returned ${response.status} ${response.statusText}`;
+            
+            try {
+              // Try to parse error as JSON
+              const contentType = response.headers.get("content-type");
+              if (contentType && contentType.includes("application/json")) {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+              }
+            } catch (parseError) {
+              console.error("Error parsing error response:", parseError);
+            }
+            
+            throw new Error(errorMessage);
+          }
         }
         
         // Explicitly sync with server data regardless of response body
         queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
         
-        // As a fallback, directly remove the image from local state to give immediate feedback
-        // This will be overwritten by the server response when the query is invalidated
+        // Show success message
         toast({
           title: "Image deleted",
-          description: "Your image has been successfully removed."
+          description: "The image has been successfully removed."
         });
       } catch (error) {
         console.error("Image deletion error:", error);
