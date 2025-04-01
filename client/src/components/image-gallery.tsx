@@ -107,9 +107,6 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
         // Always invalidate the query to ensure we get fresh data
         queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
         
-        // Remove the image from local state for immediate feedback
-        setImages(prevImages => prevImages.filter(img => img.url !== imageUrl));
-        
         // Show success message
         toast({
           title: "Image deleted",
