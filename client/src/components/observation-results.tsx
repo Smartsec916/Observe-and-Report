@@ -125,10 +125,10 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
               </span>
             </div>
             
-            {/* Image gallery preview if images exist */}
+            {/* Image gallery preview if images exist - limited to 4 images */}
             {observation.images && observation.images.length > 0 && (
               <div className="mb-3 overflow-x-auto whitespace-nowrap flex gap-2 py-1">
-                {observation.images.map((image, index) => (
+                {observation.images.slice(0, 4).map((image, index) => (
                   <div 
                     key={index} 
                     className="h-16 w-16 rounded-md bg-black inline-block overflow-hidden flex-shrink-0 border border-[#3A3A3A]"
@@ -140,6 +140,11 @@ export function ObservationResults({ results, onEdit, onViewDetails }: Observati
                     />
                   </div>
                 ))}
+                {observation.images.length > 4 && (
+                  <div className="h-16 w-16 rounded-md bg-black/50 inline-block overflow-hidden flex-shrink-0 border border-[#3A3A3A] flex items-center justify-center">
+                    <span className="text-xs text-white font-medium">+{observation.images.length - 4}</span>
+                  </div>
+                )}
               </div>
             )}
             
