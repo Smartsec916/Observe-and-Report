@@ -201,15 +201,15 @@ export default function InputPage({ id }: InputPageProps = {}) {
       queryClient.invalidateQueries({ queryKey: ["/api/observations"] });
       queryClient.invalidateQueries({ queryKey: [`/api/observations/${observationId}`] });
       
-      // Show success toast
+      // Show success toast with message indicating they can continue editing
       toast({
         title: "Observation updated",
-        description: "Your changes have been saved successfully.",
+        description: "Your changes have been saved. You can continue editing or adding images.",
         variant: "default",
       });
       
-      // Navigate back to search page
-      navigate("/search");
+      // Stay on the same page instead of navigating back
+      // This allows for continued editing and adding more entries
     },
     onError: (error) => {
       // Show error toast
@@ -438,7 +438,7 @@ export default function InputPage({ id }: InputPageProps = {}) {
               onClick={handleCancel}
               disabled={isMutating}
             >
-              Cancel
+              Back to Search
             </Button>
           )}
           
