@@ -277,9 +277,12 @@ export class MemStorage implements IStorage {
     // Apply updates to the observation
     Object.keys(encryptedUpdates).forEach(key => {
       if (key === 'images') {
-        // For images, make sure we replace the entire array
-        (updatedObservation as any)[key] = (encryptedUpdates as any)[key];
-        console.log(`Storage: Replaced images array with ${(encryptedUpdates as any)[key]?.length} images`);
+        // For images, make a deep copy to ensure complete isolation 
+        // from the input reference and apply that copy
+        const imagesCopy = JSON.parse(JSON.stringify((encryptedUpdates as any)[key]));
+        (updatedObservation as any)[key] = imagesCopy;
+        console.log(`Storage: Replaced images array with ${imagesCopy?.length} images`);
+        console.log(`Storage: Image URLs: ${imagesCopy?.map((img: any) => img.url).join(', ')}`);
       } else {
         // For other fields, apply normally
         (updatedObservation as any)[key] = (encryptedUpdates as any)[key];

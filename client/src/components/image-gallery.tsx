@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ImageInfo } from "@shared/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -20,11 +20,17 @@ interface ImageGalleryProps {
   readOnly?: boolean;
 }
 
-export function ImageGallery({ images = [], observationId, readOnly = false }: ImageGalleryProps) {
+export function ImageGallery({ images: initialImages = [], observationId, readOnly = false }: ImageGalleryProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
+  const [images, setImages] = useState<ImageInfo[]>(initialImages);
+  
+  // Update local state when props change
+  useEffect(() => {
+    setImages(initialImages);
+  }, [initialImages]);
   
   // Handle file upload
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,9 +73,18 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
     }
   };
 
-  // Handle image deletion
+  // Handle image deletion with local UI update for immediate feedback
   const handleDeleteImage = async (imageUrl: string) => {
     if (window.confirm("Are you sure you want to remove this image?")) {
+      // Immediately update UI to give feedback
+      const filteredImages = images.filter(img => img.url !== imageUrl);
+      
+      // Store current images in case we need to revert
+      const previousImages = [...images];
+      
+      // Update local state immediately for fast UI feedback
+      setImages(filteredImages);
+      
       try {
         console.log("Attempting to delete image:", imageUrl);
         
@@ -88,6 +103,9 @@ export function ImageGallery({ images = [], observationId, readOnly = false }: I
         console.log("Delete response status:", response.status);
         
         if (!response.ok) {
+          // Revert the local state if the server request fails
+          setImages(previousImages);
+          
           let errorMessage = `Server returned ${response.status} ${response.statusText}`;
           
           try {

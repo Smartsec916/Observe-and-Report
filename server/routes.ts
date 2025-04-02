@@ -671,10 +671,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create a new array without the image to delete
       const updatedImages = currentImages.filter((img) => img.url !== imageUrl);
       console.log(`Updated images array length: ${updatedImages.length}`);
+      console.log(`Filtered out image URL: ${imageUrl}`);
+      console.log(`Remaining image URLs: ${updatedImages.map(img => img.url).join(', ')}`);
+      
+      // CRITICAL FIX: Always create a brand new array for the update
+      // Ensure it's a deep copy and completely different reference
+      const imagesCopy = JSON.parse(JSON.stringify(updatedImages));
       
       // Using a separate "images" update to ensure it's applied correctly
       const updatedObservation = await dataStorage.updateObservation(id, {
-        images: updatedImages
+        images: imagesCopy
       });
       
       if (!updatedObservation) {
