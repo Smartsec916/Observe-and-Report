@@ -107,6 +107,20 @@ export const incidentLocationSchema = z.object({
   formattedAddress: z.string().optional().default(''), // Updated from 'fullAddress' to 'formattedAddress'
 });
 
+// Bookmark location schema
+export const bookmarkSchema = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  description: z.string().optional().default(''),
+  latitude: z.number(),
+  longitude: z.number(),
+  address: z.string().optional().default(''),
+  createdAt: z.string().optional().default(''),
+  category: z.string().optional().default('default'),
+  color: z.string().optional().default('#3b82f6'), // Default blue color
+  icon: z.string().optional().default('map-pin')
+});
+
 // Image attachment schema
 export const imageSchema = z.object({
   url: z.string(), // URL or base64 data
