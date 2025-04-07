@@ -451,6 +451,11 @@ export class MemStorage implements IStorage {
             }
           }
           
+          // If no height is specified in the person record, include it in results
+          if (!obs.person.height && !obs.person.heightMin && !obs.person.heightMax) {
+            return true;
+          }
+          
           return personHeightMatch;
         });
       }
@@ -470,8 +475,8 @@ export class MemStorage implements IStorage {
           const personMaxAge = obs.person.ageRangeMax !== undefined ? obs.person.ageRangeMax : 
                               (obs.person.ageRangeMin !== undefined ? obs.person.ageRangeMin : -1);
           
-          // If we don't have age information for this person, no match
-          if (personMinAge === -1 || personMaxAge === -1) return false;
+          // If we don't have age information for this person, include it in results
+          if (personMinAge === -1 || personMaxAge === -1) return true;
           
           console.log(`Comparing person age range: ${personMinAge}-${personMaxAge}`);
           
@@ -494,13 +499,29 @@ export class MemStorage implements IStorage {
           if (key === 'buildPrimary') {
             results = results.filter(obs => 
               obs.person && 
-              (obs.person.buildPrimary === value || obs.person.buildSecondary === value)
+              (
+                // Match if either buildPrimary or buildSecondary matches the search value
+                obs.person.buildPrimary === value || 
+                obs.person.buildSecondary === value ||
+                // Match if the fields are empty or unset (empty string, null, undefined)
+                !obs.person.buildPrimary || 
+                obs.person.buildPrimary === '' || 
+                obs.person.buildPrimary === 'unknown'
+              )
             );
           } 
           else if (key === 'buildSecondary') {
             results = results.filter(obs => 
               obs.person && 
-              (obs.person.buildSecondary === value || obs.person.buildPrimary === value)
+              (
+                // Match if either buildSecondary or buildPrimary matches the search value
+                obs.person.buildSecondary === value || 
+                obs.person.buildPrimary === value ||
+                // Match if the fields are empty or unset (empty string, null, undefined)
+                !obs.person.buildSecondary || 
+                obs.person.buildSecondary === '' || 
+                obs.person.buildSecondary === 'unknown'
+              )
             );
           }
           // Normal exact matching for other fields
@@ -569,6 +590,11 @@ export class MemStorage implements IStorage {
             
             console.log(`  Year range match: ${vehicleYearMatch} (vehicleMinYear=${vehicleMinYear}, ` +
                       `vehicleMaxYear=${vehicleMaxYear}, searchMinYear=${searchMinYear}, searchMaxYear=${searchMaxYear})`);
+          }
+          
+          // If no year is specified in the vehicle, include it in results
+          if (!obs.vehicle.year && !obs.vehicle.yearMin && !obs.vehicle.yearMax) {
+            return true;
           }
           
           return vehicleYearMatch;
