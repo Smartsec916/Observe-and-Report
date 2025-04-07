@@ -185,15 +185,22 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                     Minimum Age
                   </Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     id="ageRangeMin"
                     placeholder="Min age"
-                    min={0}
-                    max={120}
                     value={person.ageRangeMin === undefined ? "" : person.ageRangeMin}
                     onChange={(e) => {
-                      const value = e.target.value ? parseInt(e.target.value) : undefined;
-                      handleChange("ageRangeMin", value);
+                      // Only allow numeric input
+                      const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                      // Convert to number or undefined
+                      const value = numericValue === '' ? undefined : parseInt(numericValue, 10);
+                      
+                      // Only update if it's valid
+                      if (value === undefined || (value >= 0 && value <= 120)) {
+                        handleChange("ageRangeMin", value);
+                      }
                     }}
                     className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   />
@@ -203,15 +210,22 @@ export function PersonInfoSection({ person, onChange }: PersonInfoSectionProps) 
                     Maximum Age
                   </Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     id="ageRangeMax"
                     placeholder="Max age"
-                    min={0}
-                    max={120}
                     value={person.ageRangeMax === undefined ? "" : person.ageRangeMax}
                     onChange={(e) => {
-                      const value = e.target.value ? parseInt(e.target.value) : undefined;
-                      handleChange("ageRangeMax", value);
+                      // Only allow numeric input
+                      const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                      // Convert to number or undefined
+                      const value = numericValue === '' ? undefined : parseInt(numericValue, 10);
+                      
+                      // Only update if it's valid
+                      if (value === undefined || (value >= 0 && value <= 120)) {
+                        handleChange("ageRangeMax", value);
+                      }
                     }}
                     className="w-full rounded border-input bg-background text-foreground py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   />

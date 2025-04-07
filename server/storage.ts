@@ -623,7 +623,7 @@ export class MemStorage implements IStorage {
     if (searchParams.licensePlate && searchParams.licensePlate.some(char => char !== null)) {
       results = results.filter(obs => {
         // If there's no vehicle or no license plate, include the result in search
-        if (!obs.vehicle || !obs.vehicle.licensePlate || obs.vehicle.licensePlate === '') return true;
+        if (!obs.vehicle || !obs.vehicle.licensePlate || obs.vehicle.licensePlate.length === 0) return true;
         
         return searchParams.licensePlate!.every((char, index) => {
           // Skip null values (wildcards)
