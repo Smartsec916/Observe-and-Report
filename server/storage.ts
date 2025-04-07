@@ -507,7 +507,14 @@ export class MemStorage implements IStorage {
           else {
             results = results.filter(obs => 
               obs.person && 
-              obs.person[key as keyof PersonInfo] === value
+              (
+                // If the observation has the field set, match it exactly
+                obs.person[key as keyof PersonInfo] === value ||
+                // If the field is empty/undefined in the observation, match any search value
+                !obs.person[key as keyof PersonInfo] || 
+                obs.person[key as keyof PersonInfo] === '' ||
+                obs.person[key as keyof PersonInfo] === 'unknown'
+              )
             );
           }
         }
@@ -573,7 +580,14 @@ export class MemStorage implements IStorage {
         if (value && key !== 'licensePlate') {
           results = results.filter(obs => 
             obs.vehicle && 
-            obs.vehicle[key as keyof VehicleInfo] === value
+            (
+              // If the observation has the field set, match it exactly
+              obs.vehicle[key as keyof VehicleInfo] === value ||
+              // If the field is empty/undefined in the observation, match any search value
+              !obs.vehicle[key as keyof VehicleInfo] || 
+              obs.vehicle[key as keyof VehicleInfo] === '' ||
+              obs.vehicle[key as keyof VehicleInfo] === 'unknown'
+            )
           );
         }
       });
