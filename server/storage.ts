@@ -313,6 +313,14 @@ export class MemStorage implements IStorage {
     let results = Array.from(this.observations.values()).map(obs => 
       decryptSensitiveFields(obs, SENSITIVE_FIELDS)
     );
+    
+    // Score structure to track how well each observation matches search criteria
+    const matchScores = new Map<number, number>();
+    
+    // Initialize all scores to 0
+    results.forEach(obs => {
+      matchScores.set(obs.id, 0);
+    });
 
     // Text search across all fields
     if (searchParams.query) {
@@ -324,15 +332,25 @@ export class MemStorage implements IStorage {
         const additionalNotes = obs.additionalNotes || [];
         const images = obs.images || [];
         
+        let totalMatches = 0;
+        
         // Check person fields
-        const personMatch = Object.values(person).some(value => 
-          value && typeof value === 'string' && value.toLowerCase().includes(query)
-        );
+        const personMatch = Object.values(person).some(value => {
+          if (value && typeof value === 'string' && value.toLowerCase().includes(query)) {
+            totalMatches++;
+            return true;
+          }
+          return false;
+        });
         
         // Check vehicle fields
         let vehicleMatch = Object.entries(vehicle).some(([key, value]) => {
           if (key === 'licensePlate') return false;
-          return value && typeof value === 'string' && value.toLowerCase().includes(query);
+          if (value && typeof value === 'string' && value.toLowerCase().includes(query)) {
+            totalMatches++;
+            return true;
+          }
+          return false;
         });
         
         // Check license plate
@@ -340,42 +358,73 @@ export class MemStorage implements IStorage {
           const plateString = vehicle.licensePlate.join('');
           if (plateString.toLowerCase().includes(query)) {
             vehicleMatch = true;
+            totalMatches += 2; // License plate matches are particularly important
           }
         }
         
         // Check notes
         const notesMatch = notes.toLowerCase().includes(query);
+        if (notesMatch) totalMatches++;
         
         // Check additional notes
-        const additionalNotesMatch = additionalNotes.some(note => 
-          note.content && note.content.toLowerCase().includes(query)
-        );
+        const additionalNotesMatch = additionalNotes.some(note => {
+          if (note.content && note.content.toLowerCase().includes(query)) {
+            totalMatches++;
+            return true;
+          }
+          return false;
+        });
         
         // Check image descriptions and metadata
         const imagesMatch = images.some(image => {
+          let matched = false;
+          
           // Check image name or description
-          const basicMatch = (image.name && image.name.toLowerCase().includes(query)) || 
-                            (image.description && image.description.toLowerCase().includes(query));
+          if ((image.name && image.name.toLowerCase().includes(query)) || 
+              (image.description && image.description.toLowerCase().includes(query))) {
+            totalMatches++;
+            matched = true;
+          }
           
           // Check metadata for matches
-          const metadataMatch = image.metadata && Object.entries(image.metadata).some(([key, value]) => {
-            // Check for location data in formatted address
-            if (key === 'location' && value) {
-              const location = value as any;
-              if (location.formattedAddress && location.formattedAddress.toLowerCase().includes(query)) {
+          if (image.metadata) {
+            const metadataMatch = Object.entries(image.metadata).some(([key, value]) => {
+              // Check for location data in formatted address
+              if (key === 'location' && value) {
+                const location = value as any;
+                if (location.formattedAddress && location.formattedAddress.toLowerCase().includes(query)) {
+                  totalMatches++;
+                  return true;
+                }
+                // Check each location property
+                const locationMatch = Object.values(location).some(locValue => {
+                  if (locValue && typeof locValue === 'string' && locValue.toLowerCase().includes(query)) {
+                    totalMatches++;
+                    return true;
+                  }
+                  return false;
+                });
+                return locationMatch;
+              }
+              
+              if (value && typeof value === 'string' && value.toLowerCase().includes(query)) {
+                totalMatches++;
                 return true;
               }
-              // Check each location property
-              return Object.values(location).some(locValue => 
-                locValue && typeof locValue === 'string' && locValue.toLowerCase().includes(query)
-              );
-            }
+              return false;
+            });
             
-            return value && typeof value === 'string' && value.toLowerCase().includes(query);
-          });
+            if (metadataMatch) matched = true;
+          }
           
-          return basicMatch || metadataMatch;
+          return matched;
         });
+        
+        // Set score based on total matches
+        if (totalMatches > 0) {
+          const currentScore = matchScores.get(obs.id) || 0;
+          matchScores.set(obs.id, currentScore + totalMatches);
+        }
         
         return personMatch || vehicleMatch || notesMatch || additionalNotesMatch || imagesMatch;
       });
@@ -625,12 +674,32 @@ export class MemStorage implements IStorage {
         // If there's no vehicle or no license plate, include the result in search
         if (!obs.vehicle || !obs.vehicle.licensePlate || obs.vehicle.licensePlate.length === 0) return true;
         
-        return searchParams.licensePlate!.every((char, index) => {
+        // Count the number of matches for scoring
+        let matchCount = 0;
+        const totalChars = searchParams.licensePlate!.filter(char => char !== null && char !== '').length;
+        
+        const isMatch = searchParams.licensePlate!.every((char, index) => {
           // Skip null values (wildcards)
           if (char === null || char === '') return true;
           
-          return obs.vehicle!.licensePlate![index] === char;
+          const characterMatches = obs.vehicle!.licensePlate![index] === char;
+          if (characterMatches) {
+            matchCount++;
+          }
+          return characterMatches;
         });
+        
+        // Add score based on how many characters matched
+        if (isMatch && matchCount > 0) {
+          // Calculate match percentage (higher percentage = higher score)
+          const matchPercentage = matchCount / totalChars;
+          // Add bonus for license plate match - these are highly significant
+          const scoreToAdd = Math.round(matchPercentage * 10) + matchCount;
+          const currentScore = matchScores.get(obs.id) || 0;
+          matchScores.set(obs.id, currentScore + scoreToAdd);
+        }
+        
+        return isMatch;
       });
     }
 
@@ -643,11 +712,111 @@ export class MemStorage implements IStorage {
       results = results.filter(obs => obs.date <= searchParams.dateTo!);
     }
 
-    // Sort by date (newest first)
+    // Text search scores are already added during the filtering process
+    
+    // Score person attribute matches
+    if (searchParams.person) {
+      const { heightMin, heightMax, ageRangeMin, ageRangeMax, ...otherPersonParams } = searchParams.person;
+      
+      // Score height matches
+      if (heightMin || heightMax) {
+        results.forEach(obs => {
+          if (obs.person && (obs.person.height || obs.person.heightMin || obs.person.heightMax)) {
+            const currentScore = matchScores.get(obs.id) || 0;
+            matchScores.set(obs.id, currentScore + 2);
+          }
+        });
+      }
+      
+      // Score age matches
+      if (ageRangeMin !== undefined || ageRangeMax !== undefined) {
+        results.forEach(obs => {
+          if (obs.person && (obs.person.ageRangeMin !== undefined || obs.person.ageRangeMax !== undefined)) {
+            const currentScore = matchScores.get(obs.id) || 0;
+            matchScores.set(obs.id, currentScore + 2);
+          }
+        });
+      }
+      
+      // Score other person attributes
+      Object.entries(otherPersonParams).forEach(([key, value]) => {
+        if (value) {
+          results.forEach(obs => {
+            if (obs.person) {
+              // Exact matches get a higher score
+              if (key === 'buildPrimary' && (obs.person.buildPrimary === value || obs.person.buildSecondary === value)) {
+                const currentScore = matchScores.get(obs.id) || 0;
+                matchScores.set(obs.id, currentScore + 2);
+              } 
+              else if (key === 'buildSecondary' && (obs.person.buildSecondary === value || obs.person.buildPrimary === value)) {
+                const currentScore = matchScores.get(obs.id) || 0;
+                matchScores.set(obs.id, currentScore + 2);
+              }
+              // Regular field matches
+              else if (obs.person[key as keyof PersonInfo] === value) {
+                const currentScore = matchScores.get(obs.id) || 0;
+                matchScores.set(obs.id, currentScore + 2);
+              }
+            }
+          });
+        }
+      });
+    }
+    
+    // Score vehicle attribute matches
+    if (searchParams.vehicle) {
+      const { yearMin, yearMax, ...otherVehicleParams } = searchParams.vehicle;
+      
+      // Score year matches
+      if (yearMin || yearMax) {
+        results.forEach(obs => {
+          if (obs.vehicle && (obs.vehicle.year || obs.vehicle.yearMin || obs.vehicle.yearMax)) {
+            const currentScore = matchScores.get(obs.id) || 0;
+            matchScores.set(obs.id, currentScore + 2);
+          }
+        });
+      }
+      
+      // Score other vehicle attributes
+      Object.entries(otherVehicleParams).forEach(([key, value]) => {
+        if (value && key !== 'licensePlate') {
+          results.forEach(obs => {
+            if (obs.vehicle && obs.vehicle[key as keyof VehicleInfo] === value) {
+              const currentScore = matchScores.get(obs.id) || 0;
+              matchScores.set(obs.id, currentScore + 2);
+            }
+          });
+        }
+      });
+    }
+    
+    // Score date range matches
+    if (searchParams.dateFrom || searchParams.dateTo) {
+      results.forEach(obs => {
+        const currentScore = matchScores.get(obs.id) || 0;
+        matchScores.set(obs.id, currentScore + 1);
+      });
+    }
+
+    // Sort by match score (highest first) and then by date (newest first)
     results.sort((a, b) => {
+      const scoreA = matchScores.get(a.id) || 0;
+      const scoreB = matchScores.get(b.id) || 0;
+      
+      // Primary sort by score (highest first)
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA;
+      }
+      
+      // Secondary sort by date (newest first) when scores are equal
       const dateA = new Date(`${a.date}T${a.time}`);
       const dateB = new Date(`${b.date}T${b.time}`);
       return dateB.getTime() - dateA.getTime();
+    });
+
+    console.log('Sorted results by match score (first 3 results):');
+    results.slice(0, 3).forEach(obs => {
+      console.log(`ID: ${obs.id}, Score: ${matchScores.get(obs.id) || 0}`);
     });
 
     return results;
