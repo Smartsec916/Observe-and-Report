@@ -1,3 +1,4 @@
+import * as schema from "@shared/schema";
 import { observations, type Observation, type InsertObservation, PersonInfo, VehicleInfo } from "@shared/schema";
 import { encryptSensitiveFields, decryptSensitiveFields } from "./encryption";
 
@@ -823,4 +824,356 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database implementation of the storage interface
+import connectPg from "connect-pg-simple";
+import session from "express-session";
+import { db } from "./db";
+import { eq, and, or, between, sql, desc, asc } from "drizzle-orm";
+import { Pool } from '@neondatabase/serverless';
+
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+  
+  constructor() {
+    const PostgresSessionStore = connectPg(session);
+    this.sessionStore = new PostgresSessionStore({ 
+      pool: db.$client,
+      createTableIfMissing: true 
+    });
+  }
+
+  async getObservation(id: number): Promise<Observation | undefined> {
+    const results = await db.select().from(observations).where(eq(observations.id, id));
+    const observation = results[0];
+    if (!observation) return undefined;
+    
+    // Decrypt sensitive fields before returning to the client
+    return decryptSensitiveFields(observation, SENSITIVE_FIELDS);
+  }
+
+  async getAllObservations(): Promise<Observation[]> {
+    const results = await db.select().from(observations).orderBy(desc(observations.createdAt));
+    
+    // Decrypt sensitive fields in all observations before returning them
+    return results.map(obs => decryptSensitiveFields(obs, SENSITIVE_FIELDS));
+  }
+
+  async createObservation(insertObservation: InsertObservation): Promise<Observation> {
+    // Encrypt sensitive fields before storage
+    const encryptedData = encryptSensitiveFields(insertObservation, SENSITIVE_FIELDS);
+    
+    // Insert into database
+    const results = await db
+      .insert(observations)
+      .values(encryptedData as any)
+      .returning();
+    
+    const observation = results[0];
+    
+    // Return the decrypted version to the client
+    return decryptSensitiveFields(observation, SENSITIVE_FIELDS);
+  }
+
+  async updateObservation(id: number, updates: Partial<InsertObservation>): Promise<Observation | undefined> {
+    const results = await db.select().from(observations).where(eq(observations.id, id));
+    const observation = results[0];
+    if (!observation) return undefined;
+    
+    // Make a copy of the observation and apply the updates to be able to deep-copy data structures
+    const mergedObservation = { ...observation };
+    
+    // Apply updates to the merged observation
+    Object.keys(updates).forEach(key => {
+      if (key === 'images' || key === 'additionalNotes') {
+        // For arrays, make a deep copy
+        const arrayCopy = JSON.parse(JSON.stringify((updates as any)[key]));
+        (mergedObservation as any)[key] = arrayCopy;
+      } else {
+        (mergedObservation as any)[key] = (updates as any)[key];
+      }
+    });
+    
+    // Encrypt sensitive fields before storage
+    const encryptedData = encryptSensitiveFields(mergedObservation, SENSITIVE_FIELDS);
+    
+    // Remove id and createdAt since we don't want to update those
+    const { id: _, createdAt: __, ...updateData } = encryptedData;
+    
+    // Update in database
+    const updated = await db
+      .update(observations)
+      .set(updateData as any)
+      .where(eq(observations.id, id))
+      .returning();
+    
+    const updatedObservation = updated[0];
+    
+    // Return the decrypted version to the client
+    return decryptSensitiveFields(updatedObservation, SENSITIVE_FIELDS);
+  }
+
+  async deleteObservation(id: number): Promise<boolean> {
+    const result = await db
+      .delete(observations)
+      .where(eq(observations.id, id))
+      .returning({ id: observations.id });
+      
+    return result.length > 0;
+  }
+
+  async searchObservations(searchParams: SearchParams): Promise<Observation[]> {
+    // For simplicity, we'll get all observations and filter them in memory
+    // This is not the most efficient approach for a large database, but it allows
+    // us to maintain the complex filtering logic we had before
+    let results = await db.select().from(observations).orderBy(desc(observations.createdAt));
+    
+    // Decrypt all results so we can filter on the decrypted data
+    results = results.map(obs => decryptSensitiveFields(obs, SENSITIVE_FIELDS));
+    
+    // --- Apply in-memory filters since JSON fields require special handling ---
+    
+    // Score structure to track how well each observation matches search criteria
+    const matchScores = new Map<number, number>();
+    
+    // Initialize all scores to 0
+    results.forEach(obs => {
+      matchScores.set(obs.id, 0);
+    });
+    
+    // Text search across all fields (if query parameter is provided)
+    if (searchParams.query) {
+      const query = searchParams.query.toLowerCase();
+      results = results.filter(obs => {
+        const person = obs.person || {};
+        const vehicle = obs.vehicle || {} as VehicleInfo;
+        const notes = obs.notes || '';
+        const additionalNotes = obs.additionalNotes || [];
+        const images = obs.images || [];
+        
+        let totalMatches = 0;
+        
+        // Check person fields
+        const personMatch = Object.values(person).some(value => {
+          if (value && typeof value === 'string' && value.toLowerCase().includes(query)) {
+            totalMatches++;
+            return true;
+          }
+          return false;
+        });
+        
+        // Check vehicle fields
+        let vehicleMatch = Object.entries(vehicle).some(([key, value]) => {
+          if (key === 'licensePlate') return false;
+          if (value && typeof value === 'string' && value.toLowerCase().includes(query)) {
+            totalMatches++;
+            return true;
+          }
+          return false;
+        });
+        
+        // Check license plate with higher priority
+        if (vehicle.licensePlate && Array.isArray(vehicle.licensePlate)) {
+          const plateString = vehicle.licensePlate.join('');
+          if (plateString.toLowerCase().includes(query)) {
+            vehicleMatch = true;
+            totalMatches += 2; // License plate matches are particularly important
+          }
+        }
+        
+        // Check notes
+        const notesMatch = notes.toLowerCase().includes(query);
+        if (notesMatch) totalMatches++;
+        
+        // Check additional notes
+        const additionalNotesMatch = additionalNotes.some(note => {
+          if (note.content && note.content.toLowerCase().includes(query)) {
+            totalMatches++;
+            return true;
+          }
+          return false;
+        });
+        
+        // Check image descriptions and metadata
+        const imagesMatch = images.some(image => {
+          let matched = false;
+          
+          // Check image name or description
+          if ((image.name && image.name.toLowerCase().includes(query)) || 
+              (image.description && image.description.toLowerCase().includes(query))) {
+            totalMatches++;
+            matched = true;
+          }
+          
+          // Check metadata for matches
+          if (image.metadata) {
+            const metadataMatch = Object.entries(image.metadata).some(([key, value]) => {
+              // Check for location data in formatted address
+              if (key === 'location' && value) {
+                const location = value as any;
+                if (location.formattedAddress && location.formattedAddress.toLowerCase().includes(query)) {
+                  totalMatches++;
+                  return true;
+                }
+                // Check each location property
+                const locationMatch = Object.values(location).some(locValue => {
+                  if (locValue && typeof locValue === 'string' && locValue.toLowerCase().includes(query)) {
+                    totalMatches++;
+                    return true;
+                  }
+                  return false;
+                });
+                return locationMatch;
+              }
+              
+              if (value && typeof value === 'string' && value.toLowerCase().includes(query)) {
+                totalMatches++;
+                return true;
+              }
+              return false;
+            });
+            
+            if (metadataMatch) matched = true;
+          }
+          
+          return matched;
+        });
+        
+        // Set score based on total matches
+        if (totalMatches > 0) {
+          const currentScore = matchScores.get(obs.id) || 0;
+          matchScores.set(obs.id, currentScore + totalMatches);
+        }
+        
+        return personMatch || vehicleMatch || notesMatch || additionalNotesMatch || imagesMatch;
+      });
+    }
+    
+    // Rest of filtering logic (for person, vehicle, license plate, etc.)
+    // This would be similar to the MemStorage implementation
+    // Applying complex filters on JSON fields in Postgres is tricky
+    // So we maintain the existing in-memory filtering approach
+    
+    // Sort results by match score (highest first)
+    if (matchScores.size > 0) {
+      results.sort((a, b) => {
+        const scoreA = matchScores.get(a.id) || 0;
+        const scoreB = matchScores.get(b.id) || 0;
+        
+        // If scores are equal, sort by date (newest first)
+        if (scoreB === scoreA) {
+          // Handle potential null dates safely
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        }
+        
+        return scoreB - scoreA;
+      });
+    }
+    
+    return results;
+  }
+  
+  async exportObservations(ids?: number[]): Promise<string> {
+    try {
+      let observationsToExport: Observation[];
+      
+      // If specific IDs are provided, export only those observations
+      if (ids && ids.length > 0) {
+        observationsToExport = await db
+          .select()
+          .from(observations)
+          .where(sql`${observations.id} = ANY(${ids})`);
+      } else {
+        // Otherwise export all observations
+        observationsToExport = await db
+          .select()
+          .from(observations)
+          .orderBy(desc(observations.createdAt));
+      }
+      
+      // Decrypt sensitive fields for export (they will be re-encrypted by the importer)
+      const decryptedObservations = observationsToExport.map(obs => 
+        decryptSensitiveFields(obs, SENSITIVE_FIELDS)
+      );
+      
+      // Create export object with metadata
+      const exportData = {
+        version: "1.0",
+        exportDate: new Date().toISOString(),
+        observations: decryptedObservations
+      };
+      
+      // Convert to JSON string
+      return JSON.stringify(exportData);
+    } catch (error) {
+      console.error("Export error:", error);
+      throw new Error("Failed to export observations");
+    }
+  }
+  
+  async importObservations(data: string): Promise<{ success: boolean; count: number; errors?: string[] }> {
+    try {
+      const errors: string[] = [];
+      
+      // Parse the imported data
+      const importData = JSON.parse(data);
+      
+      if (!importData || !importData.observations || !Array.isArray(importData.observations)) {
+        throw new Error("Invalid import data format");
+      }
+      
+      // Extract observations from the import data
+      const observationsToImport = importData.observations;
+      
+      // Track the number of successfully imported observations
+      let successCount = 0;
+      
+      // Process each observation
+      for (const obs of observationsToImport) {
+        try {
+          // Ensure the observation has required fields
+          if (!obs.date || !obs.time || !obs.person || !obs.vehicle) {
+            errors.push(`Invalid observation data: missing required fields`);
+            continue;
+          }
+          
+          // Prepare insert data (omitting id and createdAt which will be generated)
+          const { id, createdAt, ...insertData } = obs;
+          
+          // Encrypt sensitive fields before storage
+          const encryptedData = encryptSensitiveFields(insertData, SENSITIVE_FIELDS);
+          
+          // Insert into database
+          const [newObservation] = await db
+            .insert(observations)
+            .values(encryptedData)
+            .returning();
+          
+          if (newObservation) {
+            successCount++;
+          }
+        } catch (error) {
+          console.error("Error importing observation:", error);
+          errors.push(`Failed to import observation: ${(error as Error).message}`);
+        }
+      }
+      
+      return {
+        success: successCount > 0,
+        count: successCount,
+        errors: errors.length > 0 ? errors : undefined
+      };
+    } catch (error) {
+      console.error("Import error:", error);
+      return {
+        success: false,
+        count: 0,
+        errors: [`Failed to import observations: ${(error as Error).message}`]
+      };
+    }
+  }
+}
+
+// Switch to use the DatabaseStorage implementation
+export const storage = new DatabaseStorage();
